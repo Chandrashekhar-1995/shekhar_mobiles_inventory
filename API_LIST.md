@@ -8,3 +8,6 @@
 
     -  Login User ("identifier", "password")
         - http://localhost:7777/api/v1/user/login
+
+    -  Logout
+        - http://localhost:7777/api/v1/user/logout
