@@ -1,4 +1,8 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+
 const userSchema = new mongoose.Schema(
     {
         name: {
@@ -21,11 +25,10 @@ const userSchema = new mongoose.Schema(
             // default:"http://res.cloudinary.com/chandrashekhar/image/upload/v1717332666/drlgqpgmr43vj8rqidxm.jpg"
         },
         mobileNumber: {
-            type:Number,
+            type:String,
             unique: true,
             required: [true, "Mobile Number is required"],
             trim: true,
-            index:true
         },
         address: {
             type: String,
@@ -147,5 +150,18 @@ const userSchema = new mongoose.Schema(
     },
     {timestamps:true}
 );
+
+userSchema.methods.getJWT = function(){
+    const user = this;
+    return jwt.sign({ _id: user._id }, "MybestFriend123123@", { expiresIn: "1d" });
+};
+
+userSchema.methods.validatePassword = async function (passwordInterByUser){
+    const user = this;
+    const hashPassword = user.password
+    const isPasswordValid = await bcrypt.compare(passwordInterByUser, hashPassword);
+
+    return isPasswordValid;
+}
 
 module.exports = mongoose.model("User", userSchema);
