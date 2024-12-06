@@ -17,4 +17,7 @@
 
     -  get profile
         - http://localhost:7777/api/v1/profile
+
+    -  find user by email or mobile number {"identifier": "csp8052@gmail.com"}
+        - http://localhost:7777/api/v1/user
         

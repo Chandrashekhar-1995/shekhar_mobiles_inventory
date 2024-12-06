@@ -130,9 +130,9 @@ authRouter.get("/user/login", async (req, res) => {
         const jwtToken = user.getJWT();
 
         res.cookie("token", jwtToken);
-        res.status(200).json({ message: "Login successfully" });
+        res.status(200).json(new ApiResponse(200, "Login successfully"));
     } catch (err) {
-        res.status(400).json({ error: "Error: " + err.message });
+        res.status(400).send("Error : " + err);
     }
 });
 
