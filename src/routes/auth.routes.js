@@ -8,7 +8,7 @@ const ApiError = require("../utils/ApiError");
 
 
 // Register User
-authRouter.post("/register", async (req, res, next) => {
+authRouter.post("/user/register", async (req, res, next) => {
     try {
         // Validate input
         validateSignupData(req);
@@ -45,7 +45,7 @@ authRouter.post("/register", async (req, res, next) => {
 
 
  // Create User
- authRouter.post("/create", async (req, res, next) => {
+ authRouter.post("/user/create", async (req, res, next) => {
     const { name, email, mobileNumber, address, avatar, city, state, pinCode, gender, dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, dapartment, emergencyContactPerson, emergencyContactNumber, bloodGroup, identityDocument, documentNumber, communication, salesCommission, remark} = req.body;
 
     try {
@@ -107,7 +107,7 @@ authRouter.post("/register", async (req, res, next) => {
 
  
 // Login User
-authRouter.get("/login", async (req, res) => {
+authRouter.get("/user/login", async (req, res) => {
     const { identifier, password } = req.body; // `identifier` can be mobileNumber or email
     try {
         // Check email or mobileNumber in the database
@@ -116,14 +116,14 @@ authRouter.get("/login", async (req, res) => {
         });
 
         if (!user) {
-            throw new Error("User not found");
+            throw new ApiError(409, "User not found");
         }
 
         // Compare password using the schema method
         const isPasswordCorrect = await user.validatePassword(password);
 
         if (!isPasswordCorrect) {
-            throw new Error("Invalid credentials");
+            throw new ApiError(409, "invalid credentials");            
         }
 
         // Generate JWT token using user method

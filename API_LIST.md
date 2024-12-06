@@ -11,3 +11,10 @@
 
     -  Logout
         - http://localhost:7777/api/v1/user/logout
+
+
+# Profile Routes
+
+    -  get profile
+        - http://localhost:7777/api/v1/profile
+        
