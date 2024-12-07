@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
+const bcrypt = require("bcrypt");
 
 
 //get user full profile get
@@ -140,7 +141,37 @@ profileRouter.patch("/admin/update/user", async(req,res, next)=>{
     }
 });
 
-// chande password of user patch "/user/password/change"  Take email or mobileNumber, old password, new password from body
+// chande password of user
+profileRouter.patch("/user/password/change", async (req,res,next)=>{
+    // Take email or mobileNumber, old password, new password from body
+    const {identifier, oldPassword, newPassword} = req.body
+
+    try {
+        const user = await User.findOne({
+            $or: [{ email: identifier }, { mobileNumber: identifier }]
+        })
+
+        if(!user){
+            throw new ApiError(404, "User not found with this email")
+        };
+
+        const isPasswordCorrect = await user.validatePassword(oldPassword);
+        if(!isPasswordCorrect){
+            throw new ApiError(401, "Wrong Old password please insert correct password")
+        };
+
+        const hashPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashPassword;
+
+        await user.save();
+
+        res.status(200).json(new ApiResponse(200,{}, "Password updated successfully"));
+        
+    } catch (err) {
+        next(err);
+    }
+
+});
 
 
 // chande password of customer "/customer/password/change"  Take email or mobileNumber, old password, new password from body
