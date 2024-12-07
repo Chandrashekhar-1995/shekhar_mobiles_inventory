@@ -19,6 +19,13 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
             required: [true, "Email is required"],
             trim: true,
+            validate: {
+                validator: function (value) {
+                    // Use a regex to validate email format
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                },
+                message: (props) => `${props.value} is not a valid email address!`,
+            },
         },
         avatar: {
             type: String,// cloudanery url
@@ -29,6 +36,12 @@ const userSchema = new mongoose.Schema(
             unique: true,
             required: [true, "Mobile Number is required"],
             trim: true,
+            validate: {
+                validator: function (value) {
+                    return /^[6-9]\d{9}$/.test(value); // Validates Indian mobile number format
+                },
+                message: (props) => `${props.value} is not a valid mobile number!`,
+            },
         },
         address: {
             type: String,
@@ -71,7 +84,7 @@ const userSchema = new mongoose.Schema(
         },
         bio: {
             type: String,
-            max:[50, 'Maximum 500 chareters allowed'],
+            max:[500, 'Maximum 500 chareters allowed'],
         },
         password: {
             type: String,
