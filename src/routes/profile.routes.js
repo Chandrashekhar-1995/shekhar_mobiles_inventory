@@ -11,11 +11,15 @@ profileRouter.get("/profile", async (req, res) => {
     const { token } = req.cookies;
     
     try {
+        if(!token){
+            throw new ApiError(400, "Login first ")
+        };
+
         const decodedMessage = jwt.verify(token, "MybestFriend123123@");
         const userId = decodedMessage._id;
         const user = await User.findOne({ _id: userId });
         res.send(user)
-        res.status(200).json(new ApiResponse(200, user, "User find successfully."));
+        res.status(200).json(new ApiResponse(200, user, "User detail fetched successfully."));
     } catch (err) {
         res.status(400).send("Error : " + err);
     }
@@ -49,7 +53,44 @@ profileRouter.get("/user", async (req, res)=>{
 });
 
 
-// update user patch "/user/update" (login require) get details from cookies, if userType = customer then search in customer and if others search in users
+// update login user details
+profileRouter.patch("/user/update", async(req,res)=>{
+    const data = req.body;
+    const { token } = req.cookies;
+
+    try {
+        // check update only if login done
+        if(!token){
+            throw new ApiError(401, "Please log in first.")
+        };
+
+        const UPDATE_ALLOWED = ["name", "email", "mobileNumber", "address", "avatar", "city", "state", "pinCode", "gender", "dateOfBirth", "marrigeAniversary", "bio", "emergencyContactPerson", "emergencyContactNumber", "bloodGroup", "communication", "remark"];
+
+        const updateFields = Object.keys(data);
+        const invalidFields = updateFields.filter((key) => !UPDATE_ALLOWED.includes(key));
+
+        if (invalidFields.length > 0) {
+            throw new ApiError(403, `Updating these fields is not allowed: ${invalidFields.join(", ")}`);
+        };
+
+        // Find Update the user
+        const userId = jwt.verify(token, "MybestFriend123123@");
+        const user = await User.findByIdAndUpdate(
+            userId, 
+            data, 
+            { returnDocument: 'after', runValidators: true }
+        ); 
+
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        };
+
+        res.status(200).json(new ApiResponse(200, `Hey ${user.name} your profile updated successfully.`));
+        
+    } catch (err) {
+        res.status(400).send("Error : " + err);
+    }
+})
 
 // chande password of user patch "/user/password/change"  Take email or mobileNumber, old password, new password from body
 
