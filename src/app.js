@@ -6,6 +6,7 @@ const connectDB = require("./config/database");
 const authRoutes = require("./routes/auth.routes");
 const profileRouter =require("./routes/profile.routes");
 const customerRoutes = require("./routes/customer.routes");
+const errorHandler = require("./middlewares/errorHandler.middleware");
 
 const PORT = process.env.PORT || 3000;
 
@@ -16,6 +17,10 @@ app.use(cookieParser());
 app.use("/api/v1/", authRoutes );
 app.use("/api/v1/", profileRouter );
 app.use("/api/v1/", customerRoutes );
+
+
+// Error Handler Middleware (must be after all routes)
+app.use(errorHandler);
 
 
 // Connect to database and start server

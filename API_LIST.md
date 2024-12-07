@@ -23,4 +23,7 @@
 
     -  update login user profile 
         - http://localhost:7777/api/v1/user/update
+
+    -  update user by admine 
+        - http://localhost:7777/api/v1/admin/update/user
         

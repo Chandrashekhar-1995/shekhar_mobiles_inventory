@@ -7,7 +7,7 @@ const ApiError = require("../utils/ApiError");
 
 
 //get user full profile get
-profileRouter.get("/profile", async (req, res) => {
+profileRouter.get("/profile", async (req, res, next) => {
     const { token } = req.cookies;
     
     try {
@@ -21,13 +21,13 @@ profileRouter.get("/profile", async (req, res) => {
         res.send(user)
         res.status(200).json(new ApiResponse(200, user, "User detail fetched successfully."));
     } catch (err) {
-        res.status(400).send("Error : " + err);
+        next(err);
     }
 });
 
 
 // search a user by email or mobile number
-profileRouter.get("/user", async (req, res)=>{
+profileRouter.get("/user", async (req, res, next)=>{
     //take emails or mobile no fron req.body
     const { identifier } = req.body;
 
@@ -47,14 +47,14 @@ profileRouter.get("/user", async (req, res)=>{
         res.status(200).json(new ApiResponse(200, user, "User find successfully."));
 
     } catch (err) {
-        res.status(400).send("Error : " + err);
+        next(err);
     };
 
 });
 
 
 // update login user details
-profileRouter.patch("/user/update", async(req,res)=>{
+profileRouter.patch("/user/update", async(req,res, next)=>{
     const data = req.body;
     const { token } = req.cookies;
 
@@ -88,9 +88,57 @@ profileRouter.patch("/user/update", async(req,res)=>{
         res.status(200).json(new ApiResponse(200, `Hey ${user.name} your profile updated successfully.`));
         
     } catch (err) {
-        res.status(400).send("Error : " + err);
+        next(err);
     }
-})
+});
+
+// update user details by Admin
+profileRouter.patch("/admin/update/user", async(req,res, next)=>{
+    const {userId, ...data} = req.body;
+    const { token } = req.cookies;
+
+    try {
+        // check update only if login done
+        if(!token){
+            throw new ApiError(401, "Please log in first.")
+        };
+
+        // Verify the admin's token
+        const adminData = jwt.verify(token, "MybestFriend123123@");
+        const adminUser = await User.findById(adminData._id);
+
+        if(!adminUser){
+            throw new ApiError(404, "Admin not found.");
+        };
+
+         // Check if the logged-in user is an Admin
+         if(adminUser.designation !== "Admin"){
+            throw new ApiError(403, "Access denied. Only Admins can update user details.");
+         };
+
+        // Validate user ID and updates
+        if(!userId || !data ){
+            throw new ApiError(400, "Please provide a valid userId and updates.")
+        };
+        
+        const updatedUser = await User.findByIdAndUpdate(
+            userId, 
+            {$set: data}, 
+            { new: true, runValidators: true }
+        ); 
+
+        if (!updatedUser){
+            throw new ApiError(404, "User not found");
+        };
+
+        
+
+        res.status(200).json(new ApiResponse(200, updatedUser, `${updatedUser.name}'s profile updated successfully.`));
+        
+    } catch (err) {
+        next(err);
+    }
+});
 
 // chande password of user patch "/user/password/change"  Take email or mobileNumber, old password, new password from body
 

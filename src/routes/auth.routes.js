@@ -39,7 +39,7 @@ authRouter.post("/user/register", async (req, res, next) => {
  
          res.status(201).json(new ApiResponse(201, createdUser, "User registered successfully."));
      } catch (err) {
-        res.status(400).send("Error : " + err);
+        next(err);
      }
  });
 
@@ -101,13 +101,13 @@ authRouter.post("/user/register", async (req, res, next) => {
  
          res.status(201).json(new ApiResponse(201, createdUser, "User registered successfully."));
      } catch (err) {
-        res.status(400).send("Error : " + err);
+        next(err);
      }
  });
 
  
 // Login User
-authRouter.get("/user/login", async (req, res) => {
+authRouter.get("/user/login", async (req, res, next) => {
     const { identifier, password } = req.body; // `identifier` can be mobileNumber or email
     try {
         // Check email or mobileNumber in the database
@@ -116,7 +116,7 @@ authRouter.get("/user/login", async (req, res) => {
         });
 
         if (!user) {
-            throw new ApiError(409, "User not found");
+            throw new ApiError(400, "User not found");
         }
 
         // Compare password using the schema method
@@ -132,7 +132,7 @@ authRouter.get("/user/login", async (req, res) => {
         res.cookie("token", jwtToken);
         res.status(200).json(new ApiResponse(200, {}, "Login successfully"));
     } catch (err) {
-        res.status(400).send("Error : " + err);
+        next(err);
     }
 });
 
