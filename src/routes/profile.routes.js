@@ -173,14 +173,35 @@ profileRouter.patch("/user/password/change", async (req,res,next)=>{
 
 });
 
+// reset password of user
+profileRouter.patch("/user/password/reset", async (req,res,next)=>{
+    // Take mobile number, name, new password from body
+    const {mobileNumber, name, newPassword} = req.body;
 
-// chande password of customer "/customer/password/change"  Take email or mobileNumber, old password, new password from body
+    try {
+        const user = await User.findOne({ mobileNumber: mobileNumber })
 
+        if(!user){
+            throw new ApiError(404, "User not found Please insert correct details")
+        };
 
-// reset password of user "/user/password/reset"   Take email or mobile number, name, new password from body
+        if(user.name !== name){
+            throw new ApiError(404, "User not found Please insert correct details")
+        };
 
+        const hashPassword = await bcrypt.hash(newPassword, 10);
 
-// reset password of customer /customer/password/reset"   Take email or mobile number, name, new password from body
+        user.password = hashPassword;
+
+        await user.save();
+
+        res.status(200).json(new ApiResponse(200,{}, "Password reset successfull"));
+        
+    } catch (err) {
+        next(err);
+    };
+});
+
 
 
 module.exports = profileRouter;

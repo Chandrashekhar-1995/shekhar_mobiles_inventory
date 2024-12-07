@@ -28,4 +28,7 @@
         - http://localhost:7777/api/v1/admin/update/user
     -  user password change
         - http://localhost:7777/api/v1/user/password/change
+
+    -  reset password
+        - http://localhost:7777/api/v1/user/password/reset
         
