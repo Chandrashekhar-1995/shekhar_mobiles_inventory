@@ -41,8 +41,6 @@ profileRouter.get("/profile", async (req, res, next) => {
     }
 });
 
-
-
 // search a user by email or mobile number
 profileRouter.get("/user", async (req, res, next)=>{
     //take emails or mobile no fron req.body
