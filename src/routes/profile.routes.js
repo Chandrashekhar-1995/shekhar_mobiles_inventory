@@ -41,30 +41,38 @@ profileRouter.get("/profile", async (req, res, next) => {
     }
 });
 
-// search a user by email or mobile number
-profileRouter.get("/user", async (req, res, next)=>{
-    //take emails or mobile no fron req.body
+// Search a user by email or mobile number (in Customer or User model)
+profileRouter.get("/user", async (req, res, next) => {
     const { identifier } = req.body;
 
     try {
+        // Validate input
         if (!identifier?.trim()) {
-            throw new ApiError(400, "Please insert Email or Mobile Number")
-        };
+            throw new ApiError(400, "Please provide a valid Email or Mobile Number.");
+        }
 
-        const user = await User.findOne({
+        // Search in the Customer model first
+        let user = await Customer.findOne({
             $or: [{ email: identifier }, { mobileNumber: identifier }]
         }).select("-password");
 
+        // If not found in Customer, search in User
+        if (!user) {
+            user = await User.findOne({
+                $or: [{ email: identifier }, { mobileNumber: identifier }]
+            }).select("-password");
+        }
+
+        // If not found in both models, throw an error
         if (!user) {
             throw new ApiError(404, "User not found.");
         }
 
-        res.status(200).json(new ApiResponse(200, user, "User find successfully."));
-
+        // Respond with the user details
+        res.status(200).json(new ApiResponse(200, user, "User found successfully."));
     } catch (err) {
         next(err);
-    };
-
+    }
 });
 
 
