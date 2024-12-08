@@ -1,16 +1,16 @@
 # User Routes
     -  Register (name, email, mobileNumber, address, password,)
-        - http://localhost:7777/api/v1/register
+        - http://localhost:7777/api/v1/auth/register
 
     -  Create User by admin
-        - http://localhost:7777/api/v1/user/create
+        - http://localhost:7777/api/v1/auth/user/create
             appept {"name", "email", "mobileNumber", "address", "avatar", "city", "state", "pinCode", "gender", "dateOfBirth", "marrigeAniversary", "bio", "joiningDate", "refferedBy", "designation", "dapartment", "emergencyContactPerson", "emergencyContactNumber", "bloodGroup", "identityDocument", "documentNumber", "communication", "salesCommission", "remark"  ///////  ==  validatoe intery == gender = (male, female, others), designation = ('Relationship Manager','Admin','Marketing Executive', 'Manager', 'Accountant', 'Clerk', 'Peon', 'Office Boy', 'Receptionist', 'Trainee'), department = ('Sales', 'Marketing', 'Finance', 'Human Resource', 'Administration', 'Accounts'), communication = ('sms', 'email'), salesCommission = ('yes', 'no'), }
 
     -  Login User ("identifier", "password")
-        - http://localhost:7777/api/v1/login
+        - http://localhost:7777/api/v1/auth/login
 
     -  Logout
-        - http://localhost:7777/api/v1/user/logout
+        - http://localhost:7777/api/v1/auth/logout
 
 
 # Profile Routes

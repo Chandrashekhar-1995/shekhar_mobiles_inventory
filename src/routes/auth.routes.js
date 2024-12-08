@@ -1,6 +1,7 @@
 const express = require("express");
 const authRouter = express.Router();
 const User = require("../models/user.model");
+const Customer = require("../models/customer.model");
 const validateSignupData = require("../middlewares/auth.middleware");
 const bcrypt = require('bcrypt');
 const ApiResponse = require("../utils/ApiResponse");
@@ -8,7 +9,7 @@ const ApiError = require("../utils/ApiError");
 
 
 // Register User
-authRouter.post("/register", async (req, res, next) => {
+authRouter.post("/auth/register", async (req, res, next) => {
     try {
         // Validate input
         validateSignupData(req);
@@ -69,70 +70,114 @@ authRouter.post("/register", async (req, res, next) => {
 });
 
 
- // Create User
- authRouter.post("/user/create", async (req, res, next) => {
-    const { name, email, mobileNumber, address, avatar, city, state, pinCode, gender, dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, dapartment, emergencyContactPerson, emergencyContactNumber, bloodGroup, identityDocument, documentNumber, communication, salesCommission, remark} = req.body;
-
+// Create User by Admin
+authRouter.post("/auth/user/create", async (req, res, next) => {
     try {
-        
-        // Validate required fields
-    if (!name?.trim() || !mobileNumber?.trim() || !address?.trim()) {
-        throw new ApiError(400, "All fields are required: name, mobileNumber, and address.");
-    }
+        const { 
+            name, email, mobileNumber, address, avatar, city, state, pinCode, gender, 
+            dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, 
+            dapartment, emergencyContactPerson, emergencyContactNumber, bloodGroup, 
+            identityDocument, documentNumber, communication, salesCommission, remark 
+        } = req.body;
 
-        // Check if email or mobile number already exists
-        const existingUser = await User.findOne({ $or: [{ email }, { mobileNumber }] });
-        if (existingUser) {
-            throw new ApiError(409, "User with this email or mobile number already exists.");
+        // Validate required fields
+        if (!name?.trim() || !mobileNumber?.trim() || !address?.trim()) {
+            throw new ApiError(400, "All fields are required: name, mobileNumber, and address.");
         }
 
-        // Incrypt password
-        const password = "ShekharMobiles9@"
-        const hashPassword = await bcrypt.hash(password, 10)
+        // Extract and verify the JWT token from cookies
+        const { token } = req.cookies;
+        if (!token) {
+            throw new ApiError(401, "Please log in first.");
+        }
 
-         // Create new user
-         const user = new User({
-            name, 
-            email, 
-            mobileNumber, 
-            address, 
+        const adminData = jwt.verify(token, "MybestFriend123123@");
+        const adminUser = await User.findById(adminData._id);
+
+        if (!adminUser) {
+            throw new ApiError(404, "Admin user not found.");
+        }
+
+        // Check if the logged-in user has the 'Admin' designation
+        if (adminUser.designation !== "Admin") {
+            throw new ApiError(403, "Access denied. Only Admins can create new users.");
+        }
+
+        // Check if the identifier (email or mobileNumber) already exists in the Customer model
+        const existingCustomer = await Customer.findOne({
+            $or: [{ email }, { mobileNumber }],
+        });
+
+        if (existingCustomer) {
+            throw new ApiError(
+                409,
+                "A customer with this email or mobile number already exists."
+            );
+        }
+
+        // Check if the identifier (email or mobileNumber) already exists in the User model
+        const existingUser = await User.findOne({
+            $or: [{ email }, { mobileNumber }],
+        });
+
+        if (existingUser) {
+            throw new ApiError(
+                409,
+                "A user with this email or mobile number already exists."
+            );
+        }
+
+        // Generate a default password and hash it
+        const password = "ShekharMobiles9@";
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const user = new User({
+            name,
+            email,
+            mobileNumber,
+            address,
             password: hashPassword,
             avatar,
-            city, 
-            state, 
-            pinCode, 
-            gender, 
-            dateOfBirth, 
-            marrigeAniversary, 
-            bio, 
-            joiningDate, 
-            refferedBy, 
-            designation, 
-            dapartment, 
+            city,
+            state,
+            pinCode,
+            gender,
+            dateOfBirth,
+            marrigeAniversary,
+            bio,
+            joiningDate,
+            refferedBy,
+            designation,
+            dapartment,
             emergencyContactPerson,
-            emergencyContactNumber, 
-            bloodGroup, 
-            identityDocument, 
-            documentNumber, 
-            communication, 
-            salesCommission, 
-            remark
-         });
-         await user.save();
+            emergencyContactNumber,
+            bloodGroup,
+            identityDocument,
+            documentNumber,
+            communication,
+            salesCommission,
+            remark,
+        });
 
-         const createdUser = await User.findById(user._id).select(
-            "-password"
+        await user.save();
+
+        // Fetch the newly created user excluding the password
+        const createdUser = await User.findById(user._id).select("-password");
+
+        // Respond with success
+        res.status(201).json(
+            new ApiResponse(201, createdUser, "User registered successfully.")
         );
- 
-         res.status(201).json(new ApiResponse(201, createdUser, "User registered successfully."));
-     } catch (err) {
+    } catch (err) {
         next(err);
-     }
- });
+    }
+});
+
 
  
 // Login User
-authRouter.post("/login", async (req, res, next) => {
+authRouter.post("/auth/login", async (req, res, next) => {
     const { identifier, password } = req.body; // `identifier` can be email or mobile number
 
     try {
@@ -178,7 +223,7 @@ authRouter.post("/login", async (req, res, next) => {
 
 
 // Logout
-authRouter.post("/logout", async (req, res) => {
+authRouter.post("/auth/logout", async (req, res) => {
     res.cookie("token", null, {
         expires: new Date(Date.now())
     })
