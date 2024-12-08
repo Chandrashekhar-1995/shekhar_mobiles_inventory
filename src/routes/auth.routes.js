@@ -174,7 +174,6 @@ authRouter.post("/auth/user/create", async (req, res, next) => {
     }
 });
 
-
  
 // Login User
 authRouter.post("/auth/login", async (req, res, next) => {

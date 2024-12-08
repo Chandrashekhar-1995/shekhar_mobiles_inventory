@@ -7,23 +7,40 @@ const ApiError = require("../utils/ApiError");
 const bcrypt = require("bcrypt");
 
 
-//get user full profile get
+// Get full profile (User or Customer)
 profileRouter.get("/profile", async (req, res, next) => {
     const { token } = req.cookies;
-    
-    try {
-        if(!token){
-            throw new ApiError(400, "Login first ")
-        };
 
-        const decodedMessage = jwt.verify(token, "MybestFriend123123@");
-        const userId = decodedMessage._id;
-        const user = await User.findOne({ _id: userId }).select("-password");
-        res.status(200).json(new ApiResponse(200, user, "User detail fetched successfully."));
+    try {
+        // Check if token exists
+        if (!token) {
+            throw new ApiError(401, "Please log in first.");
+        }
+
+        // Verify and decode the JWT
+        const decodedToken = jwt.verify(token, "MybestFriend123123@");
+        const userId = decodedToken._id;
+
+        // Search in the Customer model first
+        let userProfile = await Customer.findById(userId).select("-password");
+
+        // If not found in Customer, search in User
+        if (!userProfile) {
+            userProfile = await User.findById(userId).select("-password");
+        }
+
+        // If not found in both, throw an error
+        if (!userProfile) {
+            throw new ApiError(404, "User not found.");
+        }
+
+        // Respond with the profile details
+        res.status(200).json(new ApiResponse(200, userProfile, "Profile fetched successfully."));
     } catch (err) {
         next(err);
     }
 });
+
 
 
 // search a user by email or mobile number
