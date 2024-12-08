@@ -108,7 +108,7 @@ const userSchema = new mongoose.Schema(
         designation:{
             type:String,
             enum: {
-                values: ['Relationship Manager','Admin','Marketing Executive', 'Manager', 'Accountant', 'Clerk', 'Peon', 'Office Boy', 'Receptionist', 'Trainee'],
+                values: ["Relationship Manager","Admin","Marketing Executive", "Manager", "Accountant", "Clerk", "Peon", "Office Boy", "Receptionist", "Trainee"],
                 message: '{VALUE} is not supported Designation'
               },
               default:'Trainee',

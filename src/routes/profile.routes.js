@@ -18,8 +18,7 @@ profileRouter.get("/profile", async (req, res, next) => {
 
         const decodedMessage = jwt.verify(token, "MybestFriend123123@");
         const userId = decodedMessage._id;
-        const user = await User.findOne({ _id: userId });
-        res.send(user)
+        const user = await User.findOne({ _id: userId }).select("-password");
         res.status(200).json(new ApiResponse(200, user, "User detail fetched successfully."));
     } catch (err) {
         next(err);
