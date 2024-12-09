@@ -2,6 +2,7 @@ const express = require("express");
 const profileRouter = express.Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
+const Customer = require("../models/customer.model");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 const bcrypt = require("bcrypt");
@@ -42,7 +43,7 @@ profileRouter.get("/profile", async (req, res, next) => {
 });
 
 // Search a user by email or mobile number (in Customer or User model)
-profileRouter.get("/user", async (req, res, next) => {
+profileRouter.get("/user/search", async (req, res, next) => {
     const { identifier } = req.body;
 
     try {
@@ -135,7 +136,7 @@ profileRouter.patch("/user/update", async (req, res, next) => {
 });
 
 // Update user details by Admin
-profileRouter.patch("/admin/update/user", async (req, res, next) => {
+profileRouter.patch("/admin/user/update", async (req, res, next) => {
     const { userId, ...data } = req.body;
     const { token } = req.cookies;
 
@@ -288,6 +289,58 @@ profileRouter.patch("/password/reset", async (req, res, next) => {
         await user.save();
 
         res.status(200).json(new ApiResponse(200, {}, "Password reset successful."));
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Get all customer by Administration 
+profileRouter.get("/customer/feed", async(req,res,next)=>{
+    const { token } = req.cookies;
+    try {
+        // Ensure login and token validation
+        if (!token) {
+            throw new ApiError(401, "Please log in first.");
+        }
+
+        // Decode token and verify the staff identity
+        const decodedData = jwt.verify(token, "MybestFriend123123@");
+        const adminUser = await User.findById(decodedData._id);
+
+        if (!adminUser) {
+            throw new ApiError(404, "Dear Customer you are not allowed to fetch customer details !!! access denied");
+        };
+
+        // Fetch all customers and exclude the password field
+        const allCustomers = await Customer.find({}).select("-password");
+
+        res.status(200).json(new ApiResponse(200, allCustomers, "Fetched all customers data successfully."));
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Get all user by Administration 
+profileRouter.get("/user/feed", async(req,res,next)=>{
+    const { token } = req.cookies;
+    try {
+        // Ensure login and token validation
+        if (!token) {
+            throw new ApiError(401, "Please log in first.");
+        }
+
+        // Decode token and verify the staff identity
+        const decodedData = jwt.verify(token, "MybestFriend123123@");
+        const adminUser = await User.findById(decodedData._id);
+
+        if (!adminUser) {
+            throw new ApiError(404, "Dear Customer you are not allowed to fetch customer details !!! access denied");
+        };
+
+        // Fetch all customers and exclude the password field
+        const allUsers = await User.find({}).select("-password");
+
+        res.status(200).json(new ApiResponse(200, allUsers, "Fetched all users data successfully."));
     } catch (err) {
         next(err);
     }
