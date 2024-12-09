@@ -134,54 +134,79 @@ profileRouter.patch("/user/update", async (req, res, next) => {
     }
 });
 
-
-// update user details by Admin
-profileRouter.patch("/admin/update/user", async(req,res, next)=>{
-    const {userId, ...data} = req.body;
+// Update user details by Admin
+profileRouter.patch("/admin/update/user", async (req, res, next) => {
+    const { userId, ...data } = req.body;
     const { token } = req.cookies;
 
     try {
-        // check update only if login done
-        if(!token){
-            throw new ApiError(401, "Please log in first.")
-        };
+        // Ensure login and token validation
+        if (!token) {
+            throw new ApiError(401, "Please log in first.");
+        }
 
-        // Verify the admin's token
-        const adminData = jwt.verify(token, "MybestFriend123123@");
-        const adminUser = await User.findById(adminData._id);
+        // Decode token and verify the admin's identity
+        const decodedData = jwt.verify(token, "MybestFriend123123@");
+        const adminUser = await User.findById(decodedData._id);
 
-        if(!adminUser){
+        if (!adminUser) {
             throw new ApiError(404, "Admin not found.");
-        };
+        }
 
-         // Check if the logged-in user is an Admin
-         if(adminUser.designation !== "Admin"){
+        // Check if the logged-in user has the Admin designation
+        if (adminUser.designation !== "Admin") {
             throw new ApiError(403, "Access denied. Only Admins can update user details.");
-         };
+        }
 
-        // Validate user ID and updates
-        if(!userId || !data ){
-            throw new ApiError(400, "Please provide a valid userId and updates.")
-        };
-        
-        const updatedUser = await User.findByIdAndUpdate(
-            userId, 
-            {$set: data}, 
+        // Validate input
+        if (!userId || Object.keys(data).length === 0) {
+            throw new ApiError(400, "Please provide a valid userId and updates.");
+        }
+
+        // Define allowed fields for updates
+        const UPDATE_ALLOWED = [
+            "name", "email", "mobileNumber", "address", "avatar", "city", "state",
+            "pinCode", "gender", "dateOfBirth", "marrigeAniversary", "bio", "joiningDate",
+            "refferedBy", "designation", "dapartment", "emergencyContactPerson",
+            "emergencyContactNumber", "bloodGroup", "identityDocument", "documentNumber",
+            "communication", "salesCommission", "remark"
+        ];
+
+        const updateFields = Object.keys(data);
+        const invalidFields = updateFields.filter((key) => !UPDATE_ALLOWED.includes(key));
+
+        if (invalidFields.length > 0) {
+            throw new ApiError(403, `Updating these fields is not allowed: ${invalidFields.join(", ")}`);
+        }
+
+        // Attempt to update in Customer model first
+        let updatedUser = await Customer.findByIdAndUpdate(
+            userId,
+            { $set: data },
             { new: true, runValidators: true }
-        ); 
+        ).select("-password");
 
-        if (!updatedUser){
-            throw new ApiError(404, "User not found");
-        };
+        // If not found in Customer model, try User model
+        if (!updatedUser) {
+            updatedUser = await User.findByIdAndUpdate(
+                userId,
+                { $set: data },
+                { new: true, runValidators: true }
+            ).select("-password");
+        }
 
-        
+        // If no record found in either model
+        if (!updatedUser) {
+            throw new ApiError(404, "User not found.");
+        }
 
-        res.status(200).json(new ApiResponse(200, updatedUser, `${updatedUser.name}'s profile updated successfully.`));
-        
+        // Return success response
+        res.status(200).json(new ApiResponse(200, updatedUser, `${updatedUser.name}'s profile has been updated successfully.`));
     } catch (err) {
         next(err);
     }
 });
+
 
 // chande password of user
 profileRouter.patch("/user/password/change", async (req,res,next)=>{
