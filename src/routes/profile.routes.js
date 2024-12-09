@@ -253,34 +253,46 @@ profileRouter.patch("/password/change", async (req, res, next) => {
 });
 
 
-// reset password of user
-profileRouter.patch("/user/password/reset", async (req,res,next)=>{
-    // Take mobile number, name, new password from body
-    const {mobileNumber, name, newPassword} = req.body;
+// Reset password for User or Customer
+profileRouter.patch("/password/reset", async (req, res, next) => {
+    const { mobileNumber, name, newPassword } = req.body;
 
     try {
-        const user = await User.findOne({ mobileNumber: mobileNumber })
+        // Validate required fields
+        if (!mobileNumber || !name || !newPassword) {
+            throw new ApiError(400, "Please provide mobileNumber, name, and new password.");
+        }
 
-        if(!user){
-            throw new ApiError(404, "User not found Please insert correct details")
-        };
+        // Find the user in Customer model first
+        let user = await Customer.findOne({ mobileNumber });
 
-        if(user.name !== name){
-            throw new ApiError(404, "User not found Please insert correct details")
-        };
+        // If not found in Customer, search in User model
+        if (!user) {
+            user = await User.findOne({ mobileNumber });
+        }
 
+        // If user is not found in either model
+        if (!user) {
+            throw new ApiError(404, "User not found. Please provide correct details.");
+        }
+
+        // Verify the name matches
+        if (user.name !== name) {
+            throw new ApiError(404, "User not found. Please provide correct details.");
+        }
+
+        // Hash and update the new password
         const hashPassword = await bcrypt.hash(newPassword, 10);
-
         user.password = hashPassword;
 
         await user.save();
 
-        res.status(200).json(new ApiResponse(200,{}, "Password reset successfull"));
-        
+        res.status(200).json(new ApiResponse(200, {}, "Password reset successful."));
     } catch (err) {
         next(err);
-    };
+    }
 });
+
 
 
 
