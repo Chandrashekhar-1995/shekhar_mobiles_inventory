@@ -208,37 +208,50 @@ profileRouter.patch("/admin/update/user", async (req, res, next) => {
 });
 
 
-// chande password of user
-profileRouter.patch("/user/password/change", async (req,res,next)=>{
-    // Take email or mobileNumber, old password, new password from body
-    const {identifier, oldPassword, newPassword} = req.body
+// Change password for User or Customer
+profileRouter.patch("/password/change", async (req, res, next) => {
+    const { identifier, oldPassword, newPassword } = req.body;
 
     try {
-        const user = await User.findOne({
-            $or: [{ email: identifier }, { mobileNumber: identifier }]
-        })
+        // Validate required fields
+        if (!identifier || !oldPassword || !newPassword) {
+            throw new ApiError(400, "Please provide identifier, old password, and new password.");
+        }
 
-        if(!user){
-            throw new ApiError(404, "User not found with this email")
-        };
+        let user = await Customer.findOne({
+            $or: [{ email: identifier }, { mobileNumber: identifier }],
+        });
 
+        // If not found in Customer model, check in User model
+        if (!user) {
+            user = await User.findOne({
+                $or: [{ email: identifier }, { mobileNumber: identifier }],
+            });
+        }
+
+        // If user is not found in either model
+        if (!user) {
+            throw new ApiError(404, "User not found with the provided identifier.");
+        }
+
+        // Validate old password
         const isPasswordCorrect = await user.validatePassword(oldPassword);
-        if(!isPasswordCorrect){
-            throw new ApiError(401, "Wrong Old password please insert correct password")
-        };
+        if (!isPasswordCorrect) {
+            throw new ApiError(401, "Incorrect old password. Please try again.");
+        }
 
+        // Hash and update the new password
         const hashPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashPassword;
 
         await user.save();
 
-        res.status(200).json(new ApiResponse(200,{}, "Password updated successfully"));
-        
+        res.status(200).json(new ApiResponse(200, {}, "Password updated successfully."));
     } catch (err) {
         next(err);
     }
-
 });
+
 
 // reset password of user
 profileRouter.patch("/user/password/reset", async (req,res,next)=>{
