@@ -76,44 +76,64 @@ profileRouter.get("/user", async (req, res, next) => {
 });
 
 
-// update login user details
-profileRouter.patch("/user/update", async(req,res, next)=>{
+// Update login user or customer details
+profileRouter.patch("/user/update", async (req, res, next) => {
     const data = req.body;
     const { token } = req.cookies;
 
     try {
-        // check update only if login done
-        if(!token){
-            throw new ApiError(401, "Please log in first.")
-        };
+        // Ensure user is logged in
+        if (!token) {
+            throw new ApiError(401, "Please log in first.");
+        }
 
-        const UPDATE_ALLOWED = ["name", "email", "mobileNumber", "address", "avatar", "city", "state", "pinCode", "gender", "dateOfBirth", "marrigeAniversary", "bio", "emergencyContactPerson", "emergencyContactNumber", "bloodGroup", "communication", "remark"];
+        // Validate fields that are allowed to update
+        const UPDATE_ALLOWED = [
+            "name", "email", "mobileNumber", "address", "avatar", "city", "state", 
+            "pinCode", "gender", "dateOfBirth", "marrigeAniversary", "bio", 
+            "emergencyContactPerson", "emergencyContactNumber", "bloodGroup", 
+            "communication", "remark"
+        ];
 
         const updateFields = Object.keys(data);
         const invalidFields = updateFields.filter((key) => !UPDATE_ALLOWED.includes(key));
 
         if (invalidFields.length > 0) {
             throw new ApiError(403, `Updating these fields is not allowed: ${invalidFields.join(", ")}`);
-        };
+        }
 
-        // Find Update the user
-        const userId = jwt.verify(token, "MybestFriend123123@");
-        const user = await User.findByIdAndUpdate(
-            userId, 
-            data, 
-            { returnDocument: 'after', runValidators: true }
-        ); 
+        // Decode token to get user ID
+        const decodedMessage = jwt.verify(token, "MybestFriend123123@");
+        const userId = decodedMessage._id;
 
+        // Try updating in Customer model first
+        let user = await Customer.findByIdAndUpdate(
+            userId,
+            { $set: data },
+            { returnDocument: "after", runValidators: true }
+        ).select("-password");
+
+        // If not found in Customer, try User model
         if (!user) {
-            throw new ApiError(404, "User not found");
-        };
+            user = await User.findByIdAndUpdate(
+                userId,
+                { $set: data },
+                { returnDocument: "after", runValidators: true }
+            ).select("-password");
+        }
 
-        res.status(200).json(new ApiResponse(200, `Hey ${user.name} your profile updated successfully.`));
-        
+        // If user not found in both models
+        if (!user) {
+            throw new ApiError(404, "User not found.");
+        }
+
+        // Respond with success message
+        res.status(200).json(new ApiResponse(200, user, `Hey ${user.name}, your profile has been updated successfully.`));
     } catch (err) {
         next(err);
     }
 });
+
 
 // update user details by Admin
 profileRouter.patch("/admin/update/user", async(req,res, next)=>{
