@@ -1,5 +1,6 @@
 const express = require("express");
 const profileRouter = express.Router();
+const { authenticateUser, authorizeRoles, authenticateLogin, CheckExistingUserOrCustomer } = require("../middlewares/auth.middleware");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const Customer = require("../models/customer.model");
@@ -7,69 +8,113 @@ const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 const bcrypt = require("bcrypt");
 
+// Create User by users
+profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"), async (req, res, next) => {
 
-// Get full profile (User or Customer)
-profileRouter.get("/profile", async (req, res, next) => {
-    const { token } = req.cookies;
+    const { 
+        name, email, mobileNumber, address, avatar, city, state, pinCode, gender, 
+        dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, 
+        dapartment, emergencyContactPerson, emergencyContactNumber, bloodGroup, 
+        identityDocument, documentNumber, communication, salesCommission, remark 
+    } = req.body;
 
     try {
-        // Check if token exists
-        if (!token) {
-            throw new ApiError(401, "Please log in first.");
+        // Validate required fields
+        if (!name?.trim() || !mobileNumber?.trim() || !address?.trim()) {
+            throw new ApiError(400, "All fields are required: name, mobileNumber, and address.");
         }
 
-        // Verify and decode the JWT
-        const decodedToken = jwt.verify(token, "MybestFriend123123@");
-        const userId = decodedToken._id;
+        // Check if the identifier (email or mobileNumber) already exists in the Customer model
+        const existingCustomer = await Customer.findOne({
+            $or: [{ email }, { mobileNumber }],
+        });
 
-        // Search in the Customer model first
-        let userProfile = await Customer.findById(userId).select("-password");
-
-        // If not found in Customer, search in User
-        if (!userProfile) {
-            userProfile = await User.findById(userId).select("-password");
+        if (existingCustomer) {
+            throw new ApiError(
+                409,
+                "A customer with this email or mobile number already exists."
+            );
         }
 
-        // If not found in both, throw an error
-        if (!userProfile) {
-            throw new ApiError(404, "User not found.");
+        // Check if the identifier (email or mobileNumber) already exists in the User model
+        const existingUser = await User.findOne({
+            $or: [{ email }, { mobileNumber }],
+        });
+
+        if (existingUser) {
+            throw new ApiError(
+                409,
+                "A user with this email or mobile number already exists."
+            );
         }
 
-        // Respond with the profile details
-        res.status(200).json(new ApiResponse(200, userProfile, "Profile fetched successfully."));
+        // Generate a default password and hash it
+        const password = "ShekharMobiles9@";
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const user = new User({
+            name,
+            email,
+            mobileNumber,
+            address,
+            password: hashPassword,
+            avatar,
+            city,
+            state,
+            pinCode,
+            gender,
+            dateOfBirth,
+            marrigeAniversary,
+            bio,
+            joiningDate,
+            refferedBy,
+            designation,
+            dapartment,
+            emergencyContactPerson,
+            emergencyContactNumber,
+            bloodGroup,
+            identityDocument,
+            documentNumber,
+            communication,
+            salesCommission,
+            remark,
+        });
+
+        await user.save();
+
+        // Fetch the newly created user excluding the password
+        const createdUser = await User.findById(user._id).select("-password");
+
+        // Respond with success
+        res.status(201).json(
+            new ApiResponse(201, createdUser, "User registered successfully.")
+        );
     } catch (err) {
         next(err);
     }
 });
 
-// Search a user by email or mobile number (in Customer or User model)
-profileRouter.get("/user/search", async (req, res, next) => {
-    const { identifier } = req.body;
+
+// Get full profile (User or Customer)
+profileRouter.get("/profile", authenticateLogin, async (req, res, next) => {
 
     try {
-        // Validate input
-        if (!identifier?.trim()) {
-            throw new ApiError(400, "Please provide a valid Email or Mobile Number.");
-        }
+        // Respond with the profile details
+        const user = req.user
+        res.status(200).json(new ApiResponse(200, user, "Profile fetched successfully."));
+    } catch (err) {
+        next(err);
+    }
+});
 
-        // Search in the Customer model first
-        let user = await Customer.findOne({
-            $or: [{ email: identifier }, { mobileNumber: identifier }]
-        }).select("-password");
 
-        // If not found in Customer, search in User
-        if (!user) {
-            user = await User.findOne({
-                $or: [{ email: identifier }, { mobileNumber: identifier }]
-            }).select("-password");
-        }
 
-        // If not found in both models, throw an error
-        if (!user) {
-            throw new ApiError(404, "User not found.");
-        }
-
-        // Respond with the user details
+// Search a user by email or mobile number (in Customer or User model)
+profileRouter.get("/user/search", CheckExistingUserOrCustomer, async (req, res, next) => {
+    
+    try { 
+        const user = req.user;
         res.status(200).json(new ApiResponse(200, user, "User found successfully."));
     } catch (err) {
         next(err);
@@ -135,30 +180,12 @@ profileRouter.patch("/user/update", async (req, res, next) => {
     }
 });
 
+
 // Update user details by Admin
-profileRouter.patch("/admin/user/update", async (req, res, next) => {
+profileRouter.patch("/admin/user/update", authenticateUser, authorizeRoles("Admin"), async (req, res, next) => {
     const { userId, ...data } = req.body;
-    const { token } = req.cookies;
 
     try {
-        // Ensure login and token validation
-        if (!token) {
-            throw new ApiError(401, "Please log in first.");
-        }
-
-        // Decode token and verify the admin's identity
-        const decodedData = jwt.verify(token, "MybestFriend123123@");
-        const adminUser = await User.findById(decodedData._id);
-
-        if (!adminUser) {
-            throw new ApiError(404, "Admin not found.");
-        }
-
-        // Check if the logged-in user has the Admin designation
-        if (adminUser.designation !== "Admin") {
-            throw new ApiError(403, "Access denied. Only Admins can update user details.");
-        }
-
         // Validate input
         if (!userId || Object.keys(data).length === 0) {
             throw new ApiError(400, "Please provide a valid userId and updates.");
@@ -216,7 +243,7 @@ profileRouter.patch("/password/change", async (req, res, next) => {
     try {
         // Validate required fields
         if (!identifier || !oldPassword || !newPassword) {
-            throw new ApiError(400, "Please provide identifier, old password, and new password.");
+            throw new ApiError(400, "All fields are required.");
         }
 
         let user = await Customer.findOne({
@@ -295,22 +322,8 @@ profileRouter.patch("/password/reset", async (req, res, next) => {
 });
 
 // Get all customer by Administration 
-profileRouter.get("/customer/feed", async(req,res,next)=>{
-    const { token } = req.cookies;
+profileRouter.get("/customer/feed", authenticateUser, async(req,res,next)=>{
     try {
-        // Ensure login and token validation
-        if (!token) {
-            throw new ApiError(401, "Please log in first.");
-        }
-
-        // Decode token and verify the staff identity
-        const decodedData = jwt.verify(token, "MybestFriend123123@");
-        const adminUser = await User.findById(decodedData._id);
-
-        if (!adminUser) {
-            throw new ApiError(404, "Dear Customer you are not allowed to fetch customer details !!! access denied");
-        };
-
         // Fetch all customers and exclude the password field
         const allCustomers = await Customer.find({}).select("-password");
 
@@ -321,22 +334,9 @@ profileRouter.get("/customer/feed", async(req,res,next)=>{
 });
 
 // Get all user by Administration 
-profileRouter.get("/user/feed", async(req,res,next)=>{
+profileRouter.get("/user/feed", authenticateUser, async(req,res,next)=>{
     const { token } = req.cookies;
     try {
-        // Ensure login and token validation
-        if (!token) {
-            throw new ApiError(401, "Please log in first.");
-        }
-
-        // Decode token and verify the staff identity
-        const decodedData = jwt.verify(token, "MybestFriend123123@");
-        const adminUser = await User.findById(decodedData._id);
-
-        if (!adminUser) {
-            throw new ApiError(404, "Dear Customer you are not allowed to fetch customer details !!! access denied");
-        };
-
         // Fetch all customers and exclude the password field
         const allUsers = await User.find({}).select("-password");
 
