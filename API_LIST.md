@@ -1,6 +1,9 @@
 # User Routes
-    -  Register (name, email, mobileNumber, address, password,)
+    -  Register a customer (name, email, mobileNumber, address, password,)
         - http://localhost:7777/api/v1/auth/register
+
+    -  Rejister Admin
+        - http://localhost:7777/api/v1//auth/ManojChandraAjay@hgtfrgerj/jhds/jhgecfhgd/hjgef/vgd/hgfvedhv/ghdsv/gvsdgvedf/562134wefgr763478cvdsfcjkbhs/register-admin
 
     -  Create User by admin
         - http://localhost:7777/api/v1/auth/user/create
