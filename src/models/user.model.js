@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+const secretKey = process.env.JWT_SECRET;
+
 
 const userSchema = new mongoose.Schema(
     {
@@ -164,9 +166,17 @@ const userSchema = new mongoose.Schema(
     {timestamps:true}
 );
 
+// Hash the password before saving
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+   });
+
 userSchema.methods.getJWT = function(){
     const user = this;
-    return jwt.sign({ _id: user._id }, "MybestFriend123123@", { expiresIn: "1d" });
+    return jwt.sign({ _id: user._id }, secretKey, { expiresIn: "1d" });
 };
 
 userSchema.methods.validatePassword = async function (passwordInterByUser){

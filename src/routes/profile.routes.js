@@ -8,6 +8,9 @@ const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 const bcrypt = require("bcrypt");
 
+const secretKey = process.env.JWT_SECRET;
+
+
 // Create User by users
 profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"), async (req, res, next) => {
 
@@ -149,7 +152,7 @@ profileRouter.patch("/user/update", async (req, res, next) => {
         }
 
         // Decode token to get user ID
-        const decodedMessage = jwt.verify(token, "MybestFriend123123@");
+        const decodedMessage = jwt.verify(token, secretKey);
         const userId = decodedMessage._id;
 
         // Try updating in Customer model first
