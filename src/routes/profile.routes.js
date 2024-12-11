@@ -1,6 +1,7 @@
 const express = require("express");
 const profileRouter = express.Router();
 const { authenticateUser, authorizeRoles, authenticateLogin, CheckExistingUserOrCustomer } = require("../middlewares/auth.middleware");
+const findUserOrCustomer = require('../utils/dbHelpers');
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const Customer = require("../models/customer.model");
@@ -237,6 +238,98 @@ profileRouter.patch("/admin/user/update", authenticateUser, authorizeRoles("Admi
         next(err);
     }
 });
+
+
+// Admin updates designation and department for a user/customer
+profileRouter.patch("/admin/update-designation", authenticateUser, authorizeRoles("Admin"),
+    async (req, res, next) => {
+        const { identifier, designation, department } = req.body;
+
+        try {
+            // Validate required fields
+            if (!identifier || !designation) {
+                throw new ApiError(400, "Identifier and designation are required.");
+            }
+
+            // Allowed designations and departments
+            const customerAllowedDesignations = ["Customer", "Supplier"];
+            const userAllowedDesignations = [
+                "Relationship Manager",
+                "Admin",
+                "Marketing Executive",
+                "Manager",
+                "Accountant",
+                "Clerk",
+                "Peon",
+                "Office Boy",
+                "Receptionist",
+                "Trainee",
+            ];
+            const allowedDepartments = [
+                "Sales",
+                "Marketing",
+                "Finance",
+                "Human Resource",
+                "Administration",
+                "Accounts",
+            ];
+
+            // Search for the user or customer
+            const user = await findUserOrCustomer(identifier);
+
+            // If user/customer not found, throw error
+            if (!user) {
+                throw new ApiError(404, "User not found.");
+            }
+
+            // Update based on model type
+            if (user instanceof Customer) {
+                if (!customerAllowedDesignations.includes(designation)) {
+                    throw new ApiError(
+                        400,
+                        `Invalid designation for Customer. Allowed: ${customerAllowedDesignations.join(", ")}`
+                    );
+                }
+                user.designation = designation; // Update designation
+            } else if (user instanceof User) {
+                if (!userAllowedDesignations.includes(designation)) {
+                    throw new ApiError(
+                        400,
+                        `Invalid designation for User. Allowed: ${userAllowedDesignations.join(", ")}`
+                    );
+                }
+                user.designation = designation; // Update designation
+
+                // Department is optional but validated if provided
+                if (department) {
+                    if (!allowedDepartments.includes(department)) {
+                        throw new ApiError(
+                            400,
+                            `Invalid department. Allowed: ${allowedDepartments.join(", ")}`
+                        );
+                    }
+                    user.department = department; // Update department
+                }
+            } else {
+                throw new ApiError(400, "Invalid user type.");
+            }
+
+            // Save changes to the database
+            await user.save();
+
+            // Success response
+            res.status(200).json(
+                new ApiResponse(
+                    200,
+                    user,
+                    `${user.name}'s designation and department updated successfully.`
+                )
+            );
+        } catch (err) {
+            next(err);
+        }
+    }
+);
 
 
 // Change password for User or Customer

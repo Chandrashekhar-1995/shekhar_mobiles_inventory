@@ -80,8 +80,10 @@ authRouter.post("/auth/ManojChandraAjay@hgtfrgerj/jhds/jhgecfhgd/hjgef/vgd/hgfve
         // Save the Admin user to the database
         await adminUser.save();
 
+        const admin = await User.findById(adminUser._id).select("-password");
+
         res.status(201).json(
-            new ApiResponse(201, {}, "Admin registered successfully.")
+            new ApiResponse(201, admin, "Admin registered successfully.")
         );
     } catch (err) {
         next(err);

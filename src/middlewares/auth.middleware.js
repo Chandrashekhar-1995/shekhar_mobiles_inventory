@@ -4,6 +4,8 @@ const User = require("../models/user.model");
 const Customer = require("../models/customer.model");
 const ApiError = require("../utils/ApiError");
 
+const secretKey = process.env.JWT_SECRET;
+
 const validateSignupData = (req) => {
     const { name, email, mobileNumber, address, password } = req.body;
 
@@ -37,7 +39,7 @@ const authenticateUser = async (req, res, next) => {
             throw new ApiError(401, "Please log in first.");
         }
 
-        const decodedData = jwt.verify(token, "MybestFriend123123@");
+        const decodedData = jwt.verify(token, secretKey);
         const user = await User.findById(decodedData._id);
 
         if (!user) {
@@ -75,7 +77,7 @@ const authenticateLogin = async(req, res, next) =>{
         }
 
         // Verify and decode the JWT
-        const decodedToken = jwt.verify(token, "MybestFriend123123@");
+        const decodedToken = jwt.verify(token, secretKey);
         const userId = decodedToken._id;
 
         // Search in the Customer model first
