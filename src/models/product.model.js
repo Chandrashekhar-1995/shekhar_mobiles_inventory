@@ -2,11 +2,12 @@ const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
     {
-        productName: {
+        productName: { 
             type: String,
             required: [true, "Product name is required"],
             unique: true,
             trim: true,
+            lowercase:true,
             index: true,
         },
         itemCode: {
@@ -28,7 +29,6 @@ const productSchema = new mongoose.Schema(
         },
         subcategory: {
             type: String,
-            required: true,
             trim: true,
         },
         purchasePrice: {
@@ -53,6 +53,7 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
             enum: ["UNT", "PCS", "NOS", "MTR", "BOX"],
+            default:PCS
         },
         saleDiscount: {
             // it is in %

@@ -5,6 +5,7 @@ const app = express();
 const connectDB = require("./config/database");
 const authRoutes = require("./routes/auth.routes");
 const profileRouter =require("./routes/profile.routes");
+const categoryRouter = require("./routes/category.routes");
 const errorHandler = require("./middlewares/errorHandler.middleware");
 
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/", authRoutes );
 app.use("/api/v1/", profileRouter );
+app.use("/api/v1/", categoryRouter );
 
 
 // Error Handler Middleware (must be after all routes)

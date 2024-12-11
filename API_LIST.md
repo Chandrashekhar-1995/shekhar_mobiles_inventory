@@ -41,4 +41,16 @@
 
     -  get all user by Administration 
         - http://localhost:7777/api/v1/user/feed
+
+
+    -  patch admin change department
+        - http://localhost:7777/api/v1/admin/update-designation
         
+
+# Category Routes
+
+    -  create category (post)
+        - http://localhost:7777/api/v1/category/create
+    
+    -  add sub category (patch)
+        - http://localhost:7777/api/v1/category/led/add-subcategory
