@@ -15,7 +15,6 @@ const productSchema = new mongoose.Schema(
             unique: true,
             lowercase: true,
             trim: true,
-            index: true,
         },
         brand: {
             type: mongoose.Schema.Types.ObjectId,
@@ -53,7 +52,7 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
             enum: ["UNT", "PCS", "NOS", "MTR", "BOX"],
-            default:PCS
+            default:"PCS"
         },
         saleDiscount: {
             // it is in %

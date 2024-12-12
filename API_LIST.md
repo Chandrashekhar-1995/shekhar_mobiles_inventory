@@ -54,3 +54,13 @@
     
     -  add sub category (patch)
         - http://localhost:7777/api/v1/category/led/add-subcategory
+
+
+# Brand Routes
+    -  -  create brand (post)
+        - http://localhost:7777/api/v1/brand/create
+
+
+# Product Routes
+    -  -  create product (post)
+        - http://localhost:7777/api/v1/product/create

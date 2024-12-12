@@ -8,23 +8,23 @@ const categoryRouter = express.Router();
 
 // Create a new category
 categoryRouter.post("/category/create", authenticateUser, async (req, res, next) => {
-    const { name, subcategories } = req.body;
+    const { categoryName, subcategories } = req.body;
 
     try {
         // Validate input
-        if (!name) {
+        if (!categoryName) {
             throw new ApiError(400, "Category name is required.");
         }
 
         // Check if the category already exists
-        const existingCategory = await Category.findOne({ name });
+        const existingCategory = await Category.findOne({ categoryName });
         if (existingCategory) {
             throw new ApiError(409, "Category already exists.");
         }
 
         // Create the new category
         const category = new Category({
-            name,
+            categoryName,
             subcategories: subcategories || [], // Add subcategories if provided
         });
 

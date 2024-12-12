@@ -3,9 +3,11 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const app = express();
 const connectDB = require("./config/database");
-const authRoutes = require("./routes/auth.routes");
-const profileRouter =require("./routes/profile.routes");
+const authRouter = require("./routes/auth.routes");
+const brandRouter = require("./routes/brand.routes");
 const categoryRouter = require("./routes/category.routes");
+const productRouter = require("./routes/product.routes");
+const profileRouter =require("./routes/profile.routes");
 const errorHandler = require("./middlewares/errorHandler.middleware");
 
 const PORT = process.env.PORT || 3000;
@@ -14,9 +16,11 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-app.use("/api/v1/", authRoutes );
-app.use("/api/v1/", profileRouter );
+app.use("/api/v1/", authRouter );
+app.use("/api/v1/", brandRouter );
 app.use("/api/v1/", categoryRouter );
+app.use("/api/v1/", productRouter );
+app.use("/api/v1/", profileRouter );
 
 
 // Error Handler Middleware (must be after all routes)
