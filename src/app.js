@@ -10,7 +10,20 @@ const productRouter = require("./routes/product.routes");
 const profileRouter =require("./routes/profile.routes");
 const errorHandler = require("./middlewares/errorHandler.middleware");
 
+
+// this code only create upload folder-
+// const fs = require("fs");
+// const path = require("path");
+
+// const uploadDirectory = path.join(__dirname, "./uploads");
+// // Check if uploads directory exists, create if not
+// if (!fs.existsSync(uploadDirectory)) {
+//   fs.mkdirSync(uploadDirectory, { recursive: true });
+//   console.log(`Directory ${uploadDirectory} created.`);
+// };
+
 const PORT = process.env.PORT || 3000;
+
 
 app.use(express.json());
 

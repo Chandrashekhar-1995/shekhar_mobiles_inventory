@@ -57,10 +57,16 @@
 
 
 # Brand Routes
-    -  -  create brand (post)
+    -  create brand (post)
         - http://localhost:7777/api/v1/brand/create
 
 
 # Product Routes
-    -  -  create product (post)
+    -  create product (post)
         - http://localhost:7777/api/v1/product/create
+
+    -  bulk product template download (get)
+        - http://localhost:7777/api/v1/product/template
+
+    -  bulk product upload (post)
+        - http://localhost:7777/api/v1/product/bulk-upload
