@@ -45,7 +45,13 @@
 
     -  patch admin change department
         - http://localhost:7777/api/v1/admin/update-designation
-        
+
+
+    -  bulk customer template download (get)
+        - http://localhost:7777/api/v1/customer/bulk-upload/template
+
+    -  bulk Customer upload (post)
+        - http://localhost:7777/api/v1/customer/bulk-upload
 
 # Category Routes
 

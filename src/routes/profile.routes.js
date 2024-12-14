@@ -1,13 +1,19 @@
 const express = require("express");
 const profileRouter = express.Router();
+const bcrypt = require("bcrypt");
+const fs = require("fs");
+const xlsx = require("xlsx");
+const path = require("path");
 const { authenticateUser, authorizeRoles, authenticateLogin, CheckExistingUserOrCustomer } = require("../middlewares/auth.middleware");
 const findUserOrCustomer = require('../utils/dbHelpers');
+const upload = require("../middlewares/upload.middleware");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const Customer = require("../models/customer.model");
+const parseExcelDate = require("../utils/parseExcelDate");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
-const bcrypt = require("bcrypt");
+
 
 const secretKey = process.env.JWT_SECRET;
 
@@ -441,6 +447,140 @@ profileRouter.get("/user/feed", authenticateUser, async(req,res,next)=>{
         next(err);
     }
 });
+
+// Downloak Bulk upload customers template
+profileRouter.get("/user/bulk-upload/template", authenticateUser, (req, res, next) => {
+    try {
+        const headers = [
+            "name",
+            "phone", 
+            "email", 
+            "address", 
+            "city", 
+            "state", 
+            "pinCode", 
+            "gender", 
+            "dateOfBirth", 
+            "marrigeAniversary", 
+            "bio", 
+            "designation",
+        ];
+        const worksheet = xlsx.utils.json_to_sheet([]);
+        xlsx.utils.sheet_add_aoa(worksheet, [headers],);
+    
+        const workbook = xlsx.utils.book_new();
+        xlsx.utils.book_append_sheet(workbook, worksheet, "CustomerTemplate");
+    
+        const filePath = path.join(__dirname, "../uploads/customer-template.xlsx");
+        xlsx.writeFile(workbook, filePath);
+    
+        res.download(filePath, "customer-template.xlsx", (err) => {
+            if (err) {
+                next(err);
+            }
+
+            // Delete the temporary file after download
+                        fs.unlinkSync(filePath);
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+
+
+// Bulk upload customers
+profileRouter.post("/user/bulk-upload", authenticateUser, upload.single("file"),
+    async (req, res, next) => {
+        try {
+            if (!req.file) {
+                throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
+            }
+
+            // Parse the uploaded file
+            const workbook = xlsx.readFile(req.file.path);
+            const sheetName = workbook.SheetNames[0];
+            const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+            const customers = [];
+            const skippedCustomers = [];
+            for (const row of data) {
+                try {
+                    const {
+                        name,
+                        phone,
+                        email,
+                        address,
+                        city,
+                        state,
+                        pinCode,
+                        gender,
+                        dateOfBirth,
+                        marrigeAniversary,
+                        bio,
+                        designation,
+                    } = row;
+
+                    if (!name || !phone || !address) {
+                        skippedCustomers.push({ row, reason: "Required fields missing (name, phone, address)." });
+                        continue;
+                    }
+
+                    // Parse dates and handle undefined/null values
+                    const birthDay = dateOfBirth ? parseExcelDate(dateOfBirth) : null;
+                    const aniversary = marrigeAniversary ? parseExcelDate(marrigeAniversary) : null;
+
+                    // Check for duplicate entries
+                    const existingCustomer = await Customer.findOne({
+                        $or: [{ email: email?.trim().toLowerCase() }, { mobileNumber: phone }],
+                    });
+
+                    if (existingCustomer) {
+                        skippedCustomers.push({ row, reason: "Duplicate customer (email/phone already exists)." });
+                        continue;
+                    }
+
+                    customers.push({
+                        name: name.trim(),
+                        mobileNumber: phone,
+                        email: email?.trim().toLowerCase(),
+                        address: address.trim(),
+                        city: city?.trim(),
+                        state: state?.trim(),
+                        pinCode: pinCode,
+                        gender,
+                        dateOfBirth: birthDay,
+                        marrigeAniversary: aniversary,
+                        bio,
+                        designation: designation || "Customer",
+                    });
+                } catch (rowError) {
+                    skippedCustomers.push({ row, reason: rowError.message });
+                }
+            }
+
+            // Insert all valid customers into the database
+            const insertedCustomers = await Customer.insertMany(customers);
+
+            // Delete the uploaded file
+            fs.unlink(req.file.path, (err) => {
+                if (err) console.error("Error deleting file:", err);
+            });
+
+            res.status(201).json(
+                new ApiResponse(201, { insertedCustomers, skippedCustomers }, "Customers uploaded successfully.")
+            );
+        } catch (err) {
+            // Delete the file in case of an error
+            if (req.file?.path) {
+                fs.unlink(req.file.path, (fileErr) => {
+                    if (fileErr) console.error("Error deleting file:", fileErr);
+                });
+            }
+            next(err);
+        }
+    }
+);
 
 
 

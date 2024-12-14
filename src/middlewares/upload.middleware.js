@@ -25,9 +25,6 @@ const fileFilter = (req, file, cb) => {
     const extName = path.extname(file.originalname).toLowerCase();
     const mimeType = file.mimetype;
 
-    console.log("File Extension:", extName);
-    console.log("File MIME Type:", mimeType);
-
     if (allowedExtensions.includes(extName) && allowedMimeTypes.includes(mimeType)) {
         cb(null, true);
     } else {

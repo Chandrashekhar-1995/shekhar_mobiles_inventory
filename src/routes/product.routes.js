@@ -102,13 +102,20 @@ productRouter.get("/product/template", authenticateUser, async (req, res, next) 
         // Define headers for the CSV/Excel template
         const headers = [
             "productName",     // Required
+            "itemCode",        // Optional
             "brand",           // Required
             "category",        // Required
             "subcategory",     // Optional
             "purchasePrice",   // Required
             "salePrice",       // Required
+            "minSalePrice",    // Optional
             "mrp",             // Optional
             "unit",            // Required: UNT, PCS, NOS, MTR, BOX
+            "saleDiscount",    // Optional
+            "lowLevelLimit",   // Optional
+            "description",     // Optional
+            "warranty",        // Optional
+            "location",        // Optional
             "openingStock",    // Optional
         ];
 
