@@ -449,7 +449,7 @@ profileRouter.get("/user/feed", authenticateUser, async(req,res,next)=>{
 });
 
 // Downloak Bulk upload customers template
-profileRouter.get("/user/bulk-upload/template", authenticateUser, (req, res, next) => {
+profileRouter.get("/customer/bulk-upload/template", authenticateUser, (req, res, next) => {
     try {
         const headers = [
             "name",
@@ -490,7 +490,7 @@ profileRouter.get("/user/bulk-upload/template", authenticateUser, (req, res, nex
 
 
 // Bulk upload customers
-profileRouter.post("/user/bulk-upload", authenticateUser, upload.single("file"),
+profileRouter.post("/customer/bulk-upload", authenticateUser, upload.single("file"),
     async (req, res, next) => {
         try {
             if (!req.file) {
