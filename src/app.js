@@ -8,6 +8,7 @@ const brandRouter = require("./routes/brand.routes");
 const categoryRouter = require("./routes/category.routes");
 const productRouter = require("./routes/product.routes");
 const profileRouter =require("./routes/profile.routes");
+const accountRouter =require("./routes/account.routes");
 const errorHandler = require("./middlewares/errorHandler.middleware");
 
 
@@ -34,6 +35,7 @@ app.use("/api/v1/", brandRouter );
 app.use("/api/v1/", categoryRouter );
 app.use("/api/v1/", productRouter );
 app.use("/api/v1/", profileRouter );
+app.use("/api/v1/", accountRouter );
 
 
 // Error Handler Middleware (must be after all routes)

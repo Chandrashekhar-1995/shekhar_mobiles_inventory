@@ -76,3 +76,8 @@
 
     -  bulk product upload (post)
         - http://localhost:7777/api/v1/product/bulk-upload
+
+
+# Account Routes
+    -  create account (post)
+        - http://localhost:7777/api/v1/account/create
