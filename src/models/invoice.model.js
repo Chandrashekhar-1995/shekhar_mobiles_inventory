@@ -2,6 +2,14 @@ const mongoose = require("mongoose");
 
 const invoiceSchema = new mongoose.Schema(
     {
+        invoiceType:{
+            type:String,
+            enum:{
+                values:["Non GST", "GST", "Bill of Supply"],
+                message: '{VALUE} is not supported invoice type'
+            },
+            default:"Non GST"
+        },
         invoiceNumber: {
             type: String,
             required: true,
@@ -12,12 +20,14 @@ const invoiceSchema = new mongoose.Schema(
             default: Date.now,
         },
         dueDate: {
-            type: Date,
+            type: Date, // credit period
+            default: Date.now,
         },
         billTo: {
             type: String,
             enum: ["Cash", "Customer"],
             required: true,
+            default:"Cash"
         },
         customer: {
             type: mongoose.Schema.Types.ObjectId,
@@ -25,10 +35,13 @@ const invoiceSchema = new mongoose.Schema(
         },
         items: [
             {
-                product: {
+                item: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Product",
                     required: true,
+                },
+                unit:{
+                    type:String
                 },
                 quantity: {
                     type: Number,
@@ -38,9 +51,18 @@ const invoiceSchema = new mongoose.Schema(
                     type: Number,
                     required: true,
                 },
+                mrp:{
+                    type:Number
+                },
                 discount: {
                     type: Number,
                     default: 0,
+                },
+                tax:{
+                    type:Number
+                },
+                cess:{
+                    type:Number
                 },
                 total: {
                     type: Number,
@@ -61,13 +83,8 @@ const invoiceSchema = new mongoose.Schema(
             required: true,
         },
         paymentDetails: {
-            paymentDate: Date,
-            paymentMode: {
-                type: String,
-                enum: ["Cash", "Bank", "PhonePe", "QR Code"],
-            },
-            transactionId: String,
-            paidAmount: Number,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Account",
         },
         privateNote: {
             type: String,

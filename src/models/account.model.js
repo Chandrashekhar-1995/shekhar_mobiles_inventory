@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const accountSchema = new mongoose.Schema(
-  {
+  { 
     accountName: {
       type: String,
       trim: true,
@@ -62,6 +62,9 @@ const accountSchema = new mongoose.Schema(
         referenceId: {
           type: String, // To link the transaction to an invoice or external transaction ID
           required: false,
+        },
+        transactionId: {
+          type: String
         },
         paymentMode: {
           type: String,

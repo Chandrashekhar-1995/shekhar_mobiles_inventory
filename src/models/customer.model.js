@@ -131,6 +131,10 @@ const customerSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        refferedBy:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+        },
     },
     {timestamps:true}
 );

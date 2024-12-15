@@ -18,7 +18,7 @@ const ApiError = require("../utils/ApiError");
 const secretKey = process.env.JWT_SECRET;
 
 
-// Create User by users
+// Create User by Admin
 profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"), async (req, res, next) => {
 
     const { 
@@ -52,10 +52,7 @@ profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"
         });
 
         if (existingUser) {
-            throw new ApiError(
-                409,
-                "A user with this email or mobile number already exists."
-            );
+            throw new ApiError( 409, "A user with this email or mobile number already exists." );
         }
 
         // Generate a default password and hash it
@@ -99,6 +96,75 @@ profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"
         // Respond with success
         res.status(201).json(
             new ApiResponse(201, createdUser, "User registered successfully.")
+        );
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Create Customer by users
+profileRouter.post("/auth/customer/create", authenticateUser, async (req, res, next) => {
+
+    const { 
+        name, email, mobileNumber, address, avatar, city, state, pinCode, gender, dateOfBirth, marrigeAniversary, bio, refferedBy, designation,
+    } = req.body;
+
+    try {
+        // Validate required fields
+        if (!name?.trim() || !mobileNumber?.trim() || !address?.trim()) {
+            throw new ApiError(400, "All fields are required: name, mobileNumber, and address.");
+        }
+
+        // Check if the identifier (email or mobileNumber) already exists in the Customer model
+        const existingCustomer = await Customer.findOne({mobileNumber});
+
+        if (existingCustomer) {
+            throw new ApiError(
+                409,
+                "A customer with this email or mobile number already exists."
+            );
+        }
+
+        // Check if the identifier (email or mobileNumber) already exists in the User model
+        const existingUser = await User.findOne({
+            $or: [{ email }, { mobileNumber }],
+        });
+
+        if (existingUser) {
+            throw new ApiError( 409, "A user with this email or mobile number already exists." );
+        };
+
+        // Generate a default password and hash it
+        const password = "ShekharMobiles9@";
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const customer = new Customer({
+            name,
+            email,
+            mobileNumber,
+            address,
+            password: hashPassword,
+            avatar,
+            city,
+            state,
+            pinCode,
+            gender,
+            dateOfBirth,
+            marrigeAniversary,
+            bio,
+            refferedBy,
+            designation,
+        });
+
+        await customer.save();
+
+        // Fetch the newly created user excluding the password
+        const createdCustomer = await Customer.findById(customer._id).select("-password");
+
+        // Respond with success
+        res.status(201).json(
+            new ApiResponse(201, createdCustomer, "Customer registered successfully.")
         );
     } catch (err) {
         next(err);
@@ -495,7 +561,7 @@ profileRouter.post("/customer/bulk-upload", authenticateUser, upload.single("fil
         try {
             if (!req.file) {
                 throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
-            }
+            };
 
             // Parse the uploaded file
             const workbook = xlsx.readFile(req.file.path);
@@ -540,11 +606,16 @@ profileRouter.post("/customer/bulk-upload", authenticateUser, upload.single("fil
                         continue;
                     }
 
+                    // Generate a default password and hash it
+                    const password = "ShekharMobiles9@";
+                    const hashPassword = await bcrypt.hash(password, 10);
+
                     customers.push({
                         name: name.trim(),
                         mobileNumber: phone,
                         email: email?.trim().toLowerCase(),
                         address: address.trim(),
+                        password:hashPassword,
                         city: city?.trim(),
                         state: state?.trim(),
                         pinCode: pinCode,

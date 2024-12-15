@@ -15,4 +15,12 @@ const findUserOrCustomer = async (identifier) => {
   return user; // Returns the found user or customer, or null if not found.
 };
 
-module.exports = findUserOrCustomer;
+
+const findCustomer = async (identifier) =>{
+  let customer = await Customer.findOne({
+    $or: [{ mobileNumber: identifier }, { name: identifier } ],
+  });
+  return customer;
+};
+
+module.exports = findUserOrCustomer, findCustomer;
