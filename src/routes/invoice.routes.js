@@ -44,65 +44,65 @@ invoiceRouter.post("/invoice/create", authenticateUser, async (req, res, next)=>
       throw new ApiError(404, "Customer not found");
     }
 
-   // Calculate total amount and validate items
-   let totalAmount = 0;
-   const itemDetails = [];
-   for (const item of items) {
-       const product = await Product.findById(item.item);
-       if (!product) {
-           return res.status(404).json({ message: `Item with ID ${item.item} not found.` });
-       }
+  //  // Calculate total amount and validate items
+  //  let totalAmount = 0;
+  //  const itemDetails = [];
+  //  for (const item of items) {
+  //      const product = await Product.findById(item.item);
+  //      if (!product) {
+  //          return res.status(404).json({ message: `Item with ID ${item.item} not found.` });
+  //      }
 
-       const itemTotal = item.quantity * item.salePrice;
-       totalAmount += itemTotal;
-       itemDetails.push({
-           item: item.item,
-           quantity: item.quantity,
-           salePrice: item.salePrice,
-           total: itemTotal,
-       });
-   }
+  //      const itemTotal = item.quantity * item.salePrice;
+  //      totalAmount += itemTotal;
+  //      itemDetails.push({
+  //          item: item.item,
+  //          quantity: item.quantity,
+  //          salePrice: item.salePrice,
+  //          total: itemTotal,
+  //      });
+  //  }
 
-   // Apply discount
-   totalAmount -= discountAmount;
+  //  // Apply discount
+  //  totalAmount -= discountAmount;
 
-    // Process received payments
-    let receivedAmount = 0;
-    const paymentDetails = [];
-    for (const payment of payments || []) {
-        const account = await Account.findById(payment.accountId);
-        if (!account) {
-            return res.status(404).json({ message: `Account with ID ${payment.accountId} not found.` });
-        }
+  //   // Process received payments
+  //   let receivedAmount = 0;
+  //   const paymentDetails = [];
+  //   for (const payment of payments || []) {
+  //       const account = await Account.findById(payment.accountId);
+  //       if (!account) {
+  //           return res.status(404).json({ message: `Account with ID ${payment.accountId} not found.` });
+  //       }
 
-        // Ensure payment doesn't exceed due amount
-        if (receivedAmount + payment.amount > totalAmount) {
-            return res.status(400).json({
-                message: `Received payment exceeds total invoice amount. Allowed amount: ${totalAmount - receivedAmount}`,
-            });
-        }
+  //       // Ensure payment doesn't exceed due amount
+  //       if (receivedAmount + payment.amount > totalAmount) {
+  //           return res.status(400).json({
+  //               message: `Received payment exceeds total invoice amount. Allowed amount: ${totalAmount - receivedAmount}`,
+  //           });
+  //       }
 
-        // Credit the account (add received amount to balance)
-        account.updateBalance("Credit", payment.amount);
-        await account.save();
+  //       // Credit the account (add received amount to balance)
+  //       account.updateBalance("Credit", payment.amount);
+  //       await account.save();
 
-        paymentDetails.push({
-            accountId: payment.accountId,
-            amount: payment.amount,
-        });
+  //       paymentDetails.push({
+  //           accountId: payment.accountId,
+  //           amount: payment.amount,
+  //       });
 
-        receivedAmount += payment.amount;
-    }
+  //       receivedAmount += payment.amount;
+  //   }
 
-    // Calculate due amount and set status
-    const dueAmount = totalAmount - receivedAmount;
-    const status = dueAmount === 0 ? "Paid" : receivedAmount > 0 ? "Partially Paid" : "Unpaid";
+  //   // Calculate due amount and set status
+  //   const dueAmount = totalAmount - receivedAmount;
+  //   const status = dueAmount === 0 ? "Paid" : receivedAmount > 0 ? "Partially Paid" : "Unpaid";
 
 
     // Create the invoice
     const newInvoice = new Invoice({
       invoiceType,
-      invoiceNumber: invoiceNumber ? invoiceNumber : generateInvoiceNumber(),
+      // invoiceNumber: invoiceNumber ? invoiceNumber : generateInvoiceNumber(),
       date, 
       dueDate, 
       billTo,
@@ -112,7 +112,7 @@ invoiceRouter.post("/invoice/create", authenticateUser, async (req, res, next)=>
       totalAmount,
       receivedAmount,
       dueAmount, 
-      status,
+      // status,
       payments: paymentDetails,
       privateNote, 
       deliveryTerm,
@@ -120,7 +120,7 @@ invoiceRouter.post("/invoice/create", authenticateUser, async (req, res, next)=>
     });
 
     await newInvoice.save();
-    new ApiResponse(201, invoice, "Invoice created successfully.")
+    new ApiResponse(201, newInvoice, "Invoice created successfully.")
   } catch (err) {
       next(err);
   }
