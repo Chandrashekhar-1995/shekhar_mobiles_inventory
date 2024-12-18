@@ -78,10 +78,10 @@ const invoiceSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        netAmount: {
-            type: Number,
-            required: true,
-        },
+        // netAmount: {
+        //     type: Number,
+        //     required: true,
+        // },
         paymentDetails: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Account",
