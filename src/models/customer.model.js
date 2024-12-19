@@ -109,17 +109,13 @@ const customerSchema = new mongoose.Schema(
         },
         purchaseHistory: [
             {
-                productId: {
+                invoiceId: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: "Product", // Assumes you have a Product model
+                    ref: "Invoice", // Assumes you have a Product model
                 },
                 date: {
                     type: Date,
                     default: Date.now,
-                },
-                quantity: {
-                    type: Number,
-                    required: true,
                 },
                 totalAmount: {
                     type: Number,
@@ -127,6 +123,9 @@ const customerSchema = new mongoose.Schema(
                 },
             },
         ],
+        balance:{
+            type:Number,
+        },
         loyaltyPoints: {
             type: Number,
             default: 0,

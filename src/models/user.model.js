@@ -151,6 +151,22 @@ const userSchema = new mongoose.Schema(
                 message: '{VALUE} not Supported'
               }
         },
+        saleHistory: [
+                    {
+                        invoiceId: {
+                            type: mongoose.Schema.Types.ObjectId,
+                            ref: "Invoice", // Assumes you have a Product model
+                        },
+                        date: {
+                            type: Date,
+                            default: Date.now,
+                        },
+                        totalAmount: {
+                            type: Number,
+                            required: true,
+                        },
+                    },
+                ],
         salesCommission:{
             type:String,
             enum: {
@@ -161,7 +177,7 @@ const userSchema = new mongoose.Schema(
         remark:{
             type:String,
             max:[200, 'Maximum 200 chareters allowed'],
-        }
+        } 
     },
     {timestamps:true}
 );

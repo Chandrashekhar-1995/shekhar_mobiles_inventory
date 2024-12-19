@@ -23,6 +23,10 @@ const invoiceSchema = new mongoose.Schema(
             type: Date, // credit period
             default: Date.now,
         },
+        placeOfSupply:{
+            type: String,
+            default:"Uttar Pradesh",
+        },
         billTo: {
             type: String,
             enum: ["Cash", "Customer"],
@@ -78,11 +82,11 @@ const invoiceSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        // netAmount: {
-        //     type: Number,
-        //     required: true,
-        // },
-        paymentDetails: {
+        totalPayableAmount: {
+            type: Number,
+            required: true,
+        },
+        paymentAccount: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Account",
         },
@@ -93,6 +97,15 @@ const invoiceSchema = new mongoose.Schema(
         customerNote: {
             type: String,
             max: 500,
+        },
+        receivedAmount:{
+            type:Number
+        },
+        status:{
+            type:String,
+            enum:["Paid", "Unpaid", "Partially Paid"],
+            required:true,
+            default:"Unpaid"
         },
         soldBy: {
             type: mongoose.Schema.Types.ObjectId,

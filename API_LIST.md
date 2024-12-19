@@ -81,3 +81,9 @@
 # Account Routes
     -  create account (post)
         - http://localhost:7777/api/v1/account/create
+
+
+
+# Invoice Routes
+    -  create account (post)
+        - http://localhost:7777/api/v1/invoice/create 
