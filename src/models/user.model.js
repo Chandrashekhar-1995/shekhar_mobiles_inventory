@@ -192,7 +192,7 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.getJWT = function(){
     const user = this;
-    return jwt.sign({ _id: user._id }, secretKey, { expiresIn: "1d" });
+    return jwt.sign({ _id: user._id }, secretKey, { expiresIn: "2d" });
 };
 
 userSchema.methods.validatePassword = async function (passwordInterByUser){

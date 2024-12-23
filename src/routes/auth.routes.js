@@ -121,7 +121,7 @@ authRouter.post("/auth/login", async (req, res, next) => {
 
         res.cookie("token", token);
         res.status(200).json(
-            new ApiResponse(200, {}, `${isUserType ? "User" : "Customer"} logged in successfully.`)
+            new ApiResponse(200, user, `${isUserType ? "User" : "Customer"} logged in successfully.`)
         );
     } catch (err) {
         next(err);
