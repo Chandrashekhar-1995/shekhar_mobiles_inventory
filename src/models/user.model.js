@@ -75,14 +75,26 @@ const userSchema = new mongoose.Schema(
         dateOfBirth: {
             type: Date,
             required: false,
-            get: (value) => value?.toISOString().split("T")[0], // Converts to YYYY-MM-DD format when reading
-            set: (value) => new Date(value), // Ensures only the date is saved
+            get: (value) => {
+                if (!value) return null;
+                const date = new Date(value);
+                const day = String(date.getUTCDate()).padStart(2, "0");
+                const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+                const year = date.getUTCFullYear();
+                return `${day}/${month}/${year}`;
+            },
         },
         marrigeAniversary: {
             type: Date,
             required: false,
-            get: (value) => value?.toISOString().split("T")[0], 
-            set: (value) => new Date(value),
+            get: (value) => {
+                if (!value) return null;
+                const date = new Date(value);
+                const day = String(date.getUTCDate()).padStart(2, "0");
+                const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+                const year = date.getUTCFullYear();
+                return `${day}/${month}/${year}`;
+            },
         },
         bio: {
             type: String,
@@ -100,13 +112,19 @@ const userSchema = new mongoose.Schema(
         joiningDate:{
             type: Date,
             required: false,
-            get: (value) => value?.toISOString().split("T")[0], 
-            set: (value) => new Date(value),
+            get: (value) => {
+                if (!value) return null;
+                const date = new Date(value);
+                const day = String(date.getUTCDate()).padStart(2, "0");
+                const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+                const year = date.getUTCFullYear();
+                return `${day}/${month}/${year}`;
+            },
         },
         referredBy:{
             type:String,
             max:[50, 'Maximum 50 chareters allowed'],
-        },
+        }, 
         designation:{
             type:String,
             enum: {
