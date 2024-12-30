@@ -22,8 +22,7 @@ const secretKey = process.env.JWT_SECRET;
 profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"), async (req, res, next) => {
 
     const { 
-        name, email, mobileNumber, address, avatar, city, state, pinCode, gender, 
-        dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, 
+        name, email, mobileNumber, contactNumber,address, avatar, city, state, pinCode, country, gender, dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, 
         dapartment, emergencyContactPerson, emergencyContactNumber, bloodGroup, 
         identityDocument, documentNumber, communication, salesCommission, remark 
     } = req.body;
@@ -106,7 +105,7 @@ profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"
 profileRouter.post("/auth/customer/create", authenticateUser, async (req, res, next) => {
 
     const { 
-        name, email, mobileNumber, address, avatar, city, state, pinCode, gender, dateOfBirth, marrigeAniversary, bio, refferedBy, designation,
+        name, email, mobileNumber, contactNumber, address, avatar, city, state, pinCode, country, gender, dateOfBirth, marrigeAniversary, panNo,gstin,gstType, tradeName, accountType, openingBalance, documentType, documentNo, creditAllowed,creditLimit, refferedBy, designation,
     } = req.body;
 
     try {

@@ -8,3 +8,5 @@
     - connect mongodb
     - connetion port for listing
     - setup routing
+
+    TODO- Create customer me Country, contactNumber, panNo,gstin,gstType, tradeName, accountType, openingBalance, documentType, documentNo, creditAllowed,creditLimit, save ka logic an bio ko remark karna hai
