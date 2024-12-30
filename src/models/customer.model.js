@@ -13,6 +13,16 @@ const customerSchema = new mongoose.Schema(
             trim: true,
             index:true
         },
+        contactNumber:{
+            type: String,
+            unique: true,
+            validate: {
+                validator: function (value) {
+                    return /^[6-9]\d{9}$/.test(value); // Validates Indian mobile number format
+                },
+                message: (props) => `${props.value} is not a valid mobile number!`,
+            },
+        },
         mobileNumber: {
             type: String,
             required: [true, "Mobile number is required"],
@@ -46,6 +56,10 @@ const customerSchema = new mongoose.Schema(
         pinCode:{
             type: Number,
             default:274207,
+        },
+        country:{
+            type: String,
+            default:"India",
         },        
         email: {
             type: String,
@@ -65,9 +79,21 @@ const customerSchema = new mongoose.Schema(
         gender:{
             type:String,
             enum: {
-                values: ['male', 'female', 'others'],
+                values: ["male", "female", "others"],
                 message: '{VALUE} is not supported gender'
               }
+        },
+        panNo:{
+            type:String,
+        },
+        gstin:{
+            type:String,
+        },
+        gstType:{
+            type:String,
+        },
+        tradeName:{
+            type:String,
         },
         dateOfBirth: {
             type: Date,
@@ -97,6 +123,10 @@ const customerSchema = new mongoose.Schema(
             type: String,
             max:[500, 'Maximum 500 chareters allowed'],
         },
+        remark: {
+            type: String,
+            max:[500, 'Maximum 500 chareters allowed'],
+        },
         designation:{
             type: String,
             enum:{
@@ -123,8 +153,25 @@ const customerSchema = new mongoose.Schema(
                 },
             },
         ],
+        accountType:{
+            type:String,
+            enum: {
+                values: ["Debit", "Credit"],
+                message: '{VALUE} is not supported type'
+              }
+        },
         balance:{
             type:Number,
+        },
+        creditAllowed:{
+            type: String,
+            enum: {
+                values: ["Yes", "No"],
+                message: '{VALUE} is not supported gender'
+              }
+        },
+        creditLimit:{
+            type: Number,
         },
         loyaltyPoints: {
             type: Number,
@@ -133,6 +180,14 @@ const customerSchema = new mongoose.Schema(
         refferedBy:{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
+        },
+        documentType: {
+            type: String,
+            max:[500, 'Maximum 500 chareters allowed'],
+        },
+        documentNo: {
+            type: String,
+            max:[500, 'Maximum 500 chareters allowed'],
         },
     },
     {timestamps:true}
