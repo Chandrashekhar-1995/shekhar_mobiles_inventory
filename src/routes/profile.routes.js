@@ -103,9 +103,34 @@ profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"
 
 // Create Customer by users
 profileRouter.post("/auth/customer/create", authenticateUser, async (req, res, next) => {
-
-    const { 
-        name, email, mobileNumber, contactNumber, address, avatar, city, state, pinCode, country, gender, dateOfBirth, marrigeAniversary, panNo,gstin,gstType, tradeName, accountType, openingBalance, documentType, documentNo, creditAllowed,creditLimit, refferedBy, designation,
+    const {
+        name,
+        email,
+        mobileNumber,
+        contactNumber,
+        address,
+        avatar,
+        city,
+        state,
+        pinCode,
+        country,
+        gender,
+        dateOfBirth,
+        marrigeAniversary,
+        bio,
+        remark,
+        panNo,
+        gstin,
+        gstType,
+        tradeName,
+        accountType,
+        creditAllowed,
+        creditLimit,
+        refferedBy,
+        designation,
+        documentType,
+        documentNo,
+        balance,
     } = req.body;
 
     try {
@@ -137,26 +162,37 @@ profileRouter.post("/auth/customer/create", authenticateUser, async (req, res, n
         const password = "ShekharMobiles9@";
         const hashPassword = await bcrypt.hash(password, 10);
 
-        // Create new user
+        // Create a new customer
         const customer = new Customer({
             name,
             email,
             mobileNumber,
+            contactNumber,
             address,
             password: hashPassword,
             avatar,
             city,
             state,
             pinCode,
+            country,
             gender,
             dateOfBirth,
             marrigeAniversary,
             bio,
+            remark,
+            panNo,
+            gstin,
+            gstType,
+            tradeName,
+            accountType,
+            balance,
+            creditAllowed,
+            creditLimit,
             refferedBy,
             designation,
+            documentType,
+            documentNo,
         });
-
-        await customer.save();
 
         // Fetch the newly created user excluding the password
         const createdCustomer = await Customer.findById(customer._id).select("-password");
