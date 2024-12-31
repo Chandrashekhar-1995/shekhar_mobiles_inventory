@@ -104,33 +104,33 @@ profileRouter.post("/auth/user/create", authenticateUser, authorizeRoles("Admin"
 // Create Customer by users
 profileRouter.post("/auth/customer/create", authenticateUser, async (req, res, next) => {
     const {
-        name,
-        email,
-        mobileNumber,
-        contactNumber,
-        address,
         avatar,
+        name,
+        address,
         city,
         state,
         pinCode,
         country,
-        gender,
-        dateOfBirth,
-        marrigeAniversary,
-        bio,
-        remark,
+        email,
+        contactNumber, 
+        mobileNumber,
         panNo,
         gstin,
         gstType,
         tradeName,
         accountType,
-        creditAllowed,
-        creditLimit,
-        refferedBy,
-        designation,
+        openingBalance,
         documentType,
         documentNo,
-        balance,
+        gender,
+        refferedBy,
+        designation,
+        dateOfBirth,
+        marrigeAniversary,
+        creditAllowed,
+        creditLimit,
+        remark,
+        bio,
     } = req.body;
 
     try {
@@ -185,7 +185,7 @@ profileRouter.post("/auth/customer/create", authenticateUser, async (req, res, n
             gstType,
             tradeName,
             accountType,
-            balance,
+            balance: openingBalance,
             creditAllowed,
             creditLimit,
             refferedBy,
@@ -194,6 +194,8 @@ profileRouter.post("/auth/customer/create", authenticateUser, async (req, res, n
             documentNo,
         });
 
+        await customer.save();
+        
         // Fetch the newly created user excluding the password
         const createdCustomer = await Customer.findById(customer._id).select("-password");
 
