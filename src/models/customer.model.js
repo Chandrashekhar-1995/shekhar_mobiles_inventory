@@ -64,13 +64,13 @@ const customerSchema = new mongoose.Schema(
         email: {
             type: String,
             lowercase: true,
-            // validate: {
-            //     validator: function (value) {
-            //         // Use a regex to validate email format
-            //         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-            //     },
-            //     message: (props) => `${props.value} is not a valid email address!`,
-            // },
+            validate: {
+                validator: function (value) {
+                    // Use a regex to validate email format
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                },
+                message: (props) => `${props.value} is not a valid email address!`,
+            },
         },
         avatar: {
             type: String,// cloudanery url

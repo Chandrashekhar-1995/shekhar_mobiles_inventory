@@ -515,8 +515,8 @@ profileRouter.patch("/password/reset", async (req, res, next) => {
         }
 
         // Hash and update the new password
-        const hashPassword = await bcrypt.hash(newPassword, 10);
-        user.password = hashPassword;
+        // const hashPassword = await bcrypt.hash(newPassword, 10);
+        user.password = newPassword;
 
         await user.save();
 
