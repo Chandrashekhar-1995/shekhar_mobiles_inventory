@@ -7,21 +7,21 @@ const ApiError = require("../utils/ApiError");
 const brandRouter = express.Router();
 
 brandRouter.post("/brand/create", authenticateUser, async (req, res, next) => {
-    const { name } = req.body;
+    const { brandName } = req.body;
 
     try {
-        if (!name) {
+        if (!brandName) {
             throw new ApiError(400, "Brand name is required.");
         }
 
         // Check if the brand already exists
-        const existingBrand = await Brand.findOne({ name });
+        const existingBrand = await Brand.findOne({ brandName });
         if (existingBrand) {
             throw new ApiError(409, "Brand already exists.");
         }
 
         // Create the brand
-        const brand = await Brand.create({ name });
+        const brand = await Brand.create({ brandName });
 
         res.status(201).json(new ApiResponse(201, brand, "Brand created successfully."));
     } catch (err) {
