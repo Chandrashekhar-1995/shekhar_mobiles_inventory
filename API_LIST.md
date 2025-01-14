@@ -65,6 +65,8 @@
 # Brand Routes
     -  create brand (post)
         - http://localhost:7777/api/v1/brand/create
+    -  fetch all brand (get)
+        - http://localhost:7777/api/v1/brand/all
 
 
 # Product Routes

@@ -29,4 +29,14 @@ brandRouter.post("/brand/create", authenticateUser, async (req, res, next) => {
     }
 });
 
+brandRouter.get("/brand/all", authenticateUser, async (req, res, next) => {
+
+    try {
+        const brand = await Brand.find();
+        res.status(200).json(new ApiResponse(200, brand, "All brand fetched successfully."));
+    } catch (err) {
+        next(err);
+    }
+});
+
 module.exports = brandRouter;

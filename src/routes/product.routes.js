@@ -17,6 +17,7 @@ const productRouter = express.Router();
 productRouter.post("/product/create", authenticateUser, async (req, res, next) => {
     const {
         productName,
+        itemCode,
         brand,
         category,
         subcategory,
