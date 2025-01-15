@@ -15,6 +15,7 @@ const productSchema = new mongoose.Schema(
             unique: true,
             lowercase: true,
             trim: true,
+            index: true,
         },
         brand: {
             type: mongoose.Schema.Types.ObjectId,
@@ -54,12 +55,24 @@ const productSchema = new mongoose.Schema(
             enum: ["UNT", "PCS", "NOS", "MTR", "BOX"],
             default: "PCS",
         },
+        hsnCode: {
+            type: String,
+            max: 250,
+        },
+        gstRate: {
+            type: Number, // percentage
+            max: 90,
+        },
         saleDiscount: {
             type: Number, // percentage discount
             max: 90,
         },
         lowLevelLimit: {
             type: Number,
+        },
+        serialNumber:{
+            type:String,
+            max:100,
         },
         productImage: {
             type: String,
@@ -85,27 +98,26 @@ const productSchema = new mongoose.Schema(
                 ref: "Invoice",
             },
         ],
-        settings: {
-            printDescription: {
-                type: Boolean,
-                default: true,
-            },
-            oneClickSale: {
-                type: Boolean,
-                default: true,
-            },
-            enableTracking: {
-                type: Boolean,
-                default: true,
-            },
-            printSerialNo: {
-                type: Boolean,
-                default: false,
-            },
-            notForSale: {
-                type: Boolean,
-                default: false,
-            },
+
+        printDescription: {
+            type: Boolean,
+            default: true,
+        },
+        oneClickSale: {
+            type: Boolean,
+            default: true,
+        },
+        enableTracking: {
+            type: Boolean,
+            default: true,
+        },
+        printSerialNo: {
+            type: Boolean,
+            default: false,
+        },
+        notForSale: {
+            type: Boolean,
+            default: false,
         },
     },
     {
