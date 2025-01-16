@@ -36,6 +36,16 @@ categoryRouter.post("/category/create", authenticateUser, async (req, res, next)
     }
 });
 
+categoryRouter.get("/category/all", authenticateUser, async (req, res, next) => {
+
+    try {
+        const category = await Category.find();
+        res.status(200).json(new ApiResponse(200, category, "All categories fetched successfully."));
+    } catch (err) {
+        next(err);
+    }
+});
+
 
 categoryRouter.patch("/category/:categoryName/add-subcategory", authenticateUser, async (req, res, next) => {
     const { categoryName } = req.params;
