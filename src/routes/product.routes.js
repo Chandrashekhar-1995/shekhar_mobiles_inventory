@@ -1,5 +1,6 @@
 const express = require("express");
 const xlsx = require("xlsx");
+const ExcelJS = require("exceljs");
 const fs = require("fs");
 const path = require("path");
 const Product = require("../models/Product.model");
@@ -125,37 +126,104 @@ productRouter.post("/product/create", authenticateUser, async (req, res, next) =
 
 
 // API to download product upload template
-productRouter.get("/product/template", authenticateUser, async (req, res, next) => {
+productRouter.get("/product/template", async (req, res, next) => {
     try {
-        // Define headers for the CSV/Excel template
+        // Headers with required fields marked
         const headers = [
-            "productName",     // Required
-            "itemCode",        // Optional
-            "brand",           // Required
-            "category",        // Required
-            "subcategory",     // Optional
-            "purchasePrice",   // Required
-            "salePrice",       // Required
-            "minSalePrice",    // Optional
-            "mrp",             // Optional
-            "unit",            // Required: UNT, PCS, NOS, MTR, BOX
-            "saleDiscount",    // Optional
-            "lowLevelLimit",   // Optional
-            "description",     // Optional
-            "warranty",        // Optional
-            "location",        // Optional
-            "openingStock",    // Optional
+            { field: "productName", label: "Product Name *", required: true },
+            { field: "itemCode", label: "Item Code", required: false },
+            { field: "brand", label: "Brand *", required: true },
+            { field: "category", label: "Category *", required: true },
+            { field: "subcategory", label: "Subcategory", required: false },
+            { field: "purchasePrice", label: "Purchase Price *", required: true },
+            { field: "salePrice", label: "Sale Price *", required: true },
+            { field: "minSalePrice", label: "Min Sale Price", required: false },
+            { field: "mrp", label: "MRP", required: false },
+            { field: "unit", label: "Unit *", required: true, dropdown: ["UNT", "PCS", "NOS", "MTR", "BOX"] },
+            { field: "hsnCode", label: "HSN Code", required: false },
+            { field: "gstRate", label: "GST Rate", required: false },
+            { field: "saleDiscount", label: "Sale Discount", required: false },
+            { field: "lowLevelLimit", label: "Low Level Limit", required: false },
+            { field: "serialNumber", label: "Serial Number", required: false },
+            { field: "description", label: "Description", required: false },
+            { field: "warranty", label: "Warranty", required: false },
+            { field: "location", label: "location", required: false },
+            { field: "openingStock", label: "OpeningStock", required: false },
+            { field: "printDescription", label: "Print Description", required: false, dropdown: ["true", "false"] },
+            { field: "printSerialNo", label: "Print Serial No", required: false },
+            { field: "oneClickSale", label: "One Click Sale", required: false },
+            { field: "enableTracking", label: "Enable Tracking", required: false },
         ];
 
-        // Create a worksheet and workbook
-        const worksheet = xlsx.utils.json_to_sheet([]);
-        xlsx.utils.sheet_add_aoa(worksheet, [headers]);
-        const workbook = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(workbook, worksheet, "Template");
+        // Initialize a new workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const templateSheet = workbook.addWorksheet("Template");
+        const instructionSheet = workbook.addWorksheet("Instructions");
 
-        // Write the file to disk temporarily
+        // Add headers to the template sheet
+        const headerRow = templateSheet.addRow(headers.map((header) => header.label));
+
+        // Style headers
+        headerRow.eachCell((cell, colNumber) => {
+            const header = headers[colNumber - 1];
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: header.required ? "FFA500" : "D3D3D3" },
+            };
+            cell.font = { bold: true };
+            cell.alignment = { horizontal: "center", vertical: "middle" };
+
+             // Adjust column width dynamically based on the header text length
+             const headerLength = header.label.length; // Length of the header text
+             templateSheet.getColumn(colNumber).width = Math.max(15, headerLength + 5); // Minimum width 15, extra padding 5
+        });
+
+        // Set the row height dynamically for the header row
+        const headerRowHeight = 40;
+        templateSheet.getRow(headerRow.number).height = headerRowHeight;
+
+
+        // Add dropdowns for specific fields
+        headers.forEach((header, index) => {
+            if (header.dropdown) {
+                // Apply dropdown to all rows in the column
+                const colLetter = String.fromCharCode(65 + index);
+                templateSheet.getColumn(index + 1).eachCell((cell, rowNumber) => {
+                    if (rowNumber > 1) {
+                        cell.dataValidation = {
+                            type: "list",
+                            allowBlank: false,
+                            formula1: `"${header.dropdown.join(",")}"`,
+                        };
+                    }
+                });
+            }
+        });
+
+        // Add instructions to the second sheet
+        instructionSheet.addRow(["Field Name", "Required/Optional", "Description/Example"]);
+        headers.forEach((header) => {
+            instructionSheet.addRow([
+                header.label,
+                header.required ? "Required" : "Optional",
+                header.dropdown ? `Allowed values: ${header.dropdown.join(", ")}` : "Free text",
+            ]);
+        });
+
+        // Style instruction headers
+        instructionSheet.getRow(1).eachCell((cell) => {
+            cell.font = { bold: true };
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "CCCCCC" },
+            };
+        });
+
+        // Save workbook to file
         const filePath = path.join(__dirname, "../uploads/product-template.xlsx");
-        xlsx.writeFile(workbook, filePath);
+        await workbook.xlsx.writeFile(filePath);
 
         // Send the file as a response
         res.download(filePath, "product-template.xlsx", (err) => {
@@ -163,7 +231,7 @@ productRouter.get("/product/template", authenticateUser, async (req, res, next) 
                 next(err);
             }
 
-            // Delete the temporary file after download
+            // Delete the file after sending it
             fs.unlinkSync(filePath);
         });
     } catch (err) {
@@ -173,8 +241,9 @@ productRouter.get("/product/template", authenticateUser, async (req, res, next) 
 
 
 
+
 // Bulk upload API
-productRouter.post("/product/bulk-upload", authenticateUser, upload.single("file"),
+productRouter.post("/product/bulk-upload",  upload.single("file"),
     async (req, res, next) => {
         try {
             if (!req.file) {
