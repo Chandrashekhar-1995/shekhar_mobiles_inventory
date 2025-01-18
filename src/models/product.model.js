@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema(
     {
+        type: {
+            type: String,
+            required: true,
+            enum: ["Product", "Service"],
+            default: "Product",
+        },
         productName: { 
             type: String,
             required: [true, "Product name is required"],
