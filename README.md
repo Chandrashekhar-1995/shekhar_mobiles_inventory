@@ -14,4 +14,5 @@
     - fix update password bug for user
     - write route for fetch all brands
     - update product creating route and model
+    - update bulk upload template and upload routes
     

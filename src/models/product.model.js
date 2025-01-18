@@ -113,7 +113,7 @@ const productSchema = new mongoose.Schema(
         },
         printSerialNo: {
             type: Boolean,
-            default: false,
+            default: true,
         },
         notForSale: {
             type: Boolean,

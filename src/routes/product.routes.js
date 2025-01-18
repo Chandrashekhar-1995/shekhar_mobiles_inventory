@@ -13,6 +13,8 @@ const ApiError = require("../utils/ApiError");
 
 const productRouter = express.Router();
 
+
+
 productRouter.post("/product/create", authenticateUser, async (req, res, next) => {
     const {
         productName,
@@ -124,11 +126,9 @@ productRouter.post("/product/create", authenticateUser, async (req, res, next) =
 });
 
 
-
 // API to download product upload template
 productRouter.get("/product/template", async (req, res, next) => {
     try {
-        // Headers with required fields marked
         const headers = [
             { field: "productName", label: "Product Name *", required: true },
             { field: "itemCode", label: "Item Code", required: false },
@@ -147,23 +147,20 @@ productRouter.get("/product/template", async (req, res, next) => {
             { field: "serialNumber", label: "Serial Number", required: false },
             { field: "description", label: "Description", required: false },
             { field: "warranty", label: "Warranty", required: false },
-            { field: "location", label: "location", required: false },
-            { field: "openingStock", label: "OpeningStock", required: false },
-            { field: "printDescription", label: "Print Description", required: false, dropdown: ["true", "false"] },
-            { field: "printSerialNo", label: "Print Serial No", required: false },
-            { field: "oneClickSale", label: "One Click Sale", required: false },
-            { field: "enableTracking", label: "Enable Tracking", required: false },
+            { field: "location", label: "Location", required: false },
+            { field: "stockQuantity", label: "OpeningStock", required: false },
+            // { field: "printDescription", label: "Print Description", required: false, dropdown: ["true", "false"] },
+            // { field: "printSerialNo", label: "Print Serial No", required: false, dropdown: ["true", "false"] },
+            // { field: "oneClickSale", label: "One Click Sale", required: false, dropdown: ["true", "false"] },
+            // { field: "enableTracking", label: "Enable Tracking", required: false, dropdown: ["true", "false"] },
         ];
 
-        // Initialize a new workbook and worksheet
         const workbook = new ExcelJS.Workbook();
         const templateSheet = workbook.addWorksheet("Template");
         const instructionSheet = workbook.addWorksheet("Instructions");
 
         // Add headers to the template sheet
         const headerRow = templateSheet.addRow(headers.map((header) => header.label));
-
-        // Style headers
         headerRow.eachCell((cell, colNumber) => {
             const header = headers[colNumber - 1];
             cell.fill = {
@@ -173,33 +170,9 @@ productRouter.get("/product/template", async (req, res, next) => {
             };
             cell.font = { bold: true };
             cell.alignment = { horizontal: "center", vertical: "middle" };
-
-             // Adjust column width dynamically based on the header text length
-             const headerLength = header.label.length; // Length of the header text
-             templateSheet.getColumn(colNumber).width = Math.max(15, headerLength + 5); // Minimum width 15, extra padding 5
+            templateSheet.getColumn(colNumber).width = Math.max(15, header.label.length + 5);
         });
-
-        // Set the row height dynamically for the header row
-        const headerRowHeight = 40;
-        templateSheet.getRow(headerRow.number).height = headerRowHeight;
-
-
-        // Add dropdowns for specific fields
-        headers.forEach((header, index) => {
-            if (header.dropdown) {
-                // Apply dropdown to all rows in the column
-                const colLetter = String.fromCharCode(65 + index);
-                templateSheet.getColumn(index + 1).eachCell((cell, rowNumber) => {
-                    if (rowNumber > 1) {
-                        cell.dataValidation = {
-                            type: "list",
-                            allowBlank: false,
-                            formula1: `"${header.dropdown.join(",")}"`,
-                        };
-                    }
-                });
-            }
-        });
+        templateSheet.getRow(headerRow.number).height = 40;
 
         // Add instructions to the second sheet
         instructionSheet.addRow(["Field Name", "Required/Optional", "Description/Example"]);
@@ -210,28 +183,23 @@ productRouter.get("/product/template", async (req, res, next) => {
                 header.dropdown ? `Allowed values: ${header.dropdown.join(", ")}` : "Free text",
             ]);
         });
-
-        // Style instruction headers
-        instructionSheet.getRow(1).eachCell((cell) => {
+        instructionSheet.getRow(1).eachCell((cell, colNumber) => {
             cell.font = { bold: true };
             cell.fill = {
                 type: "pattern",
                 pattern: "solid",
                 fgColor: { argb: "CCCCCC" },
             };
+            cell.alignment = { horizontal: "center", vertical: "middle" };
+            instructionSheet.getColumn(colNumber).width = Math.max(15, cell.model.value.length + 5);
         });
+        instructionSheet.getRow(1).height = 40;
 
-        // Save workbook to file
         const filePath = path.join(__dirname, "../uploads/product-template.xlsx");
         await workbook.xlsx.writeFile(filePath);
 
-        // Send the file as a response
         res.download(filePath, "product-template.xlsx", (err) => {
-            if (err) {
-                next(err);
-            }
-
-            // Delete the file after sending it
+            if (err) next(err);
             fs.unlinkSync(filePath);
         });
     } catch (err) {
@@ -239,119 +207,96 @@ productRouter.get("/product/template", async (req, res, next) => {
     }
 });
 
-
-
-
 // Bulk upload API
-productRouter.post("/product/bulk-upload",  upload.single("file"),
-    async (req, res, next) => {
-        try {
-            if (!req.file) {
-                throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
-            }
-
-            // Parse the uploaded file
-            const workbook = xlsx.readFile(req.file.path);
-            const sheetName = workbook.SheetNames[0];
-            const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-            // Validate and process each row
-            const products = [];
-            const skippedProducts = [];
-            for (const row of data) {
-                const {
-                    productName,
-                    brand,
-                    category,
-                    subcategory,
-                    purchasePrice,
-                    salePrice,
-                    mrp,
-                    unit,
-                    openingStock,
-                } = row;
-
-                if (!productName || !brand || !category || !purchasePrice || !salePrice || !unit) {
-                    skippedProducts.push({
-                        row,
-                        reason: "Missing required fields",
-                    });
-                    continue; // Skip rows with missing required fields
-                }
-
-                // Check if the product already exists
-                const existingProduct = await Product.findOne({
-                    productName: productName.trim().toLowerCase(),
-                });
-                if (existingProduct) {
-                    skippedProducts.push({
-                        row,
-                        reason: "Product already exists",
-                    });
-                    continue; // Skip duplicate products
-                }
-
-                // Ensure brand exists or create it
-                let existingBrand = await Brand.findOne({ brandName: brand.trim() });
-                if (!existingBrand) {
-                    existingBrand = new Brand({ brandName: brand.trim() });
-                    await existingBrand.save();
-                }
-
-                // Ensure category and subcategory exist or create them
-                let existingCategory = await Category.findOne({
-                    categoryName: category.trim().toLowerCase(),
-                });
-                if (!existingCategory) {
-                    existingCategory = new Category({
-                        categoryName: category.trim().toLowerCase(),
-                        subcategories: subcategory ? [subcategory.trim()] : [],
-                    });
-                    await existingCategory.save();
-                } else if (subcategory) {
-                    // Add subcategory if not already present
-                    if (!existingCategory.subcategories.includes(subcategory.trim())) {
-                        existingCategory.subcategories.push(subcategory.trim());
-                        await existingCategory.save();
-                    }
-                }
-
-                // Create the product object
-                products.push({
-                    productName: productName.trim().toLowerCase(),
-                    brand: existingBrand._id,
-                    category: existingCategory._id,
-                    subcategory: subcategory ? subcategory.trim() : undefined,
-                    purchasePrice,
-                    salePrice,
-                    mrp,
-                    unit,
-                    stockQuantity: openingStock || 0,
-                });
-            }
-
-            // Insert all valid products into the database
-            const insertedProducts = await Product.insertMany(products);
-
-            // Delete the uploaded file
-            fs.unlink(req.file.path, (err) => {
-                if (err) console.error("Error deleting file:", err);
-            });
-
-            res.status(201).json(
-                new ApiResponse(201, { insertedProducts, skippedProducts }, "Products uploaded successfully.")
-            );
-        } catch (err) {
-            // Delete the file in case of an error
-            if (req.file && req.file.path) {
-                fs.unlink(req.file.path, (err) => {
-                    if (err) console.error("Error deleting file:", err);
-                });
-            }
-            next(err);
+productRouter.post("/product/bulk-upload", upload.single("file"), async (req, res, next) => {
+    try {
+        if (!req.file) {
+            throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
         }
-    }
-);
 
+        const workbook = xlsx.readFile(req.file.path);
+        const sheetName = workbook.SheetNames[0];
+        const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+        const headerMapping = {
+            "Product Name *": "productName",
+            "Item Code" : "itemCode",
+            "Brand *": "brand",
+            "Category *": "category",
+            "Subcategory": "subcategory",
+            "Purchase Price *": "purchasePrice",
+            "Sale Price *": "salePrice",
+            "Min Sale Price": "minSalePrice",
+            "MRP" : "mrp",
+            "Unit *": "unit",
+            "HSN Code": "hsnCode",
+            "GST Rate": "gstRate",
+            "Sale Discount": "saleDiscount",
+            "Low Level Limit": "lowLevelLimit",
+            "Serial Number" : "serialNumber",
+            "Description" : "description",
+            "Warranty": "warranty",
+            "Location" : "location",
+            "OpeningStock": "stockQuantity",
+            // "Print Description": "printDescription",
+            // "Print Serial No": "printSerialNo",
+            // "One Click Sale": "oneClickSale",
+            // "Enable Tracking": "enableTracking",
+        };
+
+        const requiredFields = ["productName", "brand", "category", "purchasePrice", "salePrice", "unit"];
+        const products = [];
+        const skippedProducts = [];
+
+        for (const row of data) {
+            const product = {};
+            for (const [templateHeader, dbField] of Object.entries(headerMapping)) {
+                product[dbField] = row[templateHeader] || null;
+            }
+
+            const missingFields = requiredFields.filter((field) => !product[field]);
+            if (missingFields.length > 0) {
+                skippedProducts.push({ row, reason: `Missing fields: ${missingFields.join(", ")}` });
+                continue;
+            }
+
+            const existingProduct = await Product.findOne({ productName: product.productName.toLowerCase() });
+            if (existingProduct) {
+                skippedProducts.push({ row, reason: "Product already exists" });
+                continue;
+            }
+
+            let brandDoc = await Brand.findOne({ brandName: product.brand });
+            if (!brandDoc) {
+                brandDoc = new Brand({ brandName: product.brand });
+                await brandDoc.save();
+            }
+
+            let categoryDoc = await Category.findOne({ categoryName: product.category.toLowerCase() });
+            if (!categoryDoc) {
+                categoryDoc = new Category({
+                    categoryName: product.category.toLowerCase(),
+                    subcategories: product.subcategory ? [product.subcategory] : [],
+                });
+                await categoryDoc.save();
+            }
+
+            products.push({
+                ...product,
+                brand: brandDoc._id,
+                category: categoryDoc._id,
+                stockQuantity: product.openingStock || 0,
+            });
+        }
+
+        const insertedProducts = await Product.insertMany(products);
+        fs.unlinkSync(req.file.path);
+
+        res.status(201).json(new ApiResponse(201, { insertedProducts, skippedProducts }, "Upload completed."));
+    } catch (err) {
+        if (req.file && req.file.path) fs.unlinkSync(req.file.path);
+        next(err);
+    }
+});
 
 module.exports = productRouter;
