@@ -127,7 +127,7 @@ productRouter.post("/product/create", authenticateUser, async (req, res, next) =
 
 
 // API to download product upload template
-productRouter.get("/product/template", async (req, res, next) => {
+productRouter.get("/product/template", authenticateUser, async (req, res, next) => {
     try {
         const headers = [
             { field: "productName", label: "Product Name *", required: true },
@@ -208,7 +208,7 @@ productRouter.get("/product/template", async (req, res, next) => {
 });
 
 // Bulk upload API
-productRouter.post("/product/bulk-upload", upload.single("file"), async (req, res, next) => {
+productRouter.post("/product/bulk-upload", upload.single("file"), authenticateUser, async (req, res, next) => {
     try {
         if (!req.file) {
             throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
@@ -274,18 +274,25 @@ productRouter.post("/product/bulk-upload", upload.single("file"), async (req, re
 
             let categoryDoc = await Category.findOne({ categoryName: product.category.toLowerCase() });
             if (!categoryDoc) {
+                // Create a new category if it doesn't exist
                 categoryDoc = new Category({
                     categoryName: product.category.toLowerCase(),
                     subcategories: product.subcategory ? [product.subcategory] : [],
                 });
                 await categoryDoc.save();
+            } else {
+                // Update the existing category with a new subcategory if it doesn't already exist
+                if (product.subcategory && !categoryDoc.subcategories.includes(product.subcategory)) {
+                    categoryDoc.subcategories.push(product.subcategory);
+                    await categoryDoc.save();
+                }
             }
 
             products.push({
                 ...product,
                 brand: brandDoc._id,
                 category: categoryDoc._id,
-                stockQuantity: product.openingStock || 0,
+                stockQuantity: product.stockQuantity || 0,
             });
         }
 
