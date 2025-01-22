@@ -3,6 +3,7 @@ const profileRouter = express.Router();
 const bcrypt = require("bcrypt");
 const fs = require("fs");
 const xlsx = require("xlsx");
+const ExcelJS = require("exceljs");
 const path = require("path");
 const { authenticateUser, authorizeRoles, authenticateLogin, CheckExistingUserOrCustomer } = require("../middlewares/auth.middleware");
 const findUserOrCustomer = require('../utils/dbHelpers');
@@ -552,45 +553,82 @@ profileRouter.get("/user/feed", authenticateUser, async(req,res,next)=>{
 });
 
 // Downloak Bulk upload customers template
-profileRouter.get("/customer/bulk-upload/template", authenticateUser, (req, res, next) => {
+profileRouter.get("/customer/bulk-upload/template", authenticateUser, async (req, res, next) => {
     try {
         const headers = [
-            "name",
-            "phone", 
-            "email", 
-            "address", 
-            "city", 
-            "state", 
-            "pinCode", 
-            "gender", 
-            "dateOfBirth", 
-            "marrigeAniversary", 
-            "bio", 
-            "designation",
+            { field: "name", label: "Name *", required: true },
+            { field: "mobileNumber", label: "Mobile Number *", required: true },
+            { field: "contactNumber", label: "Other Contact No.", required: false },
+            { field: "address", label: "Village *", required: true },
+            { field: "city", label: "City", required: false },
+            { field: "state", label: "State", required: false },
+            { field: "pinCode", label: "pinCode", required: false },
+            { field: "country", label: "country", required: false },
+            { field: "email", label: "Email", required: false },
+            { field: "gender", label: "Gender", required: false },
+            { field: "panNo", label: "Pan No", required: false,},
+            { field: "gstin", label: "GST IN", required: false },
+            { field: "gstType", label: "GST Type", required: false },
+            { field: "tradeName", label: "Trade Name", required: false },
+            { field: "designation", label: "Designation", required: false, dropdown: ["Customer", "Supplier"] },
         ];
-        const worksheet = xlsx.utils.json_to_sheet([]);
-        xlsx.utils.sheet_add_aoa(worksheet, [headers],);
     
-        const workbook = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(workbook, worksheet, "CustomerTemplate");
-    
+        const workbook = new ExcelJS.Workbook();
+        const templateSheet = workbook.addWorksheet("Template");
+        const instructionSheet = workbook.addWorksheet("Instructions");
+        // const worksheet = xlsx.utils.json_to_sheet([]);
+        // xlsx.utils.sheet_add_aoa(worksheet, [headers],);
+
+        // Add headers to the template sheet
+        const headerRow = templateSheet.addRow
+        (headers.map((header) =>header.label));
+        headerRow.eachCell((cell, colNumber)=>{
+            const header = headers[colNumber -1];
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: header.required ? "FFA500" : "D3D3D3" },
+            };
+            cell.font = { bold: true };
+            cell.alignment = { horizontal: "center", vertical: "middle" };
+
+            templateSheet.getColumn(colNumber).width = Math.max(15, header.label.length + 5);
+        });
+
+        templateSheet.getRow(headerRow.number).height = 40;
+
+        // Add instructions to the second sheet
+        instructionSheet.addRow(["Field Name", "Required/Optional", "Description/Example"]);
+        headers.forEach((header) => {
+            instructionSheet.addRow([
+                header.label,
+                header.required ? "Required" : "Optional",
+                header.dropdown ? `Allowed values: ${header.dropdown.join(", ")}` : "Free text",
+            ]);
+        });
+        instructionSheet.getRow(1).eachCell((cell, colNumber) => {
+            cell.font = { bold: true };
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "CCCCCC" },
+            };
+            cell.alignment = { horizontal: "center", vertical: "middle" };
+            instructionSheet.getColumn(colNumber).width = Math.max(15, cell.model.value.length + 5);
+        });
+        instructionSheet.getRow(1).height = 40;
+
         const filePath = path.join(__dirname, "../uploads/customer-template.xlsx");
-        xlsx.writeFile(workbook, filePath);
+        await workbook.xlsx.writeFile(filePath);
     
         res.download(filePath, "customer-template.xlsx", (err) => {
-            if (err) {
+                    if (err) next(err);
+                    fs.unlinkSync(filePath);
+                });
+            } catch (err) {
                 next(err);
             }
-
-            // Delete the temporary file after download
-                        fs.unlinkSync(filePath);
         });
-    } catch (err) {
-        next(err);
-    }
-});
-
-
 
 // Bulk upload customers
 profileRouter.post("/customer/bulk-upload", authenticateUser, upload.single("file"),
@@ -689,8 +727,6 @@ profileRouter.post("/customer/bulk-upload", authenticateUser, upload.single("fil
         }
     }
 );
-
-
 
 
 module.exports = profileRouter;

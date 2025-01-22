@@ -13,16 +13,16 @@ const customerSchema = new mongoose.Schema(
             trim: true,
             index:true
         },
-        // contactNumber:{
-        //     type: String,
-        //     unique: true,
-        //     validate: {
-        //         validator: function (value) {
-        //             return /^[6-9]\d{9}$/.test(value); // Validates Indian mobile number format
-        //         },
-        //         message: (props) => `${props.value} is not a valid mobile number!`,
-        //     },
-        // },
+        contactNumber:{
+            type: String,
+            unique: true,
+            validate: {
+                validator: function (value) {
+                    return /^[6-9]\d{9}$/.test(value); // Validates Indian mobile number format
+                },
+                message: (props) => `${props.value} is not a valid mobile number!`,
+            },
+        },
         mobileNumber: {
             type: String,
             required: [true, "Mobile number is required"],
