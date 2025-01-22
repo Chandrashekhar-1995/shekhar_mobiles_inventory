@@ -562,10 +562,12 @@ profileRouter.get("/customer/bulk-upload/template", authenticateUser, async (req
             { field: "address", label: "Village *", required: true },
             { field: "city", label: "City", required: false },
             { field: "state", label: "State", required: false },
-            { field: "pinCode", label: "pinCode", required: false },
-            { field: "country", label: "country", required: false },
+            { field: "pinCode", label: "Pin Code", required: false },
+            { field: "country", label: "Country", required: false },
             { field: "email", label: "Email", required: false },
             { field: "gender", label: "Gender", required: false },
+            // { field: "dateOfBirth", label: "Birthday", required: false },
+            // { field: "marrigeAniversary", label: "Aniversary", required: false },
             { field: "panNo", label: "Pan No", required: false,},
             { field: "gstin", label: "GST IN", required: false },
             { field: "gstType", label: "GST Type", required: false },
@@ -576,8 +578,6 @@ profileRouter.get("/customer/bulk-upload/template", authenticateUser, async (req
         const workbook = new ExcelJS.Workbook();
         const templateSheet = workbook.addWorksheet("Template");
         const instructionSheet = workbook.addWorksheet("Instructions");
-        // const worksheet = xlsx.utils.json_to_sheet([]);
-        // xlsx.utils.sheet_add_aoa(worksheet, [headers],);
 
         // Add headers to the template sheet
         const headerRow = templateSheet.addRow
@@ -631,7 +631,7 @@ profileRouter.get("/customer/bulk-upload/template", authenticateUser, async (req
         });
 
 // Bulk upload customers
-profileRouter.post("/customer/bulk-upload", authenticateUser, upload.single("file"),
+profileRouter.post("/customer/bulk-upload", upload.single("file"),
     async (req, res, next) => {
         try {
             if (!req.file) {
@@ -643,71 +643,58 @@ profileRouter.post("/customer/bulk-upload", authenticateUser, upload.single("fil
             const sheetName = workbook.SheetNames[0];
             const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
+            const headerMapping = {
+                "Name *": "name",
+                "Mobile Number *": "mobileNumber",
+                "Other Contact No.":"contactNumber",
+                "Village *":"address",
+                "City":"city",
+                "State":"state",
+                "Pin Code":"pinCode",
+                "Country":"country",
+                "Email":"email",
+                "Gender":"gender",
+                "Birthday":"dateOfBirth",
+                "Aniversary":"marrigeAniversary",
+                "Pan No":"panNo",
+                "GST IN":"gstin",
+                "GST Type":"gstType",
+                "Trade Name":"tradeName",
+                "Designation":"designation"
+            };
+
+            const requiredFields = ["name", "mobileNumber", "address"];
             const customers = [];
             const skippedCustomers = [];
             for (const row of data) {
-                try {
-                    const {
-                        name,
-                        phone,
-                        email,
-                        address,
-                        city,
-                        state,
-                        pinCode,
-                        gender,
-                        dateOfBirth,
-                        marrigeAniversary,
-                        bio,
-                        designation,
-                    } = row;
-
-                    if (!name || !phone || !address) {
-                        skippedCustomers.push({ row, reason: "Required fields missing (name, phone, address)." });
-                        continue;
+                const customer = {};
+                for (const [templateHeader, dbField] of Object.entries(headerMapping)) {
+                    if (row[templateHeader] !== undefined && row[templateHeader] !== "") {
+                        customer[dbField] = row[templateHeader]; 
                     }
-
-                    // Parse dates and handle undefined/null values
-                    const birthDay = dateOfBirth ? parseExcelDate(dateOfBirth) : null;
-                    const aniversary = marrigeAniversary ? parseExcelDate(marrigeAniversary) : null;
-
-                    // Check for duplicate entries
-                    const existingCustomer = await Customer.findOne({
-                        $or: [{ email: email?.trim().toLowerCase() }, { mobileNumber: phone }],
-                    });
-
-                    if (existingCustomer) {
-                        skippedCustomers.push({ row, reason: "Duplicate customer (email/phone already exists)." });
-                        continue;
-                    }
-
-                    // Generate a default password and hash it
-                    const password = "ShekharMobiles9@";
-                    const hashPassword = await bcrypt.hash(password, 10);
-
-                    customers.push({
-                        name: name.trim(),
-                        mobileNumber: phone,
-                        email: email?.trim().toLowerCase(),
-                        address: address.trim(),
-                        password:hashPassword,
-                        city: city?.trim(),
-                        state: state?.trim(),
-                        pinCode: pinCode,
-                        gender,
-                        dateOfBirth: birthDay,
-                        marrigeAniversary: aniversary,
-                        bio,
-                        designation: designation || "Customer",
-                    });
-                } catch (rowError) {
-                    skippedCustomers.push({ row, reason: rowError.message });
                 }
+
+                const missingFields = requiredFields.filter((field) => !customer[field]);
+                if (missingFields.length > 0) {
+                skippedCustomers.push({ row, reason: `Missing fields: ${missingFields.join(", ")}` });
+                    continue;
+                }
+
+                const existingCustomer = await Customer.findOne({
+                    $or: [{ name: customer.name.trim().toLowerCase() }, { mobileNumber: customer.mobileNumber } ]
+                });
+                if(existingCustomer){
+                    skippedCustomers.push({row, reason: "Customer already exists"});
+                    continue;
+                };
+
+                customers.push({
+                    ...customer,
+                })
             }
 
             // Insert all valid customers into the database
             const insertedCustomers = await Customer.insertMany(customers);
-
             // Delete the uploaded file
             fs.unlink(req.file.path, (err) => {
                 if (err) console.error("Error deleting file:", err);
@@ -718,11 +705,7 @@ profileRouter.post("/customer/bulk-upload", authenticateUser, upload.single("fil
             );
         } catch (err) {
             // Delete the file in case of an error
-            if (req.file?.path) {
-                fs.unlink(req.file.path, (fileErr) => {
-                    if (fileErr) console.error("Error deleting file:", fileErr);
-                });
-            }
+            if (req.file && req.file.path) fs.unlinkSync(req.file.path);
             next(err);
         }
     }

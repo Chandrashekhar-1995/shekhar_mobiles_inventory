@@ -15,13 +15,14 @@ const customerSchema = new mongoose.Schema(
         },
         contactNumber:{
             type: String,
-            unique: true,
             validate: {
                 validator: function (value) {
-                    return /^[6-9]\d{9}$/.test(value); // Validates Indian mobile number format
+                    // Allow null or validate phone number format
+                    return value === null || /^[0-9]{10}$/.test(value);
                 },
-                message: (props) => `${props.value} is not a valid mobile number!`,
+                message: '{VALUE} is not a valid mobile number!',
             },
+            default: null,
         },
         mobileNumber: {
             type: String,
@@ -63,14 +64,14 @@ const customerSchema = new mongoose.Schema(
         },        
         email: {
             type: String,
-            lowercase: true,
             validate: {
                 validator: function (value) {
-                    // Use a regex to validate email format
-                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                    // Allow null or validate email format
+                    return value === null || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
                 },
-                message: (props) => `${props.value} is not a valid email address!`,
+                message: '{VALUE} is not a valid email address!',
             },
+            default: null,
         },
         avatar: {
             type: String,// cloudanery url

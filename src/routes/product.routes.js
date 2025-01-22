@@ -208,7 +208,7 @@ productRouter.get("/product/template", authenticateUser, async (req, res, next) 
 });
 
 // Bulk upload API
-productRouter.post("/product/bulk-upload", upload.single("file"), authenticateUser, async (req, res, next) => {
+productRouter.post("/product/bulk-upload", upload.single("file"), async (req, res, next) => {
     try {
         if (!req.file) {
             throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
@@ -245,6 +245,8 @@ productRouter.post("/product/bulk-upload", upload.single("file"), authenticateUs
         };
 
         const requiredFields = ["productName", "brand", "category", "purchasePrice", "salePrice", "unit"];
+        
+
         const products = [];
         const skippedProducts = [];
 

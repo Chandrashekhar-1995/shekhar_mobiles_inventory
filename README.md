@@ -16,4 +16,5 @@
     - update product creating route and model
     - update bulk upload template and upload routes
     - templare route done for bulk upload customer
+    - route done for bulk upload customer
     
