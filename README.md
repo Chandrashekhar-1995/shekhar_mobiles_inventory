@@ -17,4 +17,5 @@
     - update bulk upload template and upload routes
     - templare route done for bulk upload customer
     - route done for bulk upload customer
+    - route for search customer by his name latters
     

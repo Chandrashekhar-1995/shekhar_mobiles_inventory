@@ -117,5 +117,22 @@ invoiceRouter.post("/invoice/create", authenticateUser, async (req, res, next) =
   }
 });
 
+// Endpoint to fetch the last invoice
+invoiceRouter.get("/invoice/last-invoice", async (req, res, next) =>{
+    try {
+        const lastInvoice = await Invoice.findOne().sort({ createdAt: -1 });
+
+        if (lastInvoice) {
+            res.status(201).json(
+                new ApiResponse(201, { lastInvoice }, "Invoice created successfully.")
+            )
+          } else {
+            res.status(404).json({ message: 'No invoices found' });
+          }
+    } catch (err) {
+        next(err);
+    }
+});
+
 
 module.exports = invoiceRouter;

@@ -17,11 +17,11 @@ const invoiceSchema = new mongoose.Schema(
         },
         date: {
             type: Date,
-            default: Date.now,
+            default: Date.today,
         },
         dueDate: {
-            type: Date, // credit period
-            default: Date.now,
+            type: Date,
+            default: Date.today,
         },
         placeOfSupply:{
             type: String,
@@ -85,6 +85,10 @@ const invoiceSchema = new mongoose.Schema(
         totalPayableAmount: {
             type: Number,
             required: true,
+        },
+        paymentDate:{
+            type: Date,
+            default: Date.today,
         },
         paymentAccount: {
             type: mongoose.Schema.Types.ObjectId,
