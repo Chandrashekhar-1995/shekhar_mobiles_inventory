@@ -13,7 +13,8 @@ const searchCustomers = async (req, res) => {
   
       // Case-insensitive search for matching names
       const customers = await Customer.find({
-        name: { $regex: search, $options: "i" },
+        $or: [{ name: { $regex: search, $options: "i" }, }, { mobileNumber:{ $regex: search, $options: "i" } }],
+        
       }).limit(10);
   
       res.status(200).json(new ApiResponse(200, customers, "Customer Fetched"));
