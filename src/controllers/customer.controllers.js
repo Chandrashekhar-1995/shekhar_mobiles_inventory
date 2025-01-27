@@ -3,7 +3,7 @@ const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 
 // Search Customers by Name
-const searchCustomers = async (req, res) => {
+const searchCustomers = async (req, res, next) => {
     try {
       const { search } = req.query;
   
