@@ -1,4 +1,3 @@
-const express = require("express");
 const xlsx = require("xlsx");
 const ExcelJS = require("exceljs");
 const fs = require("fs");
@@ -6,8 +5,6 @@ const path = require("path");
 const Product = require("../models/Product.model");
 const Brand = require("../models/Brand.model");
 const Category = require("../models/Category.model");
-const { authenticateUser } = require("../middlewares/auth.middleware");
-const upload = require("../middlewares/upload.middleware");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 
