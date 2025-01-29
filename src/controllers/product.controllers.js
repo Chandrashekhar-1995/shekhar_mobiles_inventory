@@ -120,7 +120,7 @@ const createProduct = async (req, res, next) => {
   }
 };
 
-// Search Product by Name of code
+// Search Product by Name or code
 const searcProducts = async (req, res, next) => {
   try {
     const { search } = req.query;

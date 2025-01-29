@@ -40,7 +40,7 @@ app.use(cookieParser());
 app.use("/api/v1/", authRouter );
 app.use("/api/v1/", brandRouter );
 app.use("/api/v1/", categoryRouter );
-app.use("/api/v1/", productRouter );
+app.use("/api/v1/product", productRouter );
 app.use("/api/v1/", profileRouter );
 app.use("/api/v1/", accountRouter );
 app.use("/api/v1/", invoiceRouter );

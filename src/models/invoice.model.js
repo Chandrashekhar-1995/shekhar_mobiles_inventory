@@ -44,6 +44,9 @@ const invoiceSchema = new mongoose.Schema(
                     ref: "Product",
                     required: true,
                 },
+                itemCode: {
+                    type:String,
+                },
                 unit:{
                     type:String
                 },

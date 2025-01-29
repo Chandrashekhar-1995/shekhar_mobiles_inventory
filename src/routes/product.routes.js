@@ -5,10 +5,11 @@ const { searcProducts, createProduct, downloadTemplate, bulkUploadProduct } = re
 
 const productRouter = express.Router();
 
-productRouter.post("/product/create", authenticateUser, createProduct);
-productRouter.get("/auth/product", authenticateUser, searcProducts);
-productRouter.get("/product/template", authenticateUser, downloadTemplate);
-productRouter.post("/product/bulk-upload", upload.single("file"), bulkUploadProduct);
+productRouter.post("/create", authenticateUser, createProduct);
+// productRouter.get("/auth/product", authenticateUser, searcProducts);
+productRouter.get("/auth/product", searcProducts);
+productRouter.get("/template", authenticateUser, downloadTemplate);
+productRouter.post("/bulk-upload", upload.single("file"), bulkUploadProduct);
 
 
 module.exports = productRouter;
