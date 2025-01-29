@@ -44,6 +44,9 @@ const invoiceSchema = new mongoose.Schema(
                     ref: "Product",
                     required: true,
                 },
+                productName: {
+                    type:String,
+                },
                 itemCode: {
                     type:String,
                 },
@@ -74,6 +77,9 @@ const invoiceSchema = new mongoose.Schema(
                 total: {
                     type: Number,
                     required: true,
+                },
+                itemDescription: {
+                    type: String,
                 },
             },
         ],

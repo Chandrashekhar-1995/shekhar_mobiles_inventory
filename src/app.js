@@ -43,7 +43,7 @@ app.use("/api/v1/", categoryRouter );
 app.use("/api/v1/product", productRouter );
 app.use("/api/v1/", profileRouter );
 app.use("/api/v1/", accountRouter );
-app.use("/api/v1/", invoiceRouter );
+app.use("/api/v1/invoice/", invoiceRouter );
 app.use("/api/v1/", customerRouter );
 
 
