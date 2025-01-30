@@ -6,7 +6,14 @@ const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 
 
+// gfenerate invoice number
+const generateInvoiceNumber = async () => {
+    const lastInvoice = await Invoice.findOne().sort({ createdAt: -1 });
+    const lastNumber = lastInvoice ? parseInt(lastInvoice.invoiceNumber.split("-")[1]) : 0;
+    return `INV-${(lastNumber + 1).toString().padStart(4, "0")}`;
+  };
 
+  
 
 // Create Invoice
 const createInvoice = async (req, res, next) => {
@@ -106,6 +113,20 @@ const createInvoice = async (req, res, next) => {
   };
 
 // Endpoint to fetch the last invoice
+const lastInvoiceFetch = async (req, res, next) =>{
+    try {
+        const lastInvoice = await Invoice.findOne().sort({ createdAt: -1 });
 
+        if (lastInvoice) {
+            res.status(201).json(
+                new ApiResponse(201, { lastInvoice }, "Invoice created successfully.")
+            )
+          } else {
+            res.status(404).json({ message: 'No invoices found' });
+          }
+    } catch (err) {
+        next(err);
+    }
+};
 
-module.exports = { createInvoice, lastInvoiceDatails };
+module.exports = { createInvoice, lastInvoiceFetch};
