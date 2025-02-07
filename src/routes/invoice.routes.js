@@ -7,7 +7,8 @@ const {createInvoice, lastInvoiceFetch} = require("../controllers/invoice.contro
 invoiceRouter.post("/create", authenticateUser, createInvoice);
 
 // Endpoint to fetch the last invoice
-invoiceRouter.get("/last-invoice", authenticateUser, lastInvoiceFetch );
+// invoiceRouter.get("/last-invoice", authenticateUser, lastInvoiceFetch );
+invoiceRouter.get("/last-invoice", lastInvoiceFetch );
 
 
 

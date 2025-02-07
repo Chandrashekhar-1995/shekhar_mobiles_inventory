@@ -37,6 +37,15 @@ const invoiceSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",
         },
+        customerName: {
+            type: String,
+        },
+        mobileNumber: {
+            type: Number,
+        },
+        address: {
+            type: String,
+        },
         items: [
             {
                 item: {
