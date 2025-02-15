@@ -161,9 +161,10 @@ const customerSchema = new mongoose.Schema(
                 message: '{VALUE} is not supported type'
               }
         },
-        balance:{
-            type:Number,
-        },
+        balance: {
+            type: Number,
+            default: 0,
+          },
         creditAllowed:{
             type: String,
             enum: {

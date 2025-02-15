@@ -23,15 +23,15 @@ const processPayments = async (payments, totalAmount, customer) => {
         paymentDetails.push({
             accountId: payment.accountId,
             amount: payment.amount,
-            method: account.name, // Example: "Cash", "Bank", "PhonePe"
+            method: account.name,
         });
 
     }
 
     // Update customer's balance if a valid customer is found
     if (customer) {
-        const balanceDifference = receivedAmount - totalAmount;
-        customer.balance = (customer.balance || 0) + balanceDifference; // Adjust balance (add or subtract)
+        const balanceDifference = totalAmount - receivedAmount;
+        customer.balance = (customer.balance || 0) + balanceDifference;
         await customer.save();
     }
 

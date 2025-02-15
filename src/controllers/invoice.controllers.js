@@ -1,7 +1,8 @@
 const Invoice = require("../models/invoice.model");
 const Customer = require("../models/customer.model");
-const processItems = require("../middlewares/invoice.middleware");
-const processPayments = require("../middlewares/payment.middleware");
+const Account = require("../models/account.model");
+const {processItems} = require("../middlewares/invoice.middleware");
+const {processPayments} = require("../middlewares/payment.middleware");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 
@@ -16,73 +17,83 @@ const generateInvoiceNumber = async () => {
 const createInvoice = async (req, res, next) => {
     try {
         const {
-            invoiceType = "Non GST",
+            invoiceType,
             invoiceNumber,
-            date = new Date(),
-            dueDate = new Date(),
-            placeOfSupply = "Uttar Pradesh",
+            date,
+            dueDate,
+            placeOfSupply,
             billTo,
             customerId,
             customerName,
             mobileNumber,
             address,
             items,
-            discountAmount = 0,
-            payments = [],
+            discountAmount,
+            paymentDate,
+            paymentAccount,
+            receivedAmount,
             privateNote,
-            deliveryTerm,
+            customerNote,
             soldBy,
-        } = req.body;
+            deliveryTerm,
+          } = req.body;
 
         if (!items || items.length === 0) {
             throw new ApiError(400, "Item details are required.");
-        }
+        }        
 
-        // Assign default customer ID for cash sales
         const finalCustomerId = billTo === "Cash" ? "6790a5b3d50038409a777e3d" : customerId;
         const customer = await Customer.findById(finalCustomerId);
         if (!customer) {
             throw new ApiError(404, "Customer not found.");
         }
 
-        // Process items
-        const { itemDetails, totalAmount: calculatedTotal } = await processItems(items);
-        const totalAmount = calculatedTotal;
+        const { itemDetails, totalAmount } = await processItems(items);
+
         const totalPayableAmount = totalAmount - discountAmount;
 
-        // Process payments
-        const { receivedAmount, paymentDetails } = await processPayments(payments, totalAmount, customer);
-        const paymentAccount = payments.length > 0 ? payments[0].accountId : null;
-
-        // Calculate due amount and set invoice status
         const dueAmount = totalPayableAmount - receivedAmount;
+
+        // Calculate invoice status
         const status = dueAmount === 0 ? "Paid" : receivedAmount > 0 ? "Partially Paid" : "Unpaid";
+
+        const account = await Account.findOne({ accountName: paymentAccount });
+        if (!account) {
+            throw new ApiError(404, `${paymentAccount} Account not found, please create account first.`);
+        }
 
         // Create the invoice
         const newInvoice = new Invoice({
             invoiceType,
-            invoiceNumber: invoiceNumber || await generateInvoiceNumber(),
+            invoiceNumber: invoiceNumber ? invoiceNumber : await generateInvoiceNumber (),
             date,
             dueDate,
             placeOfSupply,
             billTo,
             customer: finalCustomerId,
-            customerName: customerName || customer.name,
-            mobileNumber: mobileNumber || customer.mobileNumber,
-            address: address || customer.address,
+            customerName,
+            mobileNumber,
+            address,
             items: itemDetails,
             totalAmount,
             discountAmount,
             totalPayableAmount,
+            paymentDate,
+            paymentAccount: account._id,
             receivedAmount,
+            dueAmount,
             status,
-            paymentAccount,
             privateNote,
+            customerNote,
             deliveryTerm,
-            soldBy: soldBy || req.user._id,
-        });
+            soldBy: soldBy ? soldBy : req.user._id,
+          });
+      
+          await newInvoice.save();
 
-        await newInvoice.save();
+        // Update account balance (credit)
+        account.balance = Number(account.balance) + Number(receivedAmount);
+        await account.save();
 
         // Update customer's purchase history
         customer.purchaseHistory.push({
@@ -98,6 +109,8 @@ const createInvoice = async (req, res, next) => {
             date: newInvoice.date,
             totalAmount: newInvoice.totalPayableAmount,
         });
+
+        customer.balance = (customer.balance || 0) + balanceDifference;
         await req.user.save();
 
         res.status(201).json(new ApiResponse(201, { newInvoice }, "Invoice created successfully."));
