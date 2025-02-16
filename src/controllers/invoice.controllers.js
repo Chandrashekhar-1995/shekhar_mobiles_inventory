@@ -30,7 +30,7 @@ const createInvoice = async (req, res, next) => {
             items,
             discountAmount,
             paymentDate,
-            paymentAccount,
+            paymentMode,
             receivedAmount,
             privateNote,
             customerNote,
@@ -40,7 +40,10 @@ const createInvoice = async (req, res, next) => {
 
         if (!items || items.length === 0) {
             throw new ApiError(400, "Item details are required.");
-        }        
+        }     
+        
+        console.log(paymentMode);
+        
 
         const finalCustomerId = billTo === "Cash" ? "6790a5b3d50038409a777e3d" : customerId;
         const customer = await Customer.findById(finalCustomerId);
@@ -48,24 +51,16 @@ const createInvoice = async (req, res, next) => {
             throw new ApiError(404, "Customer not found.");
         }
 
-        const { itemDetails, totalAmount } = await processItems(items);
 
-        const totalPayableAmount = totalAmount - discountAmount;
-
-        const dueAmount = totalPayableAmount - receivedAmount;
-
-        // Calculate invoice status
-        const status = dueAmount === 0 ? "Paid" : receivedAmount > 0 ? "Partially Paid" : "Unpaid";
-
-        const account = await Account.findOne({ accountName: paymentAccount });
+        const account = await Account.findOne({ accountName: paymentMode });
         if (!account) {
-            throw new ApiError(404, `${paymentAccount} Account not found, please create account first.`);
+            throw new ApiError(404, `${paymentMode} Account not found, please create account first.`);
         }
 
-        // Create the invoice
+        // Create the invoice (not saved yet)
         const newInvoice = new Invoice({
             invoiceType,
-            invoiceNumber: invoiceNumber ? invoiceNumber : await generateInvoiceNumber (),
+            invoiceNumber: invoiceNumber ? invoiceNumber : await generateInvoiceNumber(),
             date,
             dueDate,
             placeOfSupply,
@@ -74,22 +69,31 @@ const createInvoice = async (req, res, next) => {
             customerName,
             mobileNumber,
             address,
-            items: itemDetails,
-            totalAmount,
             discountAmount,
-            totalPayableAmount,
+            paymentAccount:account._id,
             paymentDate,
-            paymentAccount: account._id,
-            receivedAmount,
-            dueAmount,
-            status,
             privateNote,
             customerNote,
             deliveryTerm,
             soldBy: soldBy ? soldBy : req.user._id,
-          });
-      
-          await newInvoice.save();
+        });
+
+        // Process items and get total amount
+        const { itemDetails, totalAmount } = await processItems(items, newInvoice._id);
+
+        newInvoice.items = itemDetails;
+        newInvoice.totalAmount = totalAmount;
+        newInvoice.totalPayableAmount = totalAmount - discountAmount;
+        newInvoice.receivedAmount = receivedAmount;
+        newInvoice.dueAmount = newInvoice.totalPayableAmount - receivedAmount;
+        newInvoice.status = newInvoice.dueAmount === 0 
+            ? "Paid" 
+            : receivedAmount > 0 
+                ? "Partially Paid" 
+                : "Unpaid";
+
+        // Save the invoice
+        await newInvoice.save();
 
         // Update account balance (credit)
         account.balance = Number(account.balance) + Number(receivedAmount);
@@ -101,6 +105,7 @@ const createInvoice = async (req, res, next) => {
             date: newInvoice.date,
             totalAmount: newInvoice.totalPayableAmount,
         });
+        customer.balance = (customer.balance || 0) + newInvoice.dueAmount;
         await customer.save();
 
         // Update user's sales history
@@ -109,8 +114,6 @@ const createInvoice = async (req, res, next) => {
             date: newInvoice.date,
             totalAmount: newInvoice.totalPayableAmount,
         });
-
-        customer.balance = (customer.balance || 0) + balanceDifference;
         await req.user.save();
 
         res.status(201).json(new ApiResponse(201, { newInvoice }, "Invoice created successfully."));
