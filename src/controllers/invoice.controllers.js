@@ -140,4 +140,25 @@ const lastInvoiceFetch = async (req, res, next) =>{
     }
 };
 
-module.exports = { createInvoice, lastInvoiceFetch};
+// Endpoint to fetch invoices
+const allInvoiceFetch = async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    try {        
+        const invoices = await Invoice.find().skip(skip).limit(limit);
+        const total = await Invoice.countDocuments();
+        if (invoices) {
+            res.status(200).json(
+                new ApiResponse(201, { invoices, total, page, limit }, "Invoice fetched successfully.")
+            )
+          } else {
+            res.status(404).json({ message: 'No invoices found' });
+          }
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { createInvoice, lastInvoiceFetch, allInvoiceFetch};

@@ -89,3 +89,7 @@
 # Invoice Routes
     -  create account (post)
         - http://localhost:7777/api/v1/invoice/create 
+    -  fetch last invoice (get)
+        - http://localhost:7777/api/v1/invoice/last-invoice
+    -  fetch all invoices (get)
+        - http://localhost:7777/api/v1/invoice/all-invoice
