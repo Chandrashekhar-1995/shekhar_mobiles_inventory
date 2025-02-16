@@ -20,4 +20,5 @@
     - route for search customer by his name latters
     - create invoice done
     - fetch all invoices
+    - fetch invoice by id
     

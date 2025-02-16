@@ -161,4 +161,19 @@ const allInvoiceFetch = async (req, res, next) =>{
     }
 };
 
-module.exports = { createInvoice, lastInvoiceFetch, allInvoiceFetch};
+// Endpoint to fetch invoices
+const invoiceFetchById = async (req, res, next) =>{
+    try {        
+        const invoice = await Invoice.findById(req.params.id);
+        if (invoice) {
+            res.status(200).json(
+                new ApiResponse(201, { invoice }, "Invoice fetched successfully.")
+            )
+          } else {
+            res.status(404).json({ message: 'No invoices found' });
+          }
+    } catch (err) {
+        next(err);
+    }
+};
+module.exports = { createInvoice, lastInvoiceFetch, allInvoiceFetch, invoiceFetchById};
