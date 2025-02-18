@@ -161,7 +161,7 @@ const allInvoiceFetch = async (req, res, next) =>{
     }
 };
 
-// Endpoint to fetch invoices
+// Endpoint to fetch invoice by id
 const invoiceFetchById = async (req, res, next) =>{
     try {        
         const invoice = await Invoice.findById(req.params.id);
@@ -176,4 +176,20 @@ const invoiceFetchById = async (req, res, next) =>{
         next(err);
     }
 };
-module.exports = { createInvoice, lastInvoiceFetch, allInvoiceFetch, invoiceFetchById};
+
+// update invoice by id
+const updateInvoice = async (req, res, next) =>{
+    try {        
+        const updatedInvoice = await Invoice.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        new ApiResponse(201, { updatedInvoice }, "Invoice fetched successfully.")
+    } catch (err) {
+        next(err);
+    }
+};
+
+
+module.exports = { createInvoice, lastInvoiceFetch, allInvoiceFetch, invoiceFetchById, updateInvoice};
