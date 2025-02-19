@@ -6,7 +6,7 @@ const {createInvoice, lastInvoiceFetch, allInvoiceFetch, invoiceFetchById, updat
 
 invoiceRouter.post("/create", authenticateUser, createInvoice);
 // Endpoint to fetch the last invoice
-invoiceRouter.get("/last-invoice", authenticateUser, lastInvoiceFetch );
+invoiceRouter.get("/last-invoice", lastInvoiceFetch );
 
 invoiceRouter.get("/all-invoice", allInvoiceFetch );
 invoiceRouter.get("/:id", invoiceFetchById );
