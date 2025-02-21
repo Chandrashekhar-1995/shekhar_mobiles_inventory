@@ -66,6 +66,10 @@ const accountSchema = new mongoose.Schema(
         transactionId: {
           type: String
         },
+        invoiceId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Invoice",
+        },
         paymentMode: {
           type: String,
           enum: {

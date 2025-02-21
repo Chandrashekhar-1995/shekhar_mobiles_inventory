@@ -2,7 +2,6 @@ const Invoice = require("../models/invoice.model");
 const Customer = require("../models/customer.model");
 const Account = require("../models/account.model");
 const {processItems} = require("../middlewares/invoice.middleware");
-const {processPayments} = require("../middlewares/payment.middleware");
 const ApiResponse = require("../utils/ApiResponse");
 const ApiError = require("../utils/ApiError");
 
@@ -32,6 +31,8 @@ const createInvoice = async (req, res, next) => {
             paymentDate,
             paymentMode,
             receivedAmount,
+            type,
+            transactionId,
             privateNote,
             customerNote,
             soldBy,
@@ -41,9 +42,6 @@ const createInvoice = async (req, res, next) => {
         if (!items || items.length === 0) {
             throw new ApiError(400, "Item details are required.");
         }     
-        
-        console.log(paymentMode);
-        
 
         const finalCustomerId = billTo === "Cash" ? "6790a5b3d50038409a777e3d" : customerId;
         const customer = await Customer.findById(finalCustomerId);
@@ -97,6 +95,16 @@ const createInvoice = async (req, res, next) => {
 
         // Update account balance (credit)
         account.balance = Number(account.balance) + Number(receivedAmount);
+        account.transactions.push({
+            type: type ? type : "Credit",
+            amount:receivedAmount,
+            description:"",
+            date:paymentDate,
+            referenceId:"",
+            transactionId:transactionId,
+            invoiceId:newInvoice._id,
+            paymentMode:paymentMode,
+        })
         await account.save();
 
         // Update customer's purchase history
