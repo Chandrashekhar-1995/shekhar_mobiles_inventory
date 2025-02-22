@@ -10,6 +10,7 @@ const categoryRouter = require("./routes/category.routes");
 const productRouter = require("./routes/product.routes");
 const profileRouter =require("./routes/profile.routes");
 const invoiceRouter = require("./routes/invoice.routes");
+const purchaseInvoiceRouter = require("./routes/purchaseInvoice.routes");
 const customerRouter = require("./routes/customer.routes");
 const accountRouter =require("./routes/account.routes");
 const errorHandler = require("./middlewares/errorHandler.middleware");
@@ -44,6 +45,7 @@ app.use("/api/v1/product", productRouter );
 app.use("/api/v1/", profileRouter );
 app.use("/api/v1/", accountRouter );
 app.use("/api/v1/invoice/", invoiceRouter );
+app.use("/api/v1/purchase-invoice/", purchaseInvoiceRouter);
 app.use("/api/v1/", customerRouter );
 
 

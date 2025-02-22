@@ -6,5 +6,4 @@ const customerRouter = express.Router();
 
 // Search customers endpoint
 customerRouter.get("/auth/customer", searchCustomers);
-
 module.exports = customerRouter;
