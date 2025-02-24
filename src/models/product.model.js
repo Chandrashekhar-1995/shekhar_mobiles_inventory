@@ -101,7 +101,7 @@ const productSchema = new mongoose.Schema(
         purchaseHistory: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Invoice",
+                ref: "PurchaseInvoice",
             },
         ],
 
