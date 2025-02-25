@@ -14,6 +14,7 @@ const purchaseInvoiceRouter = require("./routes/purchaseInvoice.routes");
 const customerRouter = require("./routes/customer.routes");
 const accountRouter =require("./routes/account.routes");
 const errorHandler = require("./middlewares/errorHandler.middleware");
+const mobileRouter = require("./routes/mobile.routes");
 
 
 // this code only create upload folder-
@@ -47,6 +48,7 @@ app.use("/api/v1/", accountRouter );
 app.use("/api/v1/invoice/", invoiceRouter );
 app.use("/api/v1/purchase-invoice/", purchaseInvoiceRouter);
 app.use("/api/v1/", customerRouter );
+app.use("/api/v1/mobile", mobileRouter );
 
 
 // Error Handler Middleware (must be after all routes)

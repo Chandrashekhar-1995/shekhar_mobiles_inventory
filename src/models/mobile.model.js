@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const mobileSchema = new mongoose.Schema(
     {
-        type:{
+        MobileType:{
             type:String,
             enum:{
                 values:["New", "Second Hand", "Repair"],
@@ -23,7 +23,9 @@ const mobileSchema = new mongoose.Schema(
         },
         emeiNumber:{
             type:String,
-            max:100,
+        },
+        emeiNumberSecond:{
+            type:String,
         },
         productImage: {
             type: String,

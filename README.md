@@ -23,3 +23,4 @@
     - fetch invoice by id
     - update some invoice workflow using navigate
     - create model for reapiring invoice and mobile
+    - createMobile route done

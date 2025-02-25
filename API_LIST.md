@@ -95,3 +95,7 @@
         - http://localhost:7777/api/v1/invoice/all-invoice
     -  fetch invoice by id (get)
         - http://localhost:7777/api/v1/invoice/:id
+
+# Mobile Routes
+    -  create mobile (post)
+        - http://localhost:7777/api/v1/mobile/create

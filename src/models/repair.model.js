@@ -97,7 +97,7 @@ const repairSchema = new mongoose.Schema(
                         type:String,
                     },
                     sinceLong:{
-                        type:String // how many time long facing problem
+                        type:String
                     },
                     repairStatus: {
                         type:String,
@@ -174,11 +174,17 @@ const repairSchema = new mongoose.Schema(
         dueAmount:{
             type:Number
         },
-        status:{
+        invoiceStatus:{
             type:String,
             enum:["Paid", "Unpaid", "Partially Paid"],
             required:true,
             default:"Unpaid"
+        },
+        repairStatus:{
+            type:String,
+            enum:["In Progress", "Repaire Done", "Delivered", "Return"],
+            required:true,
+            default:"In Progress"
         },
         bookBy: {
             type: mongoose.Schema.Types.ObjectId,
