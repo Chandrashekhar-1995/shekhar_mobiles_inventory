@@ -1,9 +1,10 @@
-const Invoice = require("../models/invoice.model");
-const Customer = require("../models/customer.model");
-const Account = require("../models/account.model");
-const {processItems} = require("../middlewares/invoice.middleware");
-const ApiResponse = require("../utils/ApiResponse");
-const ApiError = require("../utils/ApiError");
+import { Invoice } from "../models/invoice.model.js";
+import { Customer } from "../models/customer.model.js";
+import { Account } from "../models/account.model.js";
+import { processItems } from "../middlewares/invoice.middleware.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
+
 
 // Generate invoice number
 const generateInvoiceNumber = async () => {
@@ -200,4 +201,4 @@ const updateInvoice = async (req, res, next) =>{
 };
 
 
-module.exports = { createInvoice, lastInvoiceFetch, allInvoiceFetch, invoiceFetchById, updateInvoice};
+export { createInvoice, lastInvoiceFetch, allInvoiceFetch, invoiceFetchById, updateInvoice};

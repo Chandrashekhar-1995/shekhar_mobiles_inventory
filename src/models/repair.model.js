@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema } from "mongoose";
 
-const repairSchema = new mongoose.Schema(
+const repairSchema = new Schema(
     {
         invoiceType:{
             type:String,
@@ -58,10 +58,10 @@ const repairSchema = new mongoose.Schema(
             type:{
             repairType:String,
             enum:{
-                values:["Mobile", "LCD", "PC/Laptop", "Others"],
+                values:["mobile", "lcd", "pc_laptop", "others"],
                 message: '{VALUE} is not supported invoice type'
             },
-            default:"Mobile"
+            default:"mobile"
             },
             mobile:[{
                 mobile: {
@@ -182,7 +182,7 @@ const repairSchema = new mongoose.Schema(
         },
         repairStatus:{
             type:String,
-            enum:["In Progress", "Repaire Done", "Delivered", "Return"],
+            enum:["in_progress", "repaire_done", "delivered", "return"],
             required:true,
             default:"In Progress"
         },
@@ -206,4 +206,4 @@ const repairSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("Repair", repairSchema);
+export const Repair = mongoose.model("Repair", repairSchema);

@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema } from "mongoose";
 
-const invoiceSchema = new mongoose.Schema(
+const invoiceSchema = new Schema(
     {
         invoiceType:{
             type:String,
             enum:{
-                values:["Non GST", "GST", "Bill of Supply"],
+                values:["non_gst", "gst", "bill_of_supply"],
                 message: '{VALUE} is not supported invoice type'
             },
             default:"Non GST"
@@ -128,7 +128,7 @@ const invoiceSchema = new mongoose.Schema(
         },
         status:{
             type:String,
-            enum:["Paid", "Unpaid", "Partially Paid"],
+            enum:["paid", "unpaid", "partially_paid"],
             required:true,
             default:"Unpaid"
         },
@@ -144,4 +144,4 @@ const invoiceSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-module.exports = mongoose.model("Invoice", invoiceSchema);
+export const Invoice = mongoose.model("Invoice", invoiceSchema);

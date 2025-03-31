@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema } from "mongoose";
 
-const accountSchema = new mongoose.Schema(
+const accountSchema = new Schema(
   { 
     accountName: {
       type: String,
@@ -11,7 +11,7 @@ const accountSchema = new mongoose.Schema(
     type:{
       type:String,
       enum: {
-        values: ["Cash", "QR Code", "Razorpay", "Bank"],
+        values: ["cash", "qr_code", "razorpay", "bank"],
         message: "{VALUE} is not a valid account type",
       },
       required: true
@@ -33,7 +33,7 @@ const accountSchema = new mongoose.Schema(
     status:{
       type:String,
       enum:{
-        values:["Active", "Inactive"],
+        values:["active", "in_active"],
         message: "{VALUE} is not a valid status",
       }
     },
@@ -42,7 +42,7 @@ const accountSchema = new mongoose.Schema(
         type: {
           type: String,
           enum: {
-            values: ["Credit", "Debit"],
+            values: ["credit", "debit"],
             message: "{VALUE} is not a valid transaction type",
           },
           required: true,
@@ -73,7 +73,7 @@ const accountSchema = new mongoose.Schema(
         paymentMode: {
           type: String,
           enum: {
-            values: ["Cash", "QR Code", "PhonePe", "Bank"],
+            values: ["cash", "qr_code", "razorpay", "bank"],
             message: "{VALUE} is not a valid payment mode",
           },
         },
@@ -98,4 +98,4 @@ accountSchema.methods.updateBalance = function (type, amount) {
   return this.balance;
 };
 
-module.exports = mongoose.model("Account", accountSchema);
+export const Account = mongoose.model("Account", accountSchema);

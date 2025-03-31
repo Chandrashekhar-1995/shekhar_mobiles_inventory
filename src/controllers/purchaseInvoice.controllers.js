@@ -1,8 +1,8 @@
-const PurchaseInvoice = require("../models/purchaseInvoice.model");
-const Customer = require("../models/customer.model");
-const Product = require("../models/Product.model");
-const ApiResponse = require("../utils/ApiResponse");
-const ApiError = require("../utils/ApiError");
+import { PurchaseInvoice } from "../models/purchaseInvoice.model.js";
+import { Customer } from "../models/customer.model.js";
+import { Product } from "../models/product.model.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const generatePurchaseInvoiceNumber = async () => {
     const lastInvoice = await PurchaseInvoice.findOne().sort({ createdAt: -1 });

@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import mongoose, { Schema } from "mongoose";
 
-const secretKey = process.env.JWT_SECRET;
 
-const customerSchema = new mongoose.Schema(
+const customerSchema = new Schema(
     {
         name: {
             type: String,
@@ -190,10 +190,28 @@ const customerSchema = new mongoose.Schema(
             type: String,
             max:[500, 'Maximum 500 chareters allowed'],
         },
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+          },
+          refreshToken: {
+            type: String,
+          },
+          forgotPasswordToken: {
+            type: String,
+          },
+          forgotPasswordExpiry: {
+            type: Date,
+          },
+          emailVerificationToken: {
+            type: String,
+          },
+          emailVerificationExpiry: {
+            type: Date,
+          },
     },
     {timestamps:true}
 );
-
 
 // Hash the password before saving
 customerSchema.pre("save", async function (next) {
@@ -204,13 +222,6 @@ customerSchema.pre("save", async function (next) {
    });
 
 
-customerSchema.methods.getJWT = function(){
-    const user = this;
-    return jwt.sign({ _id: user._id }, secretKey, { expiresIn: "1d" });
-};
-
-
-
 customerSchema.methods.validatePassword = async function (passwordInterByUser){
     const user = this;
     const hashPassword = user.password
@@ -219,4 +230,46 @@ customerSchema.methods.validatePassword = async function (passwordInterByUser){
     return isPasswordValid;
 }
 
-module.exports = mongoose.model("Customer", customerSchema);
+customerSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      username: this.username,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
+  );
+};
+
+customerSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY },
+  );
+};
+
+/**
+ * @description Method responsible for generating tokens for email verification,  reset etc.
+ */
+
+customerSchema.methods.generateTemporaryToken = function () {
+    // This token should be client facing
+    // for example: for email verification unHashedToken should go into the user's mail
+    const unHashedToken = crypto.randomBytes(20).toString("hex");
+  
+    // This should stay in the DB to compare at the time of verification
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(unHashedToken)
+      .digest("hex");
+    // This is the expiry time for the token (20 minutes)
+    const tokenExpiry = Date.now() + 20 * 60 * 1000; // 20 minutes;
+  
+    return { unHashedToken, hashedToken, tokenExpiry };
+  };
+        
+export const Customer = mongoose.model("Customer", customerSchema);

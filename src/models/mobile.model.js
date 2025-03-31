@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema } from "mongoose";
 
-const mobileSchema = new mongoose.Schema(
+const mobileSchema = new Schema(
     {
         MobileType:{
             type:String,
             enum:{
-                values:["New", "Second Hand", "Repair"],
+                values:["new", "second_hand", "repair"],
                 message: '{VALUE} is not supported invoice type'
             },
             default:"Repair"
@@ -88,4 +88,4 @@ const mobileSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model("Mobile", mobileSchema);
+export const Mobile = mongoose.model("Mobile", mobileSchema);

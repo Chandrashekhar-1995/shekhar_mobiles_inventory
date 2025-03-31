@@ -1,6 +1,6 @@
-const Customer = require("../models/customer.model");
-const ApiResponse = require("../utils/ApiResponse");
-const ApiError = require("../utils/ApiError");
+import { Customer } from "../models/customer.model.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 
 // Search Customers by Name or Mobile number
 const searchCustomers = async (req, res, next) => {
@@ -24,4 +24,4 @@ const searchCustomers = async (req, res, next) => {
   };
   
   
-  module.exports = { searchCustomers }; 
+  export { searchCustomers }; 

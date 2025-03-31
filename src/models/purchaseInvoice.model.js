@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema } from "mongoose";
 
-const purchaseInvoiceSchema = new mongoose.Schema(
+const purchaseInvoiceSchema = new Schema(
     {
     invoiceType: {
         type: String, 
@@ -144,4 +144,4 @@ const purchaseInvoiceSchema = new mongoose.Schema(
 }
 );
 
-module.exports = mongoose.model("PurchaseInvoice", purchaseInvoiceSchema);
+export const PurchaseInvoice = mongoose.model("PurchaseInvoice", purchaseInvoiceSchema);

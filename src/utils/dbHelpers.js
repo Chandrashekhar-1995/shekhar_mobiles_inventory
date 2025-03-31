@@ -1,5 +1,7 @@
-const User = require('../models/user.model');
-const Customer = require('../models/customer.model');
+import { User } from "../models/user.model.js";
+import { Customer } from "../models/customer.model.js";
+
+
 
 const findUserOrCustomer = async (identifier) => {
   let user = await User.findOne({
@@ -23,4 +25,5 @@ const findCustomer = async (identifier) =>{
   return customer;
 };
 
-module.exports = findUserOrCustomer, findCustomer;
+export { findUserOrCustomer, findCustomer
+};

@@ -1,5 +1,5 @@
-const Product = require("../models/Product.model");
-const ApiError = require("../utils/ApiError");
+import { Product } from "../models/product.model.js";
+import { ApiError } from "../utils/ApiError.js";
 
 const processItems = async (items, invoiceId) => {
     if (!items || items.length === 0) {
@@ -69,7 +69,7 @@ const processItems = async (items, invoiceId) => {
     next();
 };
 
-module.exports = {
+export {
   processItems,
   validateInvoiceRequest,
 };

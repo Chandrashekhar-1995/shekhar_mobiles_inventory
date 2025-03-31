@@ -1,11 +1,10 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import mongoose, { Schema } from "mongoose";
 
-const secretKey = process.env.JWT_SECRET;
 
-
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
     {
         name: {
             type: String,
@@ -75,26 +74,9 @@ const userSchema = new mongoose.Schema(
         dateOfBirth: {
             type: Date,
             required: false,
-            get: (value) => {
-                if (!value) return null;
-                const date = new Date(value);
-                const day = String(date.getUTCDate()).padStart(2, "0");
-                const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-                const year = date.getUTCFullYear();
-                return `${day}/${month}/${year}`;
-            },
         },
         marrigeAniversary: {
             type: Date,
-            required: false,
-            get: (value) => {
-                if (!value) return null;
-                const date = new Date(value);
-                const day = String(date.getUTCDate()).padStart(2, "0");
-                const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-                const year = date.getUTCFullYear();
-                return `${day}/${month}/${year}`;
-            },
         },
         bio: {
             type: String,
@@ -128,7 +110,7 @@ const userSchema = new mongoose.Schema(
         designation:{
             type:String,
             enum: {
-                values: ["Relationship Manager","Admin","Marketing Executive", "Manager", "Accountant", "Clerk", "Peon", "Office Boy", "Receptionist", "Trainee"],
+                values: ["relationship_manager","admin","marketing_executive", "manager", "accountant", "clerk", "peon", "office_boy", "receptionist", "trainee"],
                 message: '{VALUE} is not supported Designation'
               },
               default:'Trainee',
@@ -136,7 +118,7 @@ const userSchema = new mongoose.Schema(
         department:{
             type:String,
             enum: {
-                values: ["Sales", "Marketing", "Finance", "Human Resource", "Administration", "Accounts"],
+                values: ["sales", "marketing", "finance", "human_resource", "administration", "accounts"],
                 message: '{VALUE} Department not found'
               }
         },
@@ -154,7 +136,7 @@ const userSchema = new mongoose.Schema(
         identityDocument:{
             type:String,
             enum: {
-                values: ['Aadhar Card', 'PAN Card', 'Driving License', 'Government ID','Voter Card' ],
+                values: ["aadhar_card", "pan_card", "driving_license", "government_id","voter_card" ],
                 message: '{VALUE} is not a valid Document'
               }
         },
@@ -195,7 +177,26 @@ const userSchema = new mongoose.Schema(
         remark:{
             type:String,
             max:[200, 'Maximum 200 chareters allowed'],
-        } 
+        },
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+          },
+          refreshToken: {
+            type: String,
+          },
+          forgotPasswordToken: {
+            type: String,
+          },
+          forgotPasswordExpiry: {
+            type: Date,
+          },
+          emailVerificationToken: {
+            type: String,
+          },
+          emailVerificationExpiry: {
+            type: Date,
+          },
     },
     {timestamps:true}
 );
@@ -208,10 +209,6 @@ userSchema.pre("save", async function (next) {
     next();
    });
 
-userSchema.methods.getJWT = function(){
-    const user = this;
-    return jwt.sign({ _id: user._id }, secretKey, { expiresIn: "2d" });
-};
 
 userSchema.methods.validatePassword = async function (passwordInterByUser){
     const user = this;
@@ -221,4 +218,46 @@ userSchema.methods.validatePassword = async function (passwordInterByUser){
     return isPasswordValid;
 }
 
-module.exports = mongoose.model("User", userSchema);
+userSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+      email: this.email,
+      username: this.username,
+    },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
+  );
+};
+
+userSchema.methods.generateRefreshToken = function () {
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY },
+  );
+};
+
+/**
+ * @description Method responsible for generating tokens for email verification, password reset etc.
+ */
+
+userSchema.methods.generateTemporaryToken = function () {
+    // This token should be client facing
+    // for example: for email verification unHashedToken should go into the user's mail
+    const unHashedToken = crypto.randomBytes(20).toString("hex");
+  
+    // This should stay in the DB to compare at the time of verification
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(unHashedToken)
+      .digest("hex");
+    // This is the expiry time for the token (20 minutes)
+    const tokenExpiry = Date.now() + 20 * 60 * 1000; // 20 minutes;
+  
+    return { unHashedToken, hashedToken, tokenExpiry };
+  };
+
+export const User = mongoose.model("User", userSchema);

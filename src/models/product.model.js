@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema } from "mongoose";
 
-const productSchema = new mongoose.Schema(
+const productSchema = new Schema(
     {
         type: {
             type: String,
@@ -58,7 +58,7 @@ const productSchema = new mongoose.Schema(
         unit: {
             type: String,
             required: true,
-            enum: ["UNT", "PCS", "NOS", "MTR", "BOX"],
+            enum: ["unt", "pcs", "nos", "mtr", "box"],
             default: "PCS",
         },
         hsnCode: {
@@ -132,4 +132,4 @@ const productSchema = new mongoose.Schema(
 );
 
 // Prevent model overwrite if it already exists
-module.exports = mongoose.model("Product", productSchema);
+export const Product = mongoose.model("Product", productSchema);

@@ -1,12 +1,8 @@
-const xlsx = require("xlsx");
-const ExcelJS = require("exceljs");
-const fs = require("fs");
-const path = require("path");
-const Product = require("../models/Product.model");
-const Brand = require("../models/Brand.model");
-const Category = require("../models/Category.model");
-const ApiResponse = require("../utils/ApiResponse");
-const ApiError = require("../utils/ApiError");
+import { Product } from "../models/product.model.js";
+import { Brand } from "../models/brand.model.js";
+import { Category } from "../models/category.model.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
 
 
 // Create Product

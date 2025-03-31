@@ -24,3 +24,6 @@
     - update some invoice workflow using navigate
     - create model for reapiring invoice and mobile
     - createMobile route done
+
+## rewrite code from require to import
+- first route register customer

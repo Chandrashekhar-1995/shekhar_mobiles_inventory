@@ -1,6 +1,7 @@
-const Mobile = require("../models/mobile.model");
-const ApiResponse = require("../utils/ApiResponse");
-const ApiError = require("../utils/ApiError");
+import {Mobile} from "../models/mobile.model.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
+
 
 // Create Mobile
 const createMobile = async (req, res, next) => {
@@ -66,4 +67,4 @@ const createMobile = async (req, res, next) => {
 
 
 
-module.exports = { createMobile};
+export { createMobile};
