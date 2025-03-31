@@ -1,6 +1,7 @@
 import { Product } from "../models/product.model.js";
 import { Brand } from "../models/brand.model.js";
 import { Category } from "../models/category.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 

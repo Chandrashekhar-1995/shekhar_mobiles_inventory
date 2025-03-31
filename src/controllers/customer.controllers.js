@@ -1,6 +1,11 @@
 import { Customer } from "../models/customer.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+
+
+
+// Create customer by user / admin
 
 // Search Customers by Name or Mobile number
 const searchCustomers = async (req, res, next) => {

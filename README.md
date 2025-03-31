@@ -27,3 +27,4 @@
 
 ## rewrite code from require to import
 - first route register customer
+- login logout and validator

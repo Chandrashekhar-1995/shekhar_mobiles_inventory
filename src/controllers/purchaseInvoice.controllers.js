@@ -1,6 +1,7 @@
 import { PurchaseInvoice } from "../models/purchaseInvoice.model.js";
 import { Customer } from "../models/customer.model.js";
 import { Product } from "../models/product.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 

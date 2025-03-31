@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 //router imports
+import healthCheckRouter from "./routes/healthcheck.routes.js";
 import authRouter from "./routes/auth.routes.js";
 // const brandRouter = require("./routes/brand.routes");
 // const categoryRouter = require("./routes/category.routes");
@@ -28,7 +29,8 @@ import authRouter from "./routes/auth.routes.js";
 import {errorHandler} from "./middlewares/errorHandler.middleware.js";
 
 
-app.use("/api/v1/", authRouter );
+app.use("/api/v1/healthcheck", healthCheckRouter );
+app.use("/api/v1/auth", authRouter );
 // app.use("/api/v1/", brandRouter );
 // app.use("/api/v1/", categoryRouter );
 // app.use("/api/v1/product", productRouter );
