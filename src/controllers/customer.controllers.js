@@ -32,22 +32,29 @@ const createCustomer = asyncHandler(async (req, res, next) => {
             throw new ApiError(400, "Email or mobile number already exists.")
           };
 
-        // Generate a default password and hash it
-        const password = "ShekharMobiles9@";
-        const hashPassword = await bcrypt.hash(password, 10);
+        // Generate password: first 3 letters of name (lowercase) + last 4 digits of mobile number
+        const generatePassword = (name, mobileNumber) => {
+          const namePart = name.trim().slice(0, 3).toLowerCase();
+          const mobilePart = mobileNumber.trim().slice(-4);
+          return `${namePart}${mobilePart}`;
+        };
+        
+        const mobileStr = mobileNumber.toString()
+        const plainPassword = generatePassword(name, mobileStr);
+        console.log("Generated password:", plainPassword); // For debugging
 
         // Create new user
         const customer = new Customer({
-            password: hashPassword,
             name, 
             mobileNumber, 
+            password: plainPassword,
             contactNumber, 
             address, 
             city, 
             state, 
             pinCode, 
             country, 
-            email: email ? email : undefined, 
+            email, 
             avatar, 
             gender, 
             panNo, 

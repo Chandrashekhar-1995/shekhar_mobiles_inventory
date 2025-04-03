@@ -43,8 +43,6 @@ const customerSchema = new Schema(
         password: {
             type: String,
             required: [true, " Password is required"],
-            default: "ShekharMobiles9@"
-
         },
         city:{
             type: String,
@@ -212,16 +210,25 @@ const customerSchema = new Schema(
 // Hash the password before saving
 customerSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-   });
+    
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
 
 
 customerSchema.methods.validatePassword = async function (passwordInterByUser){
     const user = this;
+    console.log("Validating password...");
+    console.log("Input password:", passwordInterByUser);
+    console.log("Stored hash:", this.password);
     const hashPassword = user.password
     const isPasswordValid = await bcrypt.compare(passwordInterByUser, hashPassword);
+    console.log("Password valid:", isPasswordValid);
 
     return isPasswordValid;
 }

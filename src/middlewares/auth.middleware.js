@@ -143,7 +143,7 @@ const isAdmin = async (req, res, next) => {
         const user = await User.findById(req.user._id);
 
         if (!user) {
-            throw new ApiError(404, "User not found");
+            throw new ApiError(404, "Unauthorized: Access denied");
         }
 
         // Check if user is admin
@@ -169,7 +169,7 @@ const isUser = async (req, res, next) => {
         const user = await User.findById(req.user._id);
 
         if (!user) {
-            throw new ApiError(404, "User not found");
+            throw new ApiError(404, "Unauthorized: Access denied");
         }
 
         req.user = user;

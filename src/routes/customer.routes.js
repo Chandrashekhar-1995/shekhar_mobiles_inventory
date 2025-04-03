@@ -9,6 +9,7 @@ const customerRouter = express.Router();
 customerRouter.post("/create", isLoggedIn, isUser, createCustomer);
 customerRouter.get("/:id", isLoggedIn, isUser,  fetchCustomerByID);
 customerRouter.get("/", isLoggedIn, isUser, searchCustomers);
+// customerRouter.get("/", isLoggedIn, isUser, roleBasedAuth(["admin"]), searchCustomers);
 
 
 export default customerRouter;

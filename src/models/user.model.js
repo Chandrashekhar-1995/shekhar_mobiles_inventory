@@ -85,8 +85,6 @@ const userSchema = new Schema(
         password: {
             type: String,
             required: [true, " Password is required"],
-            default: "ShekharMobiles9@"
-
         },
         refreshToken: {
             type: String,
@@ -204,10 +202,15 @@ const userSchema = new Schema(
 // Hash the password before saving
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-   });
+    
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
 
 
 userSchema.methods.validatePassword = async function (passwordInterByUser){
