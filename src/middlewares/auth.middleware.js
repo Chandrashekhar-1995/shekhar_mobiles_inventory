@@ -132,6 +132,87 @@ const isLoggedIn = async (req, res, next) => {
     }
 };
 
+
+const isAdmin = async (req, res, next) => {
+    try {
+        if (!req.user) {
+            throw new ApiError(401, "Unauthorized: Please login first");
+        }
+
+        // Find the user in User 
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Check if user is admin
+        if (user.designation !== "admin") {
+            throw new ApiError(403, "Forbidden: Admin access required");
+        }
+
+        // Attach full user object to request if needed
+        req.adminUser = user;
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+const isUser = async (req, res, next) => {
+    try {
+        if (!req.user) {
+            throw new ApiError(401, "Unauthorized: Please login first");
+        }
+
+        // Find the user in User 
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        req.user = user;
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+const roleBasedAuth = (allowedRoles = []) => {
+    return async (req, res, next) => {
+        try {
+            if (!req.user) {
+                throw new ApiError(401, "Unauthorized: Please login first");
+            }
+
+            const user = await User.findById(req.user._id) || 
+                         await Customer.findById(req.user._id);
+
+            if (!user) {
+                throw new ApiError(404, "User not found. Please login first");
+            }
+
+            if (!allowedRoles.includes(user.designation)) {
+                throw new ApiError(403, "Access denied"
+                    // `Forbidden: Required roles - ${allowedRoles.join(", ")}`
+                );
+            }
+
+            req.user = user;
+            next();
+        } catch (error) {
+            next(error);
+        }
+    };
+};
+
+
+
 export {
     isLoggedIn,
+    isAdmin,
+    isUser,
+    roleBasedAuth,
 };
