@@ -7,6 +7,8 @@ const customerRouter = express.Router();
 
 
 customerRouter.post("/create", isLoggedIn, createCustomer);
+customerRouter.get("/:id", isLoggedIn,  fetchCustomerByID);
+customerRouter.get("/", isLoggedIn,  searchCustomers);
 
 
 export default customerRouter;

@@ -80,7 +80,16 @@ const createCustomer = asyncHandler(async (req, res, next) => {
 });
 
 // Fetch customer by id
-const fetchCustomerByID = asyncHandler( async (req, res, next) => {});
+const fetchCustomerByID = asyncHandler( async (req, res, next) => {
+  const {id} = req.params;
+  try {
+    const customer = await Customer.findById(id);
+    res.status(200).json(new ApiResponse(200, customer, "Customers Fetched"));
+    
+  } catch (error) {
+    next(error)
+  }
+});
 
 // Search Customers by Name or Mobile number
 const searchCustomers = async (req, res, next) => {
