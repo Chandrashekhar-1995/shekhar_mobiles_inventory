@@ -1,9 +1,12 @@
-const express = require("express");
-const router = express.Router();
-const { searchCustomers } = require("../controllers/customer.controllers");
+import express from "express";
+import { isLoggedIn } from "../middlewares/auth.middleware.js";
+import { createCustomer, fetchCustomerByID, searchCustomers, updateCustomer, deleteCustomer, } from "../controllers/customer.controllers.js";
+
 
 const customerRouter = express.Router();
 
-// Search customers endpoint
-customerRouter.get("/auth/customer", searchCustomers);
-module.exports = customerRouter;
+
+customerRouter.post("/create", isLoggedIn, createCustomer);
+
+
+export default customerRouter;

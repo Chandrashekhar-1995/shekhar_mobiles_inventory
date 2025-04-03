@@ -28,3 +28,5 @@
 ## rewrite code from require to import
 - first route register customer
 - login logout and validator
+- update login checker logic
+- bug fix and create api for create user

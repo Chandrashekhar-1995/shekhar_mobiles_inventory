@@ -219,16 +219,16 @@ userSchema.methods.validatePassword = async function (passwordInterByUser){
 }
 
 userSchema.methods.generateAccessToken = function () {
-  return jwt.sign(
-    {
-      _id: this._id,
-      email: this.email,
-      username: this.username,
-    },
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
-  );
-};
+    return jwt.sign(
+      {
+        _id: this._id,
+        email: this.email,
+        mobileNumber: this.mobileNumber,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
+    );
+  };
 
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
@@ -240,9 +240,6 @@ userSchema.methods.generateRefreshToken = function () {
   );
 };
 
-/**
- * @description Method responsible for generating tokens for email verification, password reset etc.
- */
 
 userSchema.methods.generateTemporaryToken = function () {
     // This token should be client facing

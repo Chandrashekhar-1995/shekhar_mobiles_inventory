@@ -73,32 +73,55 @@ const registerAdmin = asyncHandler(async (req, res, next) => {
 
 // Login
 const login = asyncHandler(async (req, res, next) => {
-    const { identifier, password } = req.body; // `identifier` can be email or mobile number
+    const { identifier, password } = req.body; 
+    if ( !identifier || !password) {
+            throw new ApiError(400, "All fields are required.")
+        };
 
-    // Use the utility function to find user or customer
-    const user = await findUserOrCustomer(identifier);
-
-    // If user/customer is not found
-    if (!user) {
-        throw new ApiError(404, "User not found.");
+    try {
+        // Use the utility function to find user or customer
+        const user = await findUserOrCustomer(identifier);
+    
+        // If user/customer is not found
+        if (!user) {
+            throw new ApiError(404, "User not found.");
+        }
+    
+        // Validate password using the schema method
+        const isPasswordCorrect = await user.validatePassword(password);
+        if (!isPasswordCorrect) {
+            throw new ApiError(401, "Invalid credentials.");
+        }
+    
+            // Generate JWT token using the user/customer model's method
+            const accessToken = user.generateAccessToken();
+            const refreshToken = user.generateRefreshToken();
+    
+            user.refreshToken = refreshToken;
+            await user.save()
+    
+            res.cookie("accessToken", accessToken, { 
+                httpOnly: true, 
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 15 * 60 * 1000 // 15 minutes
+            });
+            res.cookie("refreshToken", refreshToken, { 
+                httpOnly: true, 
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
+            res.status(200).json(
+                new ApiResponse(
+                    200,
+                    user,
+                    "Login successfull."
+                )
+            )
+    } catch (error) {
+        next(error);
     }
-
-    // Validate password using the schema method
-    const isPasswordCorrect = await user.validatePassword(password);
-    if (!isPasswordCorrect) {
-        throw new ApiError(401, "Invalid credentials.");
-    }
-
-        // Generate JWT token using the user/customer model's method
-        const token = user.generateAccessToken();
-
-        // Determine if the entity is a User or a Customer based on the model
-        const isUserType = user instanceof User;
-
-        res.cookie("token", token);
-        res.status(200).json(
-            new ApiResponse(200, user, `${isUserType ? "User" : "Customer"} logged in successfully.`)
-        );
 });
 
 

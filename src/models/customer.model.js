@@ -71,7 +71,6 @@ const customerSchema = new Schema(
                 },
                 message: '{VALUE} is not a valid email address!',
             },
-            default: null,
         },
         avatar: {
             type: String,// cloudanery url
@@ -166,11 +165,8 @@ const customerSchema = new Schema(
             default: 0,
           },
         creditAllowed:{
-            type: String,
-            enum: {
-                values: ["Yes", "No"],
-                message: '{VALUE} is not supported gender'
-              }
+            type: Boolean,
+            defalt: false,
         },
         creditLimit:{
             type: Number,
@@ -231,16 +227,16 @@ customerSchema.methods.validatePassword = async function (passwordInterByUser){
 }
 
 customerSchema.methods.generateAccessToken = function () {
-  return jwt.sign(
-    {
-      _id: this._id,
-      email: this.email,
-      username: this.username,
-    },
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
-  );
-};
+    return jwt.sign(
+      {
+        _id: this._id,
+        email: this.email,
+        mobileNumber: this.mobileNumber,
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
+    );
+  };
 
 customerSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
@@ -251,10 +247,6 @@ customerSchema.methods.generateRefreshToken = function () {
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY },
   );
 };
-
-/**
- * @description Method responsible for generating tokens for email verification,  reset etc.
- */
 
 customerSchema.methods.generateTemporaryToken = function () {
     // This token should be client facing
