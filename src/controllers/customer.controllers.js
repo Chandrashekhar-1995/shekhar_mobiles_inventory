@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import ExcelJS from "exceljs";
 import xlsx from "xlsx";
 import path, { dirname } from "path";
@@ -150,12 +149,6 @@ const updateCustomer = asyncHandler(async (req, res, next) => {
       if (existingWithEmail) {
           throw new ApiError(400, "Email already in use by another customer");
       }
-  }
-
-  // Handle password update separately if needed
-  if (updateData.password) {
-      const salt = await bcrypt.genSalt(10);
-      updateData.password = await bcrypt.hash(updateData.password, salt);
   }
 
   // Perform the update

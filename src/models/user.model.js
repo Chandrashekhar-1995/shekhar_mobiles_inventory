@@ -44,6 +44,10 @@ const userSchema = new Schema(
                 message: (props) => `${props.value} is not a valid mobile number!`,
             },
         },
+        password: {
+            type: String,
+            required: [true, " Password is required"],
+        },
         address: {
             type: String,
             required: [true, "Address is required"],
@@ -64,6 +68,11 @@ const userSchema = new Schema(
             type: Number,
             default:274207,
         },
+        country:{
+            type: String,
+            max:[100, 'Maximum 100 chareters allowed'],
+            default:"India",
+        },
         gender:{
             type:String,
             enum: {
@@ -82,29 +91,16 @@ const userSchema = new Schema(
             type: String,
             max:[500, 'Maximum 500 chareters allowed'],
         },
-        password: {
-            type: String,
-            required: [true, " Password is required"],
-        },
-        refreshToken: {
-            type: String,
-        },
         joiningDate:{
             type: Date,
-            required: false,
-            get: (value) => {
-                if (!value) return null;
-                const date = new Date(value);
-                const day = String(date.getUTCDate()).padStart(2, "0");
-                const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-                const year = date.getUTCFullYear();
-                return `${day}/${month}/${year}`;
-            },
         },
         referredBy:{
             type:String,
             max:[50, 'Maximum 50 chareters allowed'],
         }, 
+        refreshToken: {
+            type: String,
+        },
         designation:{
             type:String,
             enum: {
@@ -119,6 +115,9 @@ const userSchema = new Schema(
                 values: ["sales", "marketing", "finance", "human_resource", "administration", "accounts"],
                 message: '{VALUE} Department not found'
               }
+        },
+        panNo:{
+            type:String,
         },
         emergencyContactPerson:{
             type:String,
