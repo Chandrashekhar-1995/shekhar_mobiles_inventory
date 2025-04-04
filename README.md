@@ -33,3 +33,4 @@
 - create search customer api
 - add authorization
 - create total customer route api (CRUD)
+- create total account route api (CRUD)
