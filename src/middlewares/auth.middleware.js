@@ -187,20 +187,11 @@ const roleBasedAuth = (allowedRoles = []) => {
                 throw new ApiError(401, "Unauthorized: Please login first");
             }
 
-            const user = await User.findById(req.user._id) || 
-                         await Customer.findById(req.user._id);
-
-            if (!user) {
-                throw new ApiError(404, "User not found. Please login first");
-            }
-
             if (!allowedRoles.includes(user.designation)) {
                 throw new ApiError(403, "Access denied"
                     // `Forbidden: Required roles - ${allowedRoles.join(", ")}`
                 );
             }
-
-            req.user = user;
             next();
         } catch (error) {
             next(error);

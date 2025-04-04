@@ -1,10 +1,11 @@
 import express from "express";
 import { isLoggedIn } from "../middlewares/auth.middleware.js";
+import { deleteMyProfile } from "../controllers/profile.controllers.js";
 
 const profileRouter = express.Router();
 
 
-customerRouter.get("/", isLoggedIn,  searchCustomers);
+profileRouter.delete("/delete", isLoggedIn, deleteMyProfile);
 
 
 export default profileRouter;
@@ -14,7 +15,6 @@ export default profileRouter;
 // const bcrypt = require("bcrypt");
 // const fs = require("fs");
 // const xlsx = require("xlsx");
-// const ExcelJS = require("exceljs");
 // const path = require("path");
 // const { authenticateUser, authorizeRoles, authenticateLogin, CheckExistingUserOrCustomer } = require("../middlewares/auth.middleware");
 // const findUserOrCustomer = require('../utils/dbHelpers');

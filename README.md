@@ -32,3 +32,4 @@
 - bug fix and create api for create user
 - create search customer api
 - add authorization
+- create total customer route api (CRUD)
