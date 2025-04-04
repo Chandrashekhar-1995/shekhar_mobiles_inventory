@@ -35,3 +35,4 @@
 - create total customer route api (CRUD)
 - create total account route api (CRUD)
 - create total brand route api (CRUD)
+- create total category route api (CRUD)
