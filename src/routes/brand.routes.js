@@ -1,42 +1,17 @@
-const express = require("express");
-const Brand = require("../models/Brand.model");
-const { authenticateUser } = require("../middlewares/auth.middleware");
-const ApiResponse = require("../utils/ApiResponse");
-const ApiError = require("../utils/ApiError");
+import express from "express";
+import { isAdmin, isLoggedIn, isUser } from "../middlewares/auth.middleware.js";
+import { createBrand, fetchAllBrand, fetchBrandByID, searchBrand, updateBrand, deleteBrand } from "../controllers/brand.controllers.js";
 
 const brandRouter = express.Router();
 
-brandRouter.post("/brand/create", authenticateUser, async (req, res, next) => {
-    const { brandName } = req.body;
 
-    try {
-        if (!brandName) {
-            throw new ApiError(400, "Brand name is required.");
-        }
+// create account
+brandRouter.post("/create", isLoggedIn, isAdmin, createBrand );
+brandRouter.get("/all", isLoggedIn, isUser, fetchAllBrand);
+brandRouter.get("/:id", isLoggedIn, isUser, fetchBrandByID );
+brandRouter.get("/", isLoggedIn, isUser, searchBrand);
+brandRouter.put("/:id", isLoggedIn, isUser, updateBrand );
+brandRouter.delete("/:id", isLoggedIn, isAdmin, deleteBrand );
 
-        // Check if the brand already exists
-        const existingBrand = await Brand.findOne({ brandName });
-        if (existingBrand) {
-            throw new ApiError(409, "Brand already exists.");
-        }
 
-        // Create the brand
-        const brand = await Brand.create({ brandName });
-
-        res.status(201).json(new ApiResponse(201, brand, "Brand created successfully."));
-    } catch (err) {
-        next(err);
-    }
-});
-
-brandRouter.get("/brand/all", authenticateUser, async (req, res, next) => {
-
-    try {
-        const brand = await Brand.find();
-        res.status(200).json(new ApiResponse(200, brand, "All brand fetched successfully."));
-    } catch (err) {
-        next(err);
-    }
-});
-
-module.exports = brandRouter;
+export default brandRouter;

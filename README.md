@@ -34,3 +34,4 @@
 - add authorization
 - create total customer route api (CRUD)
 - create total account route api (CRUD)
+- create total brand route api (CRUD)
