@@ -83,6 +83,10 @@ const fetchMobileByID = asyncHandler( async (req, res, next) =>{
     const {id} = req.params;
     try {
         const mobile = await Mobile.findById(id);
+          if (!mobile) {
+              throw new ApiError(404, "Mobile not found, please select a correct mobile");
+          }
+          
         res.status(200).json(new ApiResponse(200, mobile, "Mobile Fetched"));
     } catch (error) {
         next(error);
@@ -109,7 +113,7 @@ const searchMobile = asyncHandler( async (req, res, next) =>{
               
             }).limit(20);
 
-        if (mobiles.length < 0) {
+        if (!mobiles) {
             throw new ApiError(400, "No mobile found" );
           }
 

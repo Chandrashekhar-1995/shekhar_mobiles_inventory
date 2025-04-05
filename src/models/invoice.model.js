@@ -130,7 +130,7 @@ const invoiceSchema = new Schema(
             type:String,
             enum:["paid", "unpaid", "partially_paid"],
             required:true,
-            default:"Unpaid"
+            default:"paid"
         },
         soldBy: {
             type: mongoose.Schema.Types.ObjectId,

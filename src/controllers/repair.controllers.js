@@ -8,11 +8,11 @@ import { ApiError } from "../utils/ApiError.js";
 
 
 // Generate Repair invoice number
-const generateRepairInvoiceNumber = asyncHandler( async () => {
+const generateRepairInvoiceNumber = async () => {
     const lastRepairInvoice = await Repair.findOne().sort({ createdAt: -1 });
     const lastNumber = lastRepairInvoice ? parseInt(lastRepairInvoice.repairInvoiceNumber.split("-")[1]) : 0;
     return `REP-${(lastNumber + 1).toString().padStart(4, "0")}`;
-});
+};
 
 // Endpoint to fetch the last Repair invoice
 const fetchLastRepairInvoice = asyncHandler( async (req, res, next) =>{
@@ -125,7 +125,7 @@ const createRepairInvoice = asyncHandler(async (req, res, next) => {
         // Update account balance (credit)
         account.balance = Number(account.balance) + Number(receivedAmount || advanceAmount);
         account.transactions.push({
-            type: "Credit",
+            type: "credit",
             amount: receivedAmount || advanceAmount,
             description: "Repair invoice payment",
             date: paymentDate,

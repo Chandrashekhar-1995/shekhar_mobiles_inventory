@@ -8,11 +8,11 @@ import { ApiError } from "../utils/ApiError.js";
 
 
 // Generate invoice number
-const generateInvoiceNumber = asyncHandler( async () => {
+const generateInvoiceNumber = async () => {
     const lastInvoice = await Invoice.findOne().sort({ createdAt: -1 });
     const lastNumber = lastInvoice ? parseInt(lastInvoice.invoiceNumber.split("-")[1]) : 0;
     return `INV-${(lastNumber + 1).toString().padStart(4, "0")}`;
-});
+};
 
 // Endpoint to fetch the last invoice
 const fetchLastInvoice = asyncHandler( async (req, res, next) =>{
@@ -62,7 +62,7 @@ const createInvoice = asyncHandler( async (req, res, next) => {
             throw new ApiError(400, "Item details are required.");
         }     
 
-        const finalCustomerId = billTo === "Cash" ? "6790a5b3d50038409a777e3d" : customerId;
+        const finalCustomerId = billTo === "Cash" ? process.env.CASH_ACCOUNT_ID : customerId;
         const customer = await Customer.findById(finalCustomerId);
         if (!customer) {
             throw new ApiError(404, "Customer not found.");
@@ -104,10 +104,10 @@ const createInvoice = asyncHandler( async (req, res, next) => {
         newInvoice.receivedAmount = receivedAmount;
         newInvoice.dueAmount = newInvoice.totalPayableAmount - receivedAmount;
         newInvoice.status = newInvoice.dueAmount === 0 
-            ? "Paid" 
+            ? "paid" 
             : receivedAmount > 0 
-                ? "Partially Paid" 
-                : "Unpaid";
+                ? "partially_paid" 
+                : "unpaid";
 
         // Save the invoice
         await newInvoice.save();
@@ -115,7 +115,7 @@ const createInvoice = asyncHandler( async (req, res, next) => {
         // Update account balance (credit)
         account.balance = Number(account.balance) + Number(receivedAmount);
         account.transactions.push({
-            type: type ? type : "Credit",
+            type: type ? type : "credit",
             amount:receivedAmount,
             description:"",
             date:paymentDate,

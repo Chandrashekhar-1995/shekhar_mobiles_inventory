@@ -2,13 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const repairSchema = new Schema(
     {
-        invoiceType:{
-            type:String,
-            enum:{
-                values:["non_gst", "gst", "bill_of_supply"],
-                message: '{VALUE} is not supported invoice type'
-            },
-            default:"non_gst"
+        invoiceType: {
+            type: String,
+            enum: ["non_gst", "gst", "bill_of_supply"],
+            default: "non_gst"
         },
         repairInvoiceNumber: {
             type: String,
@@ -54,13 +51,10 @@ const repairSchema = new Schema(
             type: String,
         },
         repairing:[{
-            type:{
-            repairType:String,
-            enum:{
-                values:["mobile", "lcd", "pc_laptop", "others"],
-                message: '{VALUE} is not supported invoice type'
-            },
-            default:"mobile"
+            type: {
+                type: String,
+                enum: ["mobile", "lcd", "pc_laptop", "others"],
+                default: "mobile"
             },
             mobile:[{
                 mobile: {
