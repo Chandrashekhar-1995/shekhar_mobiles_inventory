@@ -11,7 +11,21 @@ const generatePurchaseInvoiceNumber = async () => {
     return `PINV-${(lastNumber + 1).toString().padStart(4, "0")}`;
 };
 
-const createPurchaseInvoice = async (req, res, next) => {
+
+const fetchLastPurchaseInvoice = asyncHandler( async (req, res, next) => {
+    try {
+        const lastPurchaseInvoice = await PurchaseInvoice.findOne().sort({ createdAt: -1 });
+        if (lastPurchaseInvoice) {
+            res.status(200).json(new ApiResponse(200, { lastPurchaseInvoice }, "Last purchase invoice fetched successfully."));
+        } else {
+            res.status(404).json({ message: 'No purchase invoices found' });
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+const createPurchaseInvoice = asyncHandler( async (req, res, next) => {
     try {
         const {
             invoiceType,
@@ -115,25 +129,13 @@ const createPurchaseInvoice = async (req, res, next) => {
         await newPurchaseInvoice.save();
 
         res.status(201).json(new ApiResponse(201, { newPurchaseInvoice }, "Purchase invoice created successfully."));
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
-};
+});
 
-const lastPurchaseInvoiceFetch = async (req, res, next) => {
-    try {
-        const lastPurchaseInvoice = await PurchaseInvoice.findOne().sort({ createdAt: -1 });
-        if (lastPurchaseInvoice) {
-            res.status(200).json(new ApiResponse(200, { lastPurchaseInvoice }, "Last purchase invoice fetched successfully."));
-        } else {
-            res.status(404).json({ message: 'No purchase invoices found' });
-        }
-    } catch (err) {
-        next(err);
-    }
-};
 
-const allPurchaseInvoiceFetch = async (req, res, next) => {
+const fetchAllPurchaseInvoice = asyncHandler( async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -146,12 +148,12 @@ const allPurchaseInvoiceFetch = async (req, res, next) => {
         } else {
             res.status(404).json({ message: 'No purchase invoices found' });
         }
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
-};
+});
 
-const purchaseInvoiceFetchById = async (req, res, next) => {
+const fetchPurchaseInvoiceByID = asyncHandler( async (req, res, next) => {
     try {
         const purchaseInvoice = await PurchaseInvoice.findById(req.params.id);
         if (purchaseInvoice) {
@@ -159,28 +161,88 @@ const purchaseInvoiceFetchById = async (req, res, next) => {
         } else {
             res.status(404).json({ message: 'No purchase invoice found' });
         }
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
-};
+});
 
-const updatePurchaseInvoice = async (req, res, next) => {
+
+const searchPurchaseInvoice = asyncHandler( async (req, res, next) =>{
     try {
+        const { search } = req.query;
+        if (!search) {
+                throw new ApiError(400, "Search Query is required." );
+              }
+        
+        // Case-insensitive search for matching names
+        const invoices = await PurchaseInvoice.find({
+            $or: [
+                { invoiceNumber: { $regex: search, $options: "i" }, }, 
+                { supplierName:{ $regex: search, $options: "i" } },
+                { mobileNumber:{ $regex: search, $options: "i" } }
+            ],
+              
+            }).limit(20);
+
+        if (invoices.length < 0) {
+            throw new ApiError(400, "No invoice found" );
+          }
+
+        res.status(200).json(new ApiResponse(200, invoices, "Invoices Fetched"));
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+const updatePurchaseInvoice = asyncHandler( async (req, res, next) => {
+    try {
+
+        const { id } = req.params;
+        const updateData = req.body;
+        
+        const invoice = await PurchaseInvoice.findById(id);
+        if (!invoice) {
+            throw new ApiError(404, "Invoice not found.");
+        }
+
         const updatedPurchaseInvoice = await PurchaseInvoice.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
+            id,
+            { $set: updateData },
+            { new: true, runValidators: true }
         );
         res.status(200).json(new ApiResponse(200, { updatedPurchaseInvoice }, "Purchase invoice updated successfully."));
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
-};
+});
 
-module.exports = {
+
+const deletePurchaseInvoice = asyncHandler( async (req, res, next) =>{
+    try {
+        const { id } = req.params;
+
+        const deletedInvoice = await PurchaseInvoice.findByIdAndDelete(id);
+
+        if (!deletedInvoice) {
+                throw new ApiError(404, "Invoice not found, please select a correct invoice");
+            }
+        
+        res.status(200).json(
+            new ApiResponse(200, null, "Invoice deleted successfully")
+          );
+    } catch (error) {
+        next(error);
+    }
+});
+
+export {
+    fetchLastPurchaseInvoice,
     createPurchaseInvoice,
-    lastPurchaseInvoiceFetch,
-    allPurchaseInvoiceFetch,
-    purchaseInvoiceFetchById,
-    updatePurchaseInvoice
+    fetchAllPurchaseInvoice,
+    fetchPurchaseInvoiceByID, 
+    searchPurchaseInvoice, 
+    updatePurchaseInvoice, 
+    deletePurchaseInvoice,
 };

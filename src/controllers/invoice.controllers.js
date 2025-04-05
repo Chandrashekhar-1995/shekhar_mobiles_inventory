@@ -26,8 +26,8 @@ const fetchLastInvoice = asyncHandler( async (req, res, next) =>{
           } else {
             res.status(404).json({ message: 'No invoices found' });
           }
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
 });
 
@@ -144,8 +144,8 @@ const createInvoice = asyncHandler( async (req, res, next) => {
         await req.user.save();
 
         res.status(201).json(new ApiResponse(201, { newInvoice }, "Invoice created successfully."));
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
 });
 
@@ -166,8 +166,8 @@ const fetchAllInvoice = asyncHandler( async (req, res, next) =>{
           } else {
             res.status(404).json({ message: 'No invoices found' });
           }
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
 });
 
@@ -182,8 +182,8 @@ const fetchInvoiceByID = asyncHandler( async (req, res, next) =>{
           } else {
             res.status(404).json({ message: 'No invoices found' });
           }
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        next(error);
     }
 });
 
