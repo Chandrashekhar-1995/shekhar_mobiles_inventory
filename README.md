@@ -38,3 +38,4 @@
 - create total category route api (CRUD)
 - create total user route api (CRUD)
 - create total product route api (CRUD)
+- create all mobile route api (CRUD)

@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const mobileSchema = new Schema(
     {
-        MobileType:{
+        mobileType:{
             type:String,
             enum:{
                 values:["new", "second_hand", "repair"],

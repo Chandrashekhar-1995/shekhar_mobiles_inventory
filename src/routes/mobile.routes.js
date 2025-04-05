@@ -1,9 +1,14 @@
-const express = require("express");
-const mobileRouter = express.Router();
-const { authenticateUser } = require("../middlewares/auth.middleware");
-const { createMobile } = require("../controllers/mobile.controllers");
+import { Router } from "express";
+import { isLoggedIn, isUser, isAdmin } from "../middlewares/auth.middleware.js";
+import {createMobile, searchMobile, fetchAllMobile, fetchMobileByID, updateMobile, deleteMobile,  } from "../controllers/mobile.controllers.js";
 
+const mobileRouter = Router();
 
-mobileRouter.post("/create", authenticateUser, createMobile);
+mobileRouter.post("/create", isLoggedIn, isAdmin, createMobile);
+mobileRouter.get("/all", isLoggedIn, isUser, fetchAllMobile);
+mobileRouter.get("/:id", isLoggedIn, isUser, fetchMobileByID );
+mobileRouter.get("/", isLoggedIn, isUser, searchMobile);
+mobileRouter.put("/:id", isLoggedIn, isUser, updateMobile );
+mobileRouter.delete("/:id", isLoggedIn, isAdmin, deleteMobile );
 
-module.exports = mobileRouter;
+export default mobileRouter; 

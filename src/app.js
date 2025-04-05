@@ -24,9 +24,9 @@ import accountRouter from "./routes/account.routes.js";
 import brandRouter from "./routes/brand.routes.js";
 import categoryRouter from "./routes/category.routes.js";
 import productRouter from "./routes/product.routes.js";
+import mobileRouter from "./routes/mobile.routes.js";
 // const invoiceRouter = require("./routes/invoice.routes");
 // const purchaseInvoiceRouter = require("./routes/purchaseInvoice.routes");
-// const mobileRouter = require("./routes/mobile.routes");
 import {errorHandler} from "./middlewares/errorHandler.middleware.js";
 
 
@@ -39,9 +39,9 @@ app.use("/api/v1/account", accountRouter );
 app.use("/api/v1/brand", brandRouter );
 app.use("/api/v1/category", categoryRouter );
 app.use("/api/v1/product", productRouter );
+app.use("/api/v1/mobile", mobileRouter );
 // app.use("/api/v1/invoice/", invoiceRouter );
 // app.use("/api/v1/purchase-invoice/", purchaseInvoiceRouter);
-// app.use("/api/v1/mobile", mobileRouter );
 
 // Error Handler Middleware (must be after all routes)
 app.use(errorHandler);
