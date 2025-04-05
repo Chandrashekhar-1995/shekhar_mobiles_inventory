@@ -8,7 +8,7 @@ const invoiceSchema = new Schema(
                 values:["non_gst", "gst", "bill_of_supply"],
                 message: '{VALUE} is not supported invoice type'
             },
-            default:"Non GST"
+            default:"non_gst"
         },
         invoiceNumber: {
             type: String,
@@ -29,9 +29,9 @@ const invoiceSchema = new Schema(
         },
         billTo: {
             type: String,
-            enum: ["Cash", "Customer"],
+            enum: ["cash", "customer"],
             required: true,
-            default:"Cash"
+            default:"cash"
         },
         customer: {
             type: mongoose.Schema.Types.ObjectId,

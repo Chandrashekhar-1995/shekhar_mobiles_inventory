@@ -1,17 +1,16 @@
-const express = require("express");
-const invoiceRouter = express.Router();
-const { authenticateUser } = require("../middlewares/auth.middleware");
-const {createInvoice, lastInvoiceFetch, allInvoiceFetch, invoiceFetchById, updateInvoice } = require("../controllers/invoice.controllers");
+import { Router } from "express";
+import { isLoggedIn, isUser, isAdmin } from "../middlewares/auth.middleware.js";
+import { createRepairInvoice, deleteRepairInvoice, fetchAllRepairInvoice, fetchLastRepairInvoice, fetchRepairInvoiceByID, searchRepairInvoice, updateRepairInvoice } from "../controllers/repair.controllers.js";
+
+const repairRouter = Router();
+
+repairRouter.get("/last-repair", isLoggedIn, isAdmin, fetchLastRepairInvoice);
+repairRouter.post("/create", isLoggedIn, isAdmin, createRepairInvoice);
+repairRouter.get("/all", isLoggedIn, isUser, fetchAllRepairInvoice);
+repairRouter.get("/:id", isLoggedIn, isUser, fetchRepairInvoiceByID );
+repairRouter.get("/", isLoggedIn, isUser, searchRepairInvoice);
+repairRouter.put("/:id", isLoggedIn, isUser, updateRepairInvoice );
+repairRouter.delete("/:id", isLoggedIn, isAdmin, deleteRepairInvoice );
 
 
-invoiceRouter.post("/create", authenticateUser, createInvoice);
-// Endpoint to fetch the last invoice
-invoiceRouter.get("/last-invoice", lastInvoiceFetch );
-
-invoiceRouter.get("/all-invoice", allInvoiceFetch );
-invoiceRouter.get("/:id", invoiceFetchById );
-invoiceRouter.patch("/:id", authenticateUser, updateInvoice );
-
-
-
-module.exports = invoiceRouter;
+export default repairRouter; 

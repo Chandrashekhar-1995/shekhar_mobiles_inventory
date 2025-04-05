@@ -5,10 +5,10 @@ const repairSchema = new Schema(
         invoiceType:{
             type:String,
             enum:{
-                values:["Non GST", "GST", "Bill of Supply"],
+                values:["non_gst", "gst", "bill_of_supply"],
                 message: '{VALUE} is not supported invoice type'
             },
-            default:"Non GST"
+            default:"non_gst"
         },
         repairInvoiceNumber: {
             type: String,
@@ -29,7 +29,6 @@ const repairSchema = new Schema(
         }],
         deliveryDate: {
             type: Date,
-            default: Date.today,
         },
         placeOfSupply:{
             type: String,
@@ -37,9 +36,9 @@ const repairSchema = new Schema(
         },
         billTo: {
             type: String,
-            enum: ["Cash", "Customer"],
+            enum: ["cash", "customer"],
             required: true,
-            default:"Cash"
+            default:"cash"
         },
         customer: {
             type: mongoose.Schema.Types.ObjectId,
@@ -136,10 +135,6 @@ const repairSchema = new Schema(
             type: Number,// jo bata ke book kiye hai
             required: true,
         },
-        advanceAmount: {
-            type: Number,
-            required: true,
-        },
         totalAmount: {
             type: Number,
             required: true,
@@ -147,6 +142,10 @@ const repairSchema = new Schema(
         discountAmount: {
             type: Number,
             default: 0,
+        },
+        advanceAmount: {
+            type: Number,
+            required: true,
         },
         totalPayableAmount: {
             type: Number,
@@ -174,19 +173,23 @@ const repairSchema = new Schema(
         dueAmount:{
             type:Number
         },
-        invoiceStatus:{
+        status:{
             type:String,
-            enum:["Paid", "Unpaid", "Partially Paid"],
+            enum:["paid", "unpaid", "partially_paid"],
             required:true,
             default:"Unpaid"
+        },
+        bookBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
         },
         repairStatus:{
             type:String,
             enum:["in_progress", "repaire_done", "delivered", "return"],
             required:true,
-            default:"In Progress"
+            default:"in_progress"
         },
-        bookBy: {
+        repairStatusUnder: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
         },
