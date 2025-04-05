@@ -92,6 +92,18 @@ const createCustomer = asyncHandler(async (req, res, next) => {
         );
 });
 
+// fetch all customer
+const fetchAllCustomer = asyncHandler( async (req, res, next) =>{
+    try {
+        const allCustomer = await Customer.find();
+        res.status(201).json(new ApiResponse(200, allCustomer, "All brand fetched successfully."));
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+
 // Fetch customer by id
 const fetchCustomerByID = asyncHandler( async (req, res, next) => {
   const {id} = req.params;
@@ -344,6 +356,7 @@ const bulkUploadCustomer = asyncHandler( async (req, res, next) =>{
   
   export { 
     createCustomer,
+    fetchAllCustomer,
     fetchCustomerByID,
     searchCustomers,
     updateCustomer,

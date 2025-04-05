@@ -5,8 +5,8 @@ const productSchema = new Schema(
         type: {
             type: String,
             required: true,
-            enum: ["Product", "Service"],
-            default: "Product",
+            enum: ["product", "eervice"],
+            default: "product",
         },
         productName: { 
             type: String,
@@ -59,7 +59,7 @@ const productSchema = new Schema(
             type: String,
             required: true,
             enum: ["unt", "pcs", "nos", "mtr", "box"],
-            default: "PCS",
+            default: "pcs",
         },
         hsnCode: {
             type: String,
@@ -104,7 +104,6 @@ const productSchema = new Schema(
                 ref: "PurchaseInvoice",
             },
         ],
-
         printDescription: {
             type: Boolean,
             default: true,

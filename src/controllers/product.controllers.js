@@ -1,3 +1,8 @@
+import ExcelJS from "exceljs";
+import xlsx from "xlsx";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
 import { Product } from "../models/product.model.js";
 import { Brand } from "../models/brand.model.js";
 import { Category } from "../models/category.model.js";
@@ -5,9 +10,12 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 // Create Product
-const createProduct = async (req, res, next) => {
+const createProduct = asyncHandler( async (req, res, next) => {
   const {
       productName,
       itemCode,
@@ -112,13 +120,37 @@ const createProduct = async (req, res, next) => {
       await product.save();
 
       res.status(201).json(new ApiResponse(201, product, "Product created successfully."));
-  } catch (err) {
-      next(err);
+  } catch (error) {
+      next(error);
   }
-};
+});
+
+// fetch all product
+const fetchAllProduct = asyncHandler( async (req, res, next) =>{
+    try {
+        const allProduct = await Product.find();
+        res.status(201).json(new ApiResponse(200, allProduct, "All product fetched successfully."));
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Fetch product by id
+const fetchProductByID = asyncHandler( async (req, res, next) => {
+  const {id} = req.params;
+  try {
+    const product = await Product.findById(id);
+    res.status(200).json(new ApiResponse(200, product, "Product Fetched"));
+    
+  } catch (error) {
+    next(error)
+  }
+});
+
 
 // Search Product by Name or code
-const searcProducts = async (req, res, next) => {
+const searcProduct = asyncHandler(async (req, res, next) => {
   try {
     const { search } = req.query;
 
@@ -136,10 +168,77 @@ const searcProducts = async (req, res, next) => {
   } catch (err) {
     next(err);;
   }
-};
+});
+
+
+// Update Product by id
+const updateProduct = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const updateData = req.body;
+  // Find the product to update
+  const product = await Product.findById(id);
+  if (!product) {
+      throw new ApiError(404, "Product not found");
+  }
+
+  // Handle product name uniqueness checks
+  if (updateData.productName && updateData.productName !== product.productName) {
+      const existingProduct = await Product.findOne({ productName: updateData.productName });
+      if (existingProduct) {
+          throw new ApiError(400, "Product name already registered");
+      }
+  }
+
+   // Handle product code uniqueness checks
+   if (updateData.itemCode && updateData.itemCode !== product.itemCode) {
+    const existingProduct = await Product.findOne({ itemCode: updateData.itemCode });
+    if (existingProduct) {
+        throw new ApiError(400, "Product code already registered");
+        }
+    }
+
+
+    // TODO write logic for update brand, category and subcategory
+
+
+  // Perform the update
+  const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+  );
+
+  if (!updatedProduct) {
+      throw new ApiError(500, "Failed to update product");
+  }
+
+  res.status(200).json(
+      new ApiResponse(200, updatedProduct, "Product updated.")
+  );
+});
+
+
+// Delete Product by id
+const deleteProduct = asyncHandler( async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const deletedProduct = await Product.findByIdAndDelete(id);
+
+    if (!deletedProduct) {
+        throw new ApiError(404, "Product not found");
+    }
+
+    res.status(200).json(
+      new ApiResponse(200, null, "Product deleted successfully")
+  );
+  } catch (error) {
+      next(error)
+  }
+});
+
 
 // API to download product upload template
-const downloadTemplate = async (req, res, next) => {
+const downloadTemplate = asyncHandler( async (req, res, next) => {
     try {
         const headers = [
             { field: "productName", label: "Product Name *", required: true },
@@ -207,7 +306,7 @@ const downloadTemplate = async (req, res, next) => {
         });
         instructionSheet.getRow(1).height = 40;
 
-        const filePath = path.join(__dirname, "../uploads/product-template.xlsx");
+        const filePath = path.join(__dirname, "../../public/files/product-template.xlsx");
         await workbook.xlsx.writeFile(filePath);
 
         res.download(filePath, "product-template.xlsx", (err) => {
@@ -217,10 +316,10 @@ const downloadTemplate = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
+});
 
 // Bulk upload API
-const bulkUploadProduct =  async (req, res, next) => {
+const bulkUploadProduct = asyncHandler( async (req, res, next) => {
     try {
         if (!req.file) {
             throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
@@ -318,6 +417,15 @@ const bulkUploadProduct =  async (req, res, next) => {
         if (req.file && req.file.path) fs.unlinkSync(req.file.path);
         next(err);
     }
-};
+});
   
-module.exports = { searcProducts, createProduct, downloadTemplate, bulkUploadProduct }; 
+export {
+    createProduct, 
+    searcProduct, 
+    downloadTemplate, 
+    bulkUploadProduct,  
+    fetchAllProduct, 
+    fetchProductByID, 
+    updateProduct, 
+    deleteProduct,
+} 

@@ -94,6 +94,18 @@ const createUser = asyncHandler(async (req, res, next) => {
         );
 });
 
+// fetch all user
+const fetchAllUser = asyncHandler( async (req, res, next) =>{
+    try {
+        const allUsers = await User.find();
+        res.status(201).json(new ApiResponse(200, allUsers, "All users fetched successfully."));
+
+    } catch (error) {
+        next(error);
+    }
+});
+
+
 // Fetch user by id
 const fetchUserByID = asyncHandler( async (req, res, next) => {
   const {id} = req.params;
