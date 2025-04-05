@@ -143,7 +143,7 @@ const updateMobile = asyncHandler( async (req, res, next) =>{
           }
         
         res.status(200).json(
-              new ApiResponse(200, updatedBrand, "Mobile updated successfully")
+              new ApiResponse(200, updateMobile, "Mobile updated successfully")
           );
         
     } catch (error) {

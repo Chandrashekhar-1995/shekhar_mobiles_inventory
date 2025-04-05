@@ -8,14 +8,31 @@ import { ApiError } from "../utils/ApiError.js";
 
 
 // Generate invoice number
-const generateInvoiceNumber = async () => {
+const generateInvoiceNumber = asyncHandler( async () => {
     const lastInvoice = await Invoice.findOne().sort({ createdAt: -1 });
     const lastNumber = lastInvoice ? parseInt(lastInvoice.invoiceNumber.split("-")[1]) : 0;
     return `INV-${(lastNumber + 1).toString().padStart(4, "0")}`;
-};
+});
+
+// Endpoint to fetch the last invoice
+const fetchLastInvoice = asyncHandler( async (req, res, next) =>{
+    try {
+        const lastInvoice = await Invoice.findOne().sort({ createdAt: -1 });
+
+        if (lastInvoice) {
+            res.status(201).json(
+                new ApiResponse(201, { lastInvoice }, "Invoice created successfully.")
+            )
+          } else {
+            res.status(404).json({ message: 'No invoices found' });
+          }
+    } catch (err) {
+        next(err);
+    }
+});
 
 // Create Invoice
-const createInvoice = async (req, res, next) => {
+const createInvoice = asyncHandler( async (req, res, next) => {
     try {
         const {
             invoiceType,
@@ -130,28 +147,11 @@ const createInvoice = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
-};
+});
 
-
-// Endpoint to fetch the last invoice
-const lastInvoiceFetch = async (req, res, next) =>{
-    try {
-        const lastInvoice = await Invoice.findOne().sort({ createdAt: -1 });
-
-        if (lastInvoice) {
-            res.status(201).json(
-                new ApiResponse(201, { lastInvoice }, "Invoice created successfully.")
-            )
-          } else {
-            res.status(404).json({ message: 'No invoices found' });
-          }
-    } catch (err) {
-        next(err);
-    }
-};
 
 // Endpoint to fetch invoices
-const allInvoiceFetch = async (req, res, next) =>{
+const fetchAllInvoice = asyncHandler( async (req, res, next) =>{
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -169,10 +169,10 @@ const allInvoiceFetch = async (req, res, next) =>{
     } catch (err) {
         next(err);
     }
-};
+});
 
 // Endpoint to fetch invoice by id
-const invoiceFetchById = async (req, res, next) =>{
+const fetchInvoiceByID = asyncHandler( async (req, res, next) =>{
     try {        
         const invoice = await Invoice.findById(req.params.id);
         if (invoice) {
@@ -185,21 +185,96 @@ const invoiceFetchById = async (req, res, next) =>{
     } catch (err) {
         next(err);
     }
-};
+});
+
+// search invoice
+const searchInvoice = asyncHandler( async (req, res, next) =>{
+    try {
+        const { search } = req.query;
+        if (!search) {
+                throw new ApiError(400, "Search Query is required." );
+              }
+        
+        // Case-insensitive search for matching names
+        const invoices = await Invoice.find({
+            $or: [
+                { invoiceNumber: { $regex: search, $options: "i" }, }, 
+                { customerName:{ $regex: search, $options: "i" } },
+                { mobileNumber:{ $regex: search, $options: "i" } }, 
+                { billTo:{ $regex: search, $options: "i" } }
+            ],
+              
+            }).limit(20);
+
+        if (invoices.length < 0) {
+            throw new ApiError(400, "No invoice found" );
+          }
+
+        res.status(200).json(new ApiResponse(200, invoices, "Invoices Fetched"));
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 
 // update invoice by id
-const updateInvoice = async (req, res, next) =>{
-    try {        
+const updateInvoice = asyncHandler( async (req, res, next) =>{
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        const invoice = await Invoice.findById(id);
+          if (!invoice) {
+              throw new ApiError(404, "Invoice not found.");
+          }
+        
         const updatedInvoice = await Invoice.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
-        new ApiResponse(201, { updatedInvoice }, "Invoice fetched successfully.")
-    } catch (err) {
-        next(err);
+              id,
+              { $set: updateData },
+              { new: true, runValidators: true }
+          )
+        
+        if (!updatedInvoice) {
+              throw new ApiError(500, "Failed to update invoice");
+          }
+        
+        res.status(200).json(
+              new ApiResponse(200, updatedInvoice, "Invoice updated successfully")
+          );
+        
+    } catch (error) {
+        next(error);
     }
+});
+
+
+// delete invoice
+const deleteInvoice = asyncHandler( async (req, res, next) =>{
+    try {
+        const { id } = req.params;
+
+        const deletedInvoice = await Invoice.findByIdAndDelete(id);
+
+        if (!deletedInvoice) {
+                throw new ApiError(404, "Invoice not found, please select a correct invoice");
+            }
+        
+        res.status(200).json(
+            new ApiResponse(200, null, "Invoice deleted successfully")
+          );
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+export { 
+    fetchLastInvoice,
+    createInvoice, 
+    fetchAllInvoice, 
+    fetchInvoiceByID, 
+    searchInvoice, 
+    updateInvoice, 
+    deleteInvoice
 };
-
-
-export { createInvoice, lastInvoiceFetch, allInvoiceFetch, invoiceFetchById, updateInvoice};
