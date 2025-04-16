@@ -128,9 +128,9 @@ const customerSchema = new Schema(
         designation:{
             type: String,
             enum:{
-                values:["Customer", "Supplier"]
+                values:["customer", "supplier"]
             },
-            default:"Customer"
+            default:"customer"
         },
         refreshToken: {
             type: String,

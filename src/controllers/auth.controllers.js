@@ -99,6 +99,8 @@ const login = asyncHandler(async (req, res, next) => {
     
             user.refreshToken = refreshToken;
             await user.save()
+
+            const loginUser= await User.findById(user._id).select("-password -refreshToken");
     
             res.cookie("accessToken", accessToken, { 
                 httpOnly: true, 
@@ -115,7 +117,7 @@ const login = asyncHandler(async (req, res, next) => {
             res.status(200).json(
                 new ApiResponse(
                     200,
-                    user,
+                    loginUser,
                     "Login successfull."
                 )
             )
@@ -127,11 +129,21 @@ const login = asyncHandler(async (req, res, next) => {
 
 // Logout
 const logout = asyncHandler(async (req, res) => {
-    res.cookie("token", null, {
+    res.cookie("accessToken", null, {
         expires: new Date(Date.now())
-    })
+    });
 
-    res.send("Logout successfully");
+    res.cookie("refreshToken", null, {
+        expires: new Date(Date.now())
+    });
+
+    res.status(200).json(
+        new ApiResponse(
+            200,
+            {},
+            "Logout successfull."
+        )
+    );
 });
 
 

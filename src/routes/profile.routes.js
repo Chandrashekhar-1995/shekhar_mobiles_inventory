@@ -1,10 +1,11 @@
 import express from "express";
 import { isLoggedIn } from "../middlewares/auth.middleware.js";
-import { deleteMyProfile } from "../controllers/profile.controllers.js";
+import { deleteMyProfile, getMyProfile } from "../controllers/profile.controllers.js";
 
 const profileRouter = express.Router();
 
 
+profileRouter.get("/", isLoggedIn, getMyProfile);
 profileRouter.delete("/delete", isLoggedIn, deleteMyProfile);
 
 
@@ -215,19 +216,6 @@ export default profileRouter;
 //         res.status(201).json(
 //             new ApiResponse(201, createdCustomer, "Customer registered successfully.")
 //         );
-//     } catch (err) {
-//         next(err);
-//     }
-// });
-
-
-// // Get full profile (User or Customer)
-// profileRouter.get("/profile", authenticateLogin, async (req, res, next) => {
-
-//     try {
-//         // Respond with the profile details
-//         const user = req.user
-//         res.status(200).json(new ApiResponse(200, user, "Profile fetched successfully."));
 //     } catch (err) {
 //         next(err);
 //     }

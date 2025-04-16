@@ -107,7 +107,7 @@ const userSchema = new Schema(
                 values: ["relationship_manager","admin","marketing_executive", "manager", "accountant", "clerk", "peon", "office_boy", "receptionist", "trainee"],
                 message: '{VALUE} is not supported Designation'
               },
-              default:'Trainee',
+              default:'trainee',
         },
         department:{
             type:String,

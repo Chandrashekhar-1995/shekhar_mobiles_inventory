@@ -5,6 +5,17 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { findUserOrCustomer } from "../utils/dbHelpers.js";
 
+// get profile
+const getMyProfile = asyncHandler( async (req, res, next) => {
+  try {
+    const user = req.user
+    res.status(200).json(
+      new ApiResponse(200, user, "Profile fetched successfully"))
+  } catch (error) {
+    next(error)
+  }
+});
+
 
 // Delete my profile
 const deleteMyProfile = asyncHandler( async (req, res, next) => {
@@ -24,6 +35,8 @@ const deleteMyProfile = asyncHandler( async (req, res, next) => {
     }
   });
 
+
 export {
+    getMyProfile,
     deleteMyProfile,
   }
