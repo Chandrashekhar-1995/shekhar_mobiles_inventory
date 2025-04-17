@@ -7,6 +7,10 @@ const categorySchema = new Schema({
         trim: true,
         unique:true,
     },
+    gstRate: {
+        type: Number, // percentage
+        max: 90,
+    },
     subcategories: [
         {
             type: String,

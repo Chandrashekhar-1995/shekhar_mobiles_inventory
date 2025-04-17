@@ -65,10 +65,6 @@ const productSchema = new Schema(
             type: String,
             max: 250,
         },
-        gstRate: {
-            type: Number, // percentage
-            max: 90,
-        },
         saleDiscount: {
             type: Number, // percentage discount
             max: 90,

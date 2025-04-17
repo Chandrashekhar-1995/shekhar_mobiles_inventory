@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 
 const createCategory = asyncHandler( async (req, res, next) => {
-    const { categoryName, subcategories } = req.body;
+    const { categoryName, subcategories, gstRate } = req.body;
 
     try {
         // Validate input
@@ -22,6 +22,7 @@ const createCategory = asyncHandler( async (req, res, next) => {
         const category = new Category({
             categoryName,
             subcategories: subcategories || [], // Add subcategories if provided
+            gstRate,
         });
 
         await category.save();

@@ -9,7 +9,6 @@ const userRouter = Router();
 
 // Create User by Admin
 userRouter.post("/create", userRegistrationValidator(), validate, createUser);
-userRouter.post("/create", isLoggedIn, isAdmin, createUser);
 userRouter.get("/all", isLoggedIn, isUser, fetchAllUser);
 userRouter.get("/:id", isLoggedIn, isUser, fetchUserByID );
 userRouter.get("/", isLoggedIn, isUser, searchUser);

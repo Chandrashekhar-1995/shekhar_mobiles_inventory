@@ -47,7 +47,8 @@ const createCustomer = asyncHandler(async (req, res, next) => {
         
         const mobileStr = mobileNumber.toString()
         const plainPassword = generatePassword(name, mobileStr);
-        console.log("Generated password:", plainPassword); // For debugging
+
+        const creditAllowedBool =  typeof creditAllowed === "string" ? creditAllowed.toLowerCase() === "yes" : Boolean(creditAllowed);
 
         // Create new user
         const customer = new Customer({
@@ -62,7 +63,7 @@ const createCustomer = asyncHandler(async (req, res, next) => {
             country, 
             email, 
             avatar, 
-            gender, 
+            gender : gender?.toLowerCase(), 
             panNo, 
             gstin, 
             gstType, 
@@ -74,7 +75,7 @@ const createCustomer = asyncHandler(async (req, res, next) => {
             designation, 
             accountType, 
             balance:openingBalance, 
-            creditAllowed, 
+            creditAllowed: creditAllowedBool, 
             creditLimit, 
             refferedBy, 
             documentType, 
@@ -95,8 +96,8 @@ const createCustomer = asyncHandler(async (req, res, next) => {
 // fetch all customer
 const fetchAllCustomer = asyncHandler( async (req, res, next) =>{
     try {
-        const allCustomer = await Customer.find();
-        res.status(201).json(new ApiResponse(200, allCustomer, "All brand fetched successfully."));
+        const allCustomer = await Customer.find().select("-password -refreshToken");;
+        res.status(200).json(new ApiResponse(200, allCustomer, "All customers fetched successfully."));
 
     } catch (error) {
         next(error);
