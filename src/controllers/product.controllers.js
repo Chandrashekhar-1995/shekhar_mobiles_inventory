@@ -98,7 +98,7 @@ const createProduct = asyncHandler( async (req, res, next) => {
           salePrice,
           minSalePrice,
           mrp,
-          unit,
+          unit: unit?.toLowerCase(),
           stockQuantity: openingStock || 0,
           hsnCode,
           saleDiscount,

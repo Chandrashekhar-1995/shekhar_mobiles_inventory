@@ -135,11 +135,62 @@ const deleteCategory = asyncHandler( async (req, res, next) =>{
 });
 
 
+const addSubcategory = asyncHandler(async (req, res, next) => {
+    const { category, subcategories } = req.body;
+  
+  try {
+      // Validation
+      if (!category || !subcategories) {
+        throw new ApiError(400, "Category name and subcategories are required.");
+      }
+
+      console.log(category, subcategories);
+      
+    
+      // Ensure subcategories is an array
+      const subcategoryList = Array.isArray(subcategories)
+        ? subcategories
+        : [subcategories];
+    
+      const existingCategory = await Category.findOne({ categoryName: category });
+    
+      if (!existingCategory) {
+        throw new ApiError(404, "Category not found.");
+      }
+    
+      // Filter out already existing subcategories (case-insensitive match)
+      const existingSubsLower = existingCategory.subcategories.map((s) =>
+        s.toLowerCase()
+      );
+    
+      const newSubcategories = subcategoryList.filter(
+        (sub) => !existingSubsLower.includes(sub.toLowerCase())
+      );
+    
+      if (newSubcategories.length === 0) {
+        return res
+          .status(200)
+          .json(new ApiResponse(200, existingCategory, "No new subcategories to add."));
+      }
+    
+      existingCategory.subcategories.push(...newSubcategories);
+      await existingCategory.save();
+    
+      return res.status(200).json(
+        new ApiResponse(200, existingCategory, "Subcategory added successfully.")
+      );
+  } catch (error) {
+    next(error)
+  }
+  });
+
+
 export {
     createCategory,
     fetchAllCategory,
     fetchCategoryByID,
     searchCategory,
     updateCategory,
-    deleteCategory
+    deleteCategory,
+    addSubcategory,
 }
