@@ -81,7 +81,7 @@ const createInvoice = asyncHandler( async (req, res, next) => {
             date,
             dueDate,
             placeOfSupply,
-            billTo,
+            billTo : billTo.toLowerCase(),
             customer: finalCustomerId,
             customerName,
             mobileNumber,

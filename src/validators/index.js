@@ -30,14 +30,14 @@ const userRegistrationValidator = () => {
       .withMessage("not a valid address")
       .isLength({ max: 200 })
       .withMessage("not a valid address"),
-      body("password")
-      .trim()
-      .notEmpty()
-      .withMessage("Password is required")
-      .isLength({ min: 6 })
-      .withMessage("password should be at least 6 char")
-      .isLength({ max: 50 })
-      .withMessage("password cannot exceed 50 char"),
+      // body("password")
+      // .trim()
+      // .notEmpty()
+      // .withMessage("Password is required")
+      // .isLength({ min: 6 })
+      // .withMessage("password should be at least 6 char")
+      // .isLength({ max: 50 })
+      // .withMessage("password cannot exceed 50 char"),
     //   .isStrongPassword()
     //   .withMessage("not a strong password")
   ];

@@ -4,8 +4,8 @@ import { fetchLastInvoice, createInvoice, fetchAllInvoice, fetchInvoiceByID, sea
 
 const invoiceRouter = Router();
 
-invoiceRouter.get("/last-invoice", isLoggedIn, isAdmin, fetchLastInvoice);
-invoiceRouter.post("/create", isLoggedIn, isAdmin, createInvoice);
+invoiceRouter.get("/last-invoice", isLoggedIn, isUser, fetchLastInvoice);
+invoiceRouter.post("/create", isLoggedIn, isUser, createInvoice);
 invoiceRouter.get("/all", isLoggedIn, isUser, fetchAllInvoice);
 invoiceRouter.get("/:id", isLoggedIn, isUser, fetchInvoiceByID );
 invoiceRouter.get("/", isLoggedIn, isUser, searchInvoice);
