@@ -4,8 +4,8 @@ import { createRepairInvoice, deleteRepairInvoice, fetchAllRepairInvoice, fetchL
 
 const repairRouter = Router();
 
-repairRouter.get("/last-repair", isLoggedIn, isAdmin, fetchLastRepairInvoice);
-repairRouter.post("/create", isLoggedIn, isAdmin, createRepairInvoice);
+repairRouter.get("/last-repair", isLoggedIn, isUser, fetchLastRepairInvoice);
+repairRouter.post("/create", isLoggedIn, isUser, createRepairInvoice);
 repairRouter.get("/all", isLoggedIn, isUser, fetchAllRepairInvoice);
 repairRouter.get("/:id", isLoggedIn, isUser, fetchRepairInvoiceByID );
 repairRouter.get("/", isLoggedIn, isUser, searchRepairInvoice);

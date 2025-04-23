@@ -8,7 +8,7 @@ const mobileSchema = new Schema(
                 values:["new", "second_hand", "repair"],
                 message: '{VALUE} is not supported invoice type'
             },
-            default:"Repair"
+            default:"repair"
         },
         brand: {
             type: mongoose.Schema.Types.ObjectId,

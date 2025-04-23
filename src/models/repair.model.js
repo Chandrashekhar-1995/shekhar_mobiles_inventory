@@ -7,7 +7,7 @@ const repairSchema = new Schema(
             enum: ["non_gst", "gst", "bill_of_supply"],
             default: "non_gst"
         },
-        repairInvoiceNumber: {
+        repairNumber: {
             type: String,
             required: true,
             unique: true,
@@ -56,7 +56,7 @@ const repairSchema = new Schema(
                 enum: ["mobile", "lcd", "pc_laptop", "others"],
                 default: "mobile"
             },
-            mobile:[{
+            mobiles:[{
                 mobile: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Mobile",
@@ -67,7 +67,7 @@ const repairSchema = new Schema(
                     ref: "Brand",
                     required: true,
                 },
-                modelNo: {
+                modelNumber: {
                     type:String,
                 },
                 emeiNumber: {
@@ -85,45 +85,63 @@ const repairSchema = new Schema(
                 otherDetails: {
                     type:String,
                 },
-                fault:[{
-                    problem: {
+                repairDescription:{
+                    type:String,
+                }
+            }],
+            repairItem:{
+                type:String,
+            },
+            fault:[{
+                problem: {
+                    type:String,
+                },
+                sinceLong:{
+                    type:String
+                },
+                repairStatus: {
+                    type:String,
+                },
+                repairPrice:{
+                    type: Number
+                }
+            }],
+            usedItems: [
+                {
+                    item: {
+                        type: mongoose.Schema.Types.ObjectId,
+                        ref: "Product",
+                        required: true,
+                    },
+                    productName: {
                         type:String,
                     },
-                    sinceLong:{
-                        type:String
-                    },
-                    repairStatus: {
+                    itemCode: {
                         type:String,
                     },
-                }],
-                usedItems: [
-                    {
-                        item: {
-                            type: mongoose.Schema.Types.ObjectId,
-                            ref: "Product",
-                            required: true,
-                        },
-                        productName: {
-                            type:String,
-                        },
-                        quantity: {
-                            type: Number,
-                            required: true,
-                        },
-                        salePrice: {
-                            type: Number,
-                            required: true,
-                        },
-                        total: {
-                            type: Number,
-                            required: true,
-                        },
-                        itemDescription: {
-                            type: String,
-                        },
+                    unit: {
+                        type:String,
                     },
-                ],
-            }],  
+                    quantity: {
+                        type: Number,
+                        required: true,
+                    },
+                    mrp: {
+                        type: Number,
+                    },
+                    salePrice: {
+                        type: Number,
+                        required: true,
+                    },
+                    total: {
+                        type: Number,
+                        required: true,
+                    },
+                    itemDescription: {
+                        type: String,
+                    },
+                },
+            ], 
         }],
         expectRepairingAmount: {
             type: Number,// jo bata ke book kiye hai
@@ -171,7 +189,7 @@ const repairSchema = new Schema(
             type:String,
             enum:["paid", "unpaid", "partially_paid"],
             required:true,
-            default:"Unpaid"
+            default:"unpaid"
         },
         bookBy: {
             type: mongoose.Schema.Types.ObjectId,
@@ -179,11 +197,11 @@ const repairSchema = new Schema(
         },
         repairStatus:{
             type:String,
-            enum:["in_progress", "repaire_done", "delivered", "return"],
+            enum:["booked", "in_progress", "repaire_done", "delivered", "return"],
             required:true,
             default:"in_progress"
         },
-        repairStatusUnder: {
+        repairUnder: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
         },
