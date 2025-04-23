@@ -49,6 +49,9 @@ const mobileSchema = new Schema(
         description: {
             type: String,
         },
+        unit: {
+            type: String,
+        },
         warranty: {
             type: String,
         },

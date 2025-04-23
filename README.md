@@ -41,3 +41,4 @@
 - create all mobile route api (CRUD)
 - create all invoice route api (CRUD)
 - create all purchaseInvoice route api (CRUD)
+- create all modelNo route api (CRUD) with controller

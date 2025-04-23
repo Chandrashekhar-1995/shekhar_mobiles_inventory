@@ -29,6 +29,7 @@ import invoiceRouter from "./routes/invoice.routes.js";
 import purchaseInvoiceRouter from "./routes/purchaseInvoice.routes.js";
 import repairRouter from "./routes/repair.routes.js";
 import {errorHandler} from "./middlewares/errorHandler.middleware.js";
+import modelNoRouter from "./routes/modelNo.routes.js";
 
 
 app.use("/api/v1/healthcheck", healthCheckRouter );
@@ -38,6 +39,7 @@ app.use("/api/v1/customer", customerRouter );
 app.use("/api/v1/profile", profileRouter );
 app.use("/api/v1/account", accountRouter );
 app.use("/api/v1/brand", brandRouter );
+app.use("/api/v1/model", modelNoRouter );
 app.use("/api/v1/category", categoryRouter );
 app.use("/api/v1/product", productRouter );
 app.use("/api/v1/mobile", mobileRouter );

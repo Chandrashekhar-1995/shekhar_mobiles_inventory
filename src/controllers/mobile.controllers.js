@@ -22,6 +22,7 @@ const createMobile = asyncHandler( async (req, res, next) => {
             stockQuantity,
             description,
             warranty,
+            unit,
             printDescription,
             enableTracking,
             printEmeiNo,
@@ -52,6 +53,7 @@ const createMobile = asyncHandler( async (req, res, next) => {
             stockQuantity,  // opening quantity
             description,
             warranty,
+            unit:unit?.toLowerCase(),
             printDescription,
             enableTracking,
             printEmeiNo,
