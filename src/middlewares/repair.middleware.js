@@ -10,52 +10,94 @@ const processRepairing = async (repairing, invoiceId) => {
     const repairDetails = [];
 
     for (const repair of repairing) {
-        if (repair.type === "mobile") {
-            for (const mobileRepair of repair.mobile) {
-                // Process used items if any
-                if (mobileRepair.usedItems && mobileRepair.usedItems.length > 0) {
-                    for (const item of mobileRepair.usedItems) {
-                        if (!item.productName || !item.quantity || !item.salePrice) {
-                            throw new ApiError(400, "Item name, quantity, and sale price are required for each used item.");
+        const { type } = repair;
+
+        if (!type) throw new ApiError(400, "Repair type is required.");
+
+        if (type === "mobile") {
+            if (!repair.mobiles || repair.mobiles.length === 0) {
+                throw new ApiError(400, "Mobiles data is required for mobile repair.");
+            }
+
+            repair.repairItem = "";
+
+            // calculate amount from fault and usedItems
+            let repairTypeAmount = 0;
+
+            for (const mobile of repair.mobiles) {
+                if (repair.fault && repair.fault.length > 0) {
+                    for (const f of repair.fault) {
+                        repairTypeAmount += f.repairPrice || 0;
+                    }
+                }
+
+                if (repair.usedItems && repair.usedItems.length > 0) {
+                    for (const item of repair.usedItems) {
+                        if (!item.item || !item.quantity || !item.salePrice) {
+                            throw new ApiError(400, "Incomplete used item data.");
                         }
 
                         const product = await Product.findById(item.item);
-                        if (!product) {
-                            throw new ApiError(404, `Item with ID ${item.item} not found.`);
-                        }
+                        if (!product) throw new ApiError(404, `Product not found: ${item.item}`);
 
-                        // Calculate item total
                         const itemTotal = item.quantity * item.salePrice;
-                        totalAmount += itemTotal;
+                        repairTypeAmount += itemTotal;
 
-                        // Reduce stock quantity
+                        // Stock adjustments
                         product.stockQuantity -= item.quantity;
+                        product.saleHistory = product.saleHistory || [];
                         product.saleHistory.push(invoiceId);
                         await product.save();
                     }
                 }
             }
+
+            totalAmount += repairTypeAmount;
+            repairDetails.push(repair);
+        } else {
+            if (!repair.repairItem) {
+                throw new ApiError(400, "Repair item description is required for non-mobile repairs.");
+            }
+
+            repair.mobiles = [];
+
+            let repairTypeAmount = 0;
+
+            if (repair.fault && repair.fault.length > 0) {
+                for (const f of repair.fault) {
+                    repairTypeAmount += f.repairPrice || 0;
+                }
+            }
+
+            if (repair.usedItems && repair.usedItems.length > 0) {
+                for (const item of repair.usedItems) {
+                    if (!item.item || !item.quantity || !item.salePrice) {
+                        throw new ApiError(400, "Incomplete used item data.");
+                    }
+
+                    const product = await Product.findById(item.item);
+                    if (!product) throw new ApiError(404, `Product not found: ${item.item}`);
+
+                    const itemTotal = item.quantity * item.salePrice;
+                    repairTypeAmount += itemTotal;
+
+                    // Stock adjustments
+                    product.stockQuantity -= item.quantity;
+                    product.saleHistory = product.saleHistory || [];
+                    product.saleHistory.push(invoiceId);
+                    await product.save();
+                }
+            }
+
+            totalAmount += repairTypeAmount;
+            repairDetails.push(repair);
         }
     }
 
     return { repairDetails, totalAmount };
 };
 
-const validateRepairRequest = (req, res, next) => {
-    const { billTo, repairing, paymentMode, advanceAmount } = req.body;
-
-    if (!billTo || !repairing || !paymentMode || advanceAmount === undefined) {
-        throw new ApiError(400, "Missing required fields: billTo, repairing, paymentMode, or advanceAmount.");
-    }
-
-    if (!Array.isArray(repairing) || repairing.length === 0) {
-        throw new ApiError(400, "Repairing details must be a non-empty array.");
-    }
-
-    next();
-};
 
 export {
     processRepairing,
-    validateRepairRequest,
 };

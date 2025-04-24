@@ -20,8 +20,9 @@ const repairSchema = new Schema(
             date:{
                 type: Date,
             },
-            time:{
-                type: String, //2:00 am , 3:30am etc
+            time: {
+                type: String,
+                match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/  // Format: HH:MM
             }
         }],
         deliveryDate: {
@@ -60,18 +61,22 @@ const repairSchema = new Schema(
                 mobile: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Mobile",
-                    required: true,
                 },
-                brandName: {
+                brand: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Brand",
-                    required: true,
+                },
+                brandName: {
+                    type:String,
                 },
                 modelNumber: {
                     type:String,
                 },
                 emeiNumber: {
-                    type:String,
+                    type:Number,
+                },
+                emeiNumberSecond: {
+                    type:Number,
                 },
                 lockOrPassword: {
                     type:String,
@@ -85,9 +90,7 @@ const repairSchema = new Schema(
                 otherDetails: {
                     type:String,
                 },
-                repairDescription:{
-                    type:String,
-                }
+                
             }],
             repairItem:{
                 type:String,
@@ -104,6 +107,9 @@ const repairSchema = new Schema(
                 },
                 repairPrice:{
                     type: Number
+                },
+                repairDescription:{
+                    type:String,
                 }
             }],
             usedItems: [
@@ -199,7 +205,7 @@ const repairSchema = new Schema(
             type:String,
             enum:["booked", "in_progress", "repaire_done", "delivered", "return"],
             required:true,
-            default:"in_progress"
+            default:"booked"
         },
         repairUnder: {
             type: mongoose.Schema.Types.ObjectId,

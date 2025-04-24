@@ -33,11 +33,11 @@ const fetchLastRepairInvoice = asyncHandler( async (req, res, next) =>{
 
 
 // Create Repair Invoice
-const createRepairInvoice = asyncHandler(async (req, res, next) => {
+const createRepair = asyncHandler(async (req, res, next) => {
     try {
         const {
             invoiceType,
-            repairInvoiceNumber,
+            repairNumber, 
             bookingDate,
             expectRepairingTime,
             placeOfSupply,
@@ -67,7 +67,7 @@ const createRepairInvoice = asyncHandler(async (req, res, next) => {
             throw new ApiError(400, "Repair details are required.");
         }
 
-        const finalCustomerId = billTo === "cash" ? "6790a5b3d50038409a777e3d" : customerId;
+        const finalCustomerId = billTo === "cash" ? process.env.CASH_ACCOUNT_ID : customerId;
         const customer = await Customer.findById(finalCustomerId);
         if (!customer) {
             throw new ApiError(404, "Customer not found.");
@@ -79,9 +79,9 @@ const createRepairInvoice = asyncHandler(async (req, res, next) => {
         }
 
         // Create the Repair invoice
-        const newRepairInvoice = new Repair({
+        const newRepair = new Repair({
             invoiceType,
-            repairInvoiceNumber: repairInvoiceNumber ? repairInvoiceNumber : await generateRepairInvoiceNumber(),
+            repairNumber: repairNumber ? repairNumber : await generateRepairInvoiceNumber(),
             bookingDate,
             expectRepairingTime,
             placeOfSupply,
@@ -106,7 +106,7 @@ const createRepairInvoice = asyncHandler(async (req, res, next) => {
         });
 
         // Process repairing items and get total amount
-        const { repairDetails, totalAmount } = await processRepairing(repairing, newRepairInvoice._id);
+        const { repairDetails, totalAmount } = await processRepairing(repairing, newRepair._id);
 
         newRepairInvoice.repairing = repairDetails;
         newRepairInvoice.totalAmount = totalAmount;
@@ -283,7 +283,7 @@ const deleteRepairInvoice = asyncHandler( async (req, res, next) =>{
 
 export { 
     fetchLastRepairInvoice,
-    createRepairInvoice, 
+    createRepair, 
     fetchAllRepairInvoice, 
     fetchRepairInvoiceByID, 
     searchRepairInvoice, 

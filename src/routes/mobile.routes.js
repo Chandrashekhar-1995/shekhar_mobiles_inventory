@@ -4,7 +4,7 @@ import {createMobile, searchMobile, fetchAllMobile, fetchMobileByID, updateMobil
 
 const mobileRouter = Router();
 
-mobileRouter.post("/create", isLoggedIn, isAdmin, createMobile);
+mobileRouter.post("/create", isLoggedIn, isUser, createMobile);
 mobileRouter.get("/all", isLoggedIn, isUser, fetchAllMobile);
 mobileRouter.get("/:id", isLoggedIn, isUser, fetchMobileByID );
 mobileRouter.get("/", isLoggedIn, isUser, searchMobile);
