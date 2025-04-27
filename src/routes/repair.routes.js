@@ -1,16 +1,16 @@
 import { Router } from "express";
 import { isLoggedIn, isUser, isAdmin } from "../middlewares/auth.middleware.js";
-import { createRepair, deleteRepairInvoice, fetchAllRepairInvoice, fetchLastRepairInvoice, fetchRepairInvoiceByID, searchRepairInvoice, updateRepairInvoice } from "../controllers/repair.controllers.js";
+import { createRepair, deleteRepair, fetchAllRepair, fetchLastRepair, fetchRepairByID, searchRepair, updateRepair } from "../controllers/repair.controllers.js";
 
 const repairRouter = Router();
 
-repairRouter.get("/last-repair", isLoggedIn, isUser, fetchLastRepairInvoice);
+repairRouter.get("/last-repair", isLoggedIn, isUser, fetchLastRepair);
 repairRouter.post("/create", isLoggedIn, isUser, createRepair);
-repairRouter.get("/all", isLoggedIn, isUser, fetchAllRepairInvoice);
-repairRouter.get("/:id", isLoggedIn, isUser, fetchRepairInvoiceByID );
-repairRouter.get("/", isLoggedIn, isUser, searchRepairInvoice);
-repairRouter.put("/:id", isLoggedIn, isUser, updateRepairInvoice );
-repairRouter.delete("/:id", isLoggedIn, isAdmin, deleteRepairInvoice );
+repairRouter.get("/all", isLoggedIn, isUser, fetchAllRepair);
+repairRouter.get("/:id", isLoggedIn, isUser, fetchRepairByID );
+repairRouter.get("/", isLoggedIn, isUser, searchRepair);
+repairRouter.put("/:id", isLoggedIn, isUser, updateRepair );
+repairRouter.delete("/:id", isLoggedIn, isAdmin, deleteRepair );
 
 
 export default repairRouter; 

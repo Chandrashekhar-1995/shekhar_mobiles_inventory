@@ -2,11 +2,6 @@ import mongoose, { Schema } from "mongoose";
 
 const repairSchema = new Schema(
     {
-        invoiceType: {
-            type: String,
-            enum: ["non_gst", "gst", "bill_of_supply"],
-            default: "non_gst"
-        },
         repairNumber: {
             type: String,
             required: true,
@@ -16,21 +11,10 @@ const repairSchema = new Schema(
             type: Date,
             default: Date.today,
         },
-        expectDelivery: [{
+        expectDeliveryDate: {
             date:{
                 type: Date,
             },
-            time: {
-                type: String,
-                match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/  // Format: HH:MM
-            }
-        }],
-        deliveryDate: {
-            type: Date,
-        },
-        placeOfSupply:{
-            type: String,
-            default:"Uttar Pradesh",
         },
         billTo: {
             type: String,
@@ -104,8 +88,12 @@ const repairSchema = new Schema(
             repairPrice:{
                 type: Number
             },
+            expectedRepairingDate:{
+                type:Date
+            },
             expectedRepairingTime: {
-                type: Number,
+                type: String,
+                match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/  // Format: HH:MM
             },
             repairDescription:{
                 type:String,

@@ -33,7 +33,7 @@ const fetchLastRepairInvoice = asyncHandler( async (req, res, next) =>{
 
 
 // Create Repair Invoice
-const createRepair = asyncHandler(async (req, res, next) => {
+const createRepairInvoice = asyncHandler(async (req, res, next) => {
     try {
         const {
             invoiceType,
@@ -281,7 +281,7 @@ const deleteRepairInvoice = asyncHandler( async (req, res, next) =>{
 
 export { 
     fetchLastRepairInvoice,
-    createRepair, 
+    createRepairInvoice, 
     fetchAllRepairInvoice, 
     fetchRepairInvoiceByID, 
     searchRepairInvoice, 

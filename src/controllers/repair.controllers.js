@@ -8,14 +8,14 @@ import { ApiError } from "../utils/ApiError.js";
 
 
 // Generate Repair invoice number
-const generateRepairInvoiceNumber = async () => {
+const generateRepairNumber = async () => {
     const lastRepairInvoice = await Repair.findOne().sort({ createdAt: -1 });
     const lastNumber = lastRepairInvoice ? parseInt(lastRepairInvoice.repairInvoiceNumber.split("-")[1]) : 0;
     return `REP-${(lastNumber + 1).toString().padStart(4, "0")}`;
 };
 
 // Endpoint to fetch the last Repair invoice
-const fetchLastRepairInvoice = asyncHandler( async (req, res, next) =>{
+const fetchLastRepair = asyncHandler( async (req, res, next) =>{
     try {
         const lastRepair = await Repair.findOne().sort({ createdAt: -1 });
 
@@ -24,7 +24,7 @@ const fetchLastRepairInvoice = asyncHandler( async (req, res, next) =>{
                 new ApiResponse(201, lastRepair, "Last Repair fetched successfully.")
             )
           } else {
-            throw new ApiError(404, "No invoices found")
+            throw new ApiError(404, "No repair found")
           }
     } catch (error) {
         next(error);
@@ -82,7 +82,7 @@ const createRepair = asyncHandler(async (req, res, next) => {
         // Create the Repair invoice
         const newRepair = new Repair({
             invoiceType,
-            repairNumber: repairNumber ? repairNumber : await generateRepairInvoiceNumber(),
+            repairNumber: repairNumber ? repairNumber : await generateRepairNumber(),
             bookingDate,
             expectDelivery,
             placeOfSupply,
@@ -161,7 +161,7 @@ const createRepair = asyncHandler(async (req, res, next) => {
 
 
 // Endpoint to fetch invoices
-const fetchAllRepairInvoice = asyncHandler( async (req, res, next) =>{
+const fetchAllRepair = asyncHandler( async (req, res, next) =>{
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -182,7 +182,7 @@ const fetchAllRepairInvoice = asyncHandler( async (req, res, next) =>{
 });
 
 // Endpoint to fetch Repair by id
-const fetchRepairInvoiceByID = asyncHandler( async (req, res, next) =>{
+const fetchRepairByID = asyncHandler( async (req, res, next) =>{
     try {        
         const invoice = await Repair.findById(req.params.id);
         if (invoice) {
@@ -198,7 +198,7 @@ const fetchRepairInvoiceByID = asyncHandler( async (req, res, next) =>{
 });
 
 // search Repair
-const searchRepairInvoice = asyncHandler( async (req, res, next) =>{
+const searchRepair = asyncHandler( async (req, res, next) =>{
     try {
         const { search } = req.query;
         if (!search) {
@@ -229,7 +229,7 @@ const searchRepairInvoice = asyncHandler( async (req, res, next) =>{
 
 
 // update Repair by id
-const updateRepairInvoice = asyncHandler( async (req, res, next) =>{
+const updateRepair = asyncHandler( async (req, res, next) =>{
     try {
         const { id } = req.params;
         const updateData = req.body;
@@ -260,7 +260,7 @@ const updateRepairInvoice = asyncHandler( async (req, res, next) =>{
 
 
 // delete Repair
-const deleteRepairInvoice = asyncHandler( async (req, res, next) =>{
+const deleteRepair = asyncHandler( async (req, res, next) =>{
     try {
         const { id } = req.params;
 
@@ -280,11 +280,11 @@ const deleteRepairInvoice = asyncHandler( async (req, res, next) =>{
 
 
 export { 
-    fetchLastRepairInvoice,
+    fetchLastRepair,
     createRepair, 
-    fetchAllRepairInvoice, 
-    fetchRepairInvoiceByID, 
-    searchRepairInvoice, 
-    updateRepairInvoice, 
-    deleteRepairInvoice
+    fetchAllRepair, 
+    fetchRepairByID, 
+    searchRepair, 
+    updateRepair, 
+    deleteRepair
 };
