@@ -21,7 +21,7 @@ const mobileSchema = new Schema(
         mobileName:{
             type:String,
         },
-        modelNumber: { 
+        modelNo: { 
             type: String,
         },
         emeiNumber: {
