@@ -25,12 +25,12 @@ const mobileSchema = new Schema(
             type: String,
         },
         emeiNumber: {
-            type: Number,
+            type: String,
             unique: true,
             sparse: true, 
         },
         emeiNumberSecond:{
-            type:Number,
+            type: String,
         },
         productImage: {
             type: String,

@@ -28,7 +28,7 @@ const createMobile = asyncHandler( async (req, res, next) => {
             printEmeiNo,
           } = req.body;
 
-        if (!brand || !modelNumber ) {
+        if (!brand || !modelNo ) {
             throw new ApiError(400, "Brand and Model no are required.");
         }     
 
