@@ -52,6 +52,10 @@ const repairSchema = new Schema(
             type: String,
         },
         repairing:[{
+            repairRef: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Repair",
+            },
             type: {
                 type: String,
                 enum: ["mobile", "lcd", "pc_laptop", "others"],

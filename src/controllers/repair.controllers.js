@@ -32,128 +32,97 @@ const fetchLastRepair = asyncHandler( async (req, res, next) =>{
 });
 
 
-// Create Repair Invoice
+// Create Repair
 const createRepair = asyncHandler(async (req, res, next) => {
     try {
         const {
-            invoiceType,
-            repairNumber, 
+            repairNumber,
             bookingDate,
             expectDeliveryDate,
-            expectDeliveryTime,
-            placeOfSupply,
             billTo,
             customerId,
+            repairing,
             discountAmount,
             advanceAmount,
             paymentMode,
             paymentDate,
             privateNote,
             customerNote,
-            deliveryTerm,
-            deliveryDate,
             bookBy,
-            repairing,
+            deliveryTerm,
             transactionId,
-            receivedAmount,
         } = req.body;
 
         if (!repairing || repairing.length === 0) {
-            throw new ApiError(400, "Repair details are required.");
-        }
-        
-        
-        const finalCustomerId = billTo === "Cash" ? process.env.CASH_CUSTOMER_ID : customerId;
-        const customer = await Customer.findById(finalCustomerId);
-        if (!customer) {
-            throw new ApiError(404, "Customer not found.");
+            throw new ApiError(400, "Repairing items are required.");
         }
 
-        let expectDelivery= [];
-        if(expectDeliveryDate || expectDeliveryTime){
-            expectDelivery.push({data:expectDeliveryDate}, {time:expectDeliveryTime})
-        }
+        const finalBillTo = billTo.toLowerCase();
+        const finalCustomerId = finalBillTo === "cash" ? process.env.CASH_CUSTOMER_ID : customerId;
+
+        const customer = await Customer.findById(finalCustomerId);
+        if (!customer) throw new ApiError(404, "Customer not found.");
 
         const account = await Account.findOne({ accountName: paymentMode });
-        if (!account) {
-            throw new ApiError(404, `${paymentMode} Account not found, please create account first.`);
-        }
+        if (!account) throw new ApiError(404, `${paymentMode} account not found.`);
 
-        // Create the Repair invoice
+        const { repairDetails, totalAmount } = await processRepairing(repairing);
+
+        const totalPayable = totalAmount - (discountAmount || 0);
+        const receivedAmount = advanceAmount || 0;
+        const dueAmount = totalPayable - receivedAmount;
+
         const newRepair = new Repair({
-            invoiceType,
-            repairNumber: repairNumber ? repairNumber : await generateRepairNumber(),
+            repairNumber: repairNumber || await generateRepairNumber(),
             bookingDate,
-            expectDelivery,
-            placeOfSupply,
-            billTo : billTo.toLowerCase(),
+            expectDeliveryDate,
+            billTo: finalBillTo,
             customer: finalCustomerId,
-            customerName:customer.customerName,
-            mobileNumber:customer.mobileNumber,
-            address:customer.address,
+            customerName: customer.customerName,
+            mobileNumber: customer.mobileNumber,
+            address: customer.address,
+            repairing: repairDetails,
             discountAmount,
             advanceAmount,
+            totalAmount,
+            totalPayableAmount: totalPayable,
             paymentAccount: account._id,
             paymentDate,
             privateNote,
             customerNote,
             deliveryTerm,
-            deliveryDate,
-            bookBy: bookBy ? bookBy : req.user._id,
-            repairing,
+            bookBy: bookBy || req.user._id,
+            status: dueAmount === 0 ? "paid" : receivedAmount > 0 ? "partially_paid" : "unpaid",
+            dueAmount,
         });
 
-        // Process repairing items and get total amount
-        const { repairDetails, totalAmount } = await processRepairing(repairing, newRepair._id);
-
-        newRepair.repairing = repairDetails;
-        newRepair.totalAmount = totalAmount;
-        newRepair.totalPayableAmount = totalAmount - (discountAmount || 0);
-        newRepair.receivedAmount = receivedAmount || advanceAmount;
-        newRepair.dueAmount = newRepair.totalPayableAmount - (receivedAmount || advanceAmount);
-        newRepair.status = newRepair.dueAmount === 0
-            ? "paid"
-            : (receivedAmount || advanceAmount) > 0
-                ? "partially_paid"
-                : "unpaid";
-
-        // Save the invoice
         await newRepair.save();
 
-        // Update account balance (credit)
-        account.balance = Number(account.balance) + Number(receivedAmount || advanceAmount);
+        // Update Account
+        account.balance += receivedAmount;
         account.transactions.push({
             type: "credit",
-            amount: receivedAmount || advanceAmount,
-            description: "Repair invoice payment",
+            amount: receivedAmount,
+            description: "Repair Invoice Payment",
             date: paymentDate,
-            referenceId: "",
-            transactionId: transactionId,
+            transactionId,
             invoiceId: newRepair._id,
             paymentMode: paymentMode.toLowerCase(),
         });
         await account.save();
 
-        // Update customer's repair history
+        // Update Customer
+        customer.balance = (customer.balance || 0) + dueAmount;
         customer.repairHistory = customer.repairHistory || [];
         customer.repairHistory.push({
             invoiceId: newRepair._id,
             date: newRepair.bookingDate,
-            totalAmount: newRepair.totalPayableAmount,
+            totalAmount: totalPayable,
         });
-        customer.balance = (customer.balance || 0) + newRepair.dueAmount;
         await customer.save();
 
-        // Update user's repair history
-        req.user.repairHistory = req.user.repairHistory || [];
-        req.user.repairHistory.push({
-            invoiceId: newRepair._id,
-            date: newRepair.bookingDate,
-            totalAmount: newRepair.totalPayableAmount,
-        });
-        await req.user.save();
+        res.status(201).json(new ApiResponse(201, { repair: newRepair }, "Repair invoice created successfully."));
 
-        res.status(201).json(new ApiResponse(201, { newRepair }, "Repair invoice created successfully."));
     } catch (error) {
         next(error);
     }

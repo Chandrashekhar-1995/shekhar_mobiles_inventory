@@ -9,125 +9,63 @@ const repairSchema = new Schema(
         },
         bookingDate: {
             type: Date,
-            default: Date.today,
+            default: Date.now,
         },
         expectDeliveryDate: {
-            date:{
-                type: Date,
-            },
+            type: Date,
         },
         billTo: {
             type: String,
             enum: ["cash", "customer"],
             required: true,
-            default:"cash"
+            default: "cash",
         },
         customer: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",
         },
-        customerName: {
-            type: String,
-        },
-        mobileNumber: {
-            type: Number,
-        },
-        address: {
-            type: String,
-        },
-        repairing:[{
+        customerName: String,
+        mobileNumber: Number,
+        address: String,
+        repairing: [{
             type: {
                 type: String,
                 enum: ["mobile", "lcd", "pc_laptop", "others"],
-                default: "mobile"
+                default: "mobile",
             },
-            mobile: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Mobile",
-            },
-            brand: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Brand",
-            },
-            brandName: {
-                type:String,
-            },
-            modelNumber: {
-                type:String,
-            },
-            emeiNumber: {
-                type:Number,
-            },
-            emeiNumberSecond: {
-                type:Number,
-            },
-            lockOrPassword: {
-                type:String,
-            },
-            email: {
-                type:String,
-            },
-            anyDamage: {
-                type:String,
-            },
-            otherDetails: {
-                type:String,
-            },
-            repairItem:{
-                type:String,
-            },
-            problem: {
-                type:String,
-            },
-            sinceLong:{
-                type:String
-            },
-            repairStatus: {
-                type:String,
-            },
-            repairPrice:{
-                type: Number
-            },
-            expectedRepairingDate:{
-                type:Date
-            },
+            brandName: String,
+            modelNumber: String,
+            emeiNumber: String,
+            emeiNumberSecond: String,
+            lockOrPassword: String,
+            email: String,
+            anyDamage: String,
+            otherDetails: String,
+            repairItem: String,
+            problem: String,
+            sinceLong: String,
+            repairStatus: String,
+            repairPrice: Number,
+            expectedRepairingDate: Date,
             expectedRepairingTime: {
                 type: String,
-                match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/  // Format: HH:MM
+                match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
             },
-            repairDescription:{
-                type:String,
-            },
+            repairDescription: String,
         }],
         usedItems: [{
             usedItem: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Product",
             },
-            productName: {
-                type:String,
-            },
-            itemCode: {
-                type:String,
-            },
-            unit: {
-                type:String,
-            },
-            quantity: {
-                type: Number,
-            },
-            mrp: {
-                type: Number,
-            },
-            salePrice: {
-                type: Number,
-            },
-            total: {
-                type: Number,
-            },
-            itemDescription: {
-                type: String,
-            },
+            productName: String,
+            itemCode: String,
+            unit: String,
+            quantity: Number,
+            mrp: Number,
+            salePrice: Number,
+            total: Number,
+            itemDescription: String,
         }],
         totalAmount: {
             type: Number,
@@ -139,14 +77,15 @@ const repairSchema = new Schema(
         },
         advanceAmount: {
             type: Number,
+            default: 0,
         },
         totalPayableAmount: {
             type: Number,
             required: true,
         },
-        paymentDate:{
+        paymentDate: {
             type: Date,
-            default: Date.today,
+            default: Date.now,
         },
         paymentAccount: {
             type: mongoose.Schema.Types.ObjectId,
@@ -154,33 +93,30 @@ const repairSchema = new Schema(
         },
         privateNote: {
             type: String,
-            max: 500,
+            maxlength: 500,
         },
         customerNote: {
             type: String,
-            max: 500,
+            maxlength: 500,
         },
-        receivedAmount:{
-            type:Number
+        dueAmount: {
+            type: Number,
         },
-        dueAmount:{
-            type:Number
-        },
-        status:{
-            type:String,
-            enum:["paid", "unpaid", "partially_paid"],
-            required:true,
-            default:"unpaid"
+        status: {
+            type: String,
+            enum: ["paid", "unpaid", "partially_paid"],
+            required: true,
+            default: "unpaid",
         },
         bookBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
         },
-        repairStatus:{
-            type:String,
-            enum:["booked", "in_progress", "repaire_done", "delivered", "return"],
-            required:true,
-            default:"booked"
+        repairStatus: {
+            type: String,
+            enum: ["booked", "in_progress", "repair_done", "delivered", "return"],
+            required: true,
+            default: "booked",
         },
         repairUnder: {
             type: mongoose.Schema.Types.ObjectId,
@@ -196,7 +132,7 @@ const repairSchema = new Schema(
         },
         deliveryTerm: {
             type: String,
-            max: 500,
+            maxlength: 500,
         },
     },
     { timestamps: true }
