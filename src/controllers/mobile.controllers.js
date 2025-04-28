@@ -11,7 +11,7 @@ const createMobile = asyncHandler( async (req, res, next) => {
             MobileType,
             brand,
             brandName,
-            modelNo,
+            modelNumber,
             emeiNumber,
             emeiNumberSecond,
             productImage,
@@ -28,21 +28,24 @@ const createMobile = asyncHandler( async (req, res, next) => {
             printEmeiNo,
           } = req.body;
 
-        if (!brand || !modelNo ) {
-            throw new ApiError(400, "Item details are required.");
+        if (!brand || !modelNumber ) {
+            throw new ApiError(400, "Brand and Model no are required.");
         }     
 
         // Check if the mobile with same emei already exists
-        const existingMobileEmei = await Mobile.findOne({ emeiNumber });
-        if (existingMobileEmei) {
-            throw new ApiError(409, "Mobile already exists with same emei.");
+        if (emeiNumber) {
+            const existingMobileEmei = await Mobile.findOne({ emeiNumber });
+            if (existingMobileEmei) {
+                throw new ApiError(409, "Mobile already exists with same emei.");
+            }
         }
 
         const newMobile = new Mobile({
             MobileType,
             brand, //_id
             brandName,
-            modelNo,
+            modelNumber,
+            mobileName: brandName + " " + modelNumber,
             emeiNumber,
             emeiNumberSecond,
             productImage,

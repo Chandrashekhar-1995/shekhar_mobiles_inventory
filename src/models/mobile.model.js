@@ -18,14 +18,19 @@ const mobileSchema = new Schema(
         brandName:{
             type:String,
         },
-        modelNo: { 
+        mobileName:{
+            type:String,
+        },
+        modelNumber: { 
             type: String,
         },
-        emeiNumber:{
-            type:String,
+        emeiNumber: {
+            type: Number,
+            unique: true,
+            sparse: true, 
         },
         emeiNumberSecond:{
-            type:String,
+            type:Number,
         },
         productImage: {
             type: String,
