@@ -34,7 +34,7 @@ const repairSchema = new Schema(
                 default: "mobile",
             },
             brandName: String,
-            modelNumber: String,
+            modelNo: String,
             emeiNumber: String,
             emeiNumberSecond: String,
             lockOrPassword: String,

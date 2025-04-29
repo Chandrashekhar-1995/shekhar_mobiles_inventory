@@ -78,7 +78,7 @@ const createRepair = asyncHandler(async (req, res, next) => {
             expectDeliveryDate,
             billTo: finalBillTo,
             customer: finalCustomerId,
-            customerName: customer.customerName,
+            customerName: customer.name,
             mobileNumber: customer.mobileNumber,
             address: customer.address,
             repairing: repairDetails,
@@ -99,29 +99,31 @@ const createRepair = asyncHandler(async (req, res, next) => {
         await newRepair.save();
 
         // Update Account
-        account.balance += receivedAmount;
-        account.transactions.push({
-            type: "credit",
-            amount: receivedAmount,
-            description: "Repair Invoice Payment",
-            date: paymentDate,
-            transactionId,
-            invoiceId: newRepair._id,
-            paymentMode: paymentMode.toLowerCase(),
-        });
-        await account.save();
+        if(receivedAmount > 0 ){
+            account.balance += parseFloat(receivedAmount);
+            account.transactions.push({
+                type: "credit",
+                amount: receivedAmount,
+                description: "Repair Invoice Payment",
+                date: paymentDate,
+                transactionId,
+                invoiceId: newRepair._id,
+                paymentMode: paymentMode.toLowerCase(),
+            });
+            await account.save();
+        }
 
         // Update Customer
         customer.balance = (customer.balance || 0) + dueAmount;
         customer.repairHistory = customer.repairHistory || [];
         customer.repairHistory.push({
-            invoiceId: newRepair._id,
+            repairId: newRepair._id,
             date: newRepair.bookingDate,
             totalAmount: totalPayable,
         });
         await customer.save();
 
-        res.status(201).json(new ApiResponse(201, { repair: newRepair }, "Repair invoice created successfully."));
+        res.status(201).json(new ApiResponse(201, { repair: newRepair }, "Repair booked successfully."));
 
     } catch (error) {
         next(error);

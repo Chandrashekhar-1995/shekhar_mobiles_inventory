@@ -139,7 +139,23 @@ const customerSchema = new Schema(
             {
                 invoiceId: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: "Invoice", // Assumes you have a Product model
+                    ref: "Invoice",
+                },
+                date: {
+                    type: Date,
+                    default: Date.now,
+                },
+                totalAmount: {
+                    type: Number,
+                    required: true,
+                },
+            },
+        ],
+        repairHistory: [
+            {
+                repairId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Repair",
                 },
                 date: {
                     type: Date,
