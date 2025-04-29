@@ -17,7 +17,7 @@ const processRepairing = async (repairing) => {
         let repairTypeAmount = 0;
 
         if (repair.repairPrice) {
-            repairTypeAmount += repair.repairPrice;
+            repairTypeAmount += parseFloat(repair.repairPrice);
         }
 
         if (repair.usedItems && repair.usedItems.length > 0) {
@@ -29,11 +29,11 @@ const processRepairing = async (repairing) => {
                 product.saleHistory.push({ invoiceId: null });  // repair invoiceId set nahi kiya abhi
                 await product.save();
 
-                repairTypeAmount += (item.salePrice || 0) * (item.quantity || 0);
+                repairTypeAmount += (parseFloat(item.salePrice) || 0) * (parseFloat(item.quantity) || 0);
             }
         }
 
-        totalAmount += repairTypeAmount;
+        totalAmount += parseFloat(repairTypeAmount);
         repairDetails.push(repair);
     }
 

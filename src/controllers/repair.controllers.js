@@ -5,6 +5,7 @@ import { processRepairing } from "../middlewares/repair.middleware.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import { User } from "../models/user.model.js";
 
 
 // Generate Repair invoice number
@@ -72,6 +73,9 @@ const createRepair = asyncHandler(async (req, res, next) => {
         const receivedAmount = advanceAmount || 0;
         const dueAmount = totalPayable - receivedAmount;
 
+        const bookedByUserId = bookBy ?? req.user._id;
+        const bookedByUser = await User.findById(bookedByUserId)
+
         const newRepair = new Repair({
             repairNumber: repairNumber || await generateRepairNumber(),
             bookingDate,
@@ -91,8 +95,8 @@ const createRepair = asyncHandler(async (req, res, next) => {
             privateNote,
             customerNote,
             deliveryTerm,
-            bookBy: bookBy || req.user._id,
-            status: dueAmount === 0 ? "paid" : receivedAmount > 0 ? "partially_paid" : "unpaid",
+            bookBy: bookedByUserId,
+            paymentStatus: dueAmount === 0 ? "paid" : receivedAmount > 0 ? "partially_paid" : "unpaid",
             dueAmount,
         });
 
@@ -122,6 +126,14 @@ const createRepair = asyncHandler(async (req, res, next) => {
             totalAmount: totalPayable,
         });
         await customer.save();
+
+        // Update user's repair book history
+        bookedByUser.bookRepairHistory.push({
+            repairId: newRepair._id,
+            date: newRepair.bookingDate,
+            totalAmount: newRepair.totalPayableAmount,
+        });
+        await bookedByUser.save();
 
         res.status(201).json(new ApiResponse(201, { repair: newRepair }, "Repair booked successfully."));
 
@@ -229,6 +241,33 @@ const updateRepair = asyncHandler( async (req, res, next) =>{
     }
 });
 
+// update Repair item by id
+const updateRepairItem = asyncHandler(async (req, res, next) => {
+    try {
+        const { id } = req.params; // main repair invoice ID
+        const { itemIndex, ...updatedFields } = req.body;
+
+        const invoice = await Repair.findById(id);
+        if (!invoice) {
+            throw new ApiError(404, "Repair invoice not found");
+        }
+
+        if (!Array.isArray(invoice.repairing) || itemIndex < 0 || itemIndex >= invoice.repairing.length) {
+            throw new ApiError(400, "Invalid item index");
+        }
+
+        Object.assign(invoice.repairing[itemIndex], updatedFields);
+        await invoice.save();
+
+        res.status(200).json(
+            new ApiResponse(200, invoice, "Repairing item updated successfully")
+        );
+    } catch (error) {
+        next(error);
+    }
+});
+
+
 
 // delete Repair
 const deleteRepair = asyncHandler( async (req, res, next) =>{
@@ -256,6 +295,7 @@ export {
     fetchAllRepair, 
     fetchRepairByID, 
     searchRepair, 
-    updateRepair, 
-    deleteRepair
+    updateRepair,
+    updateRepairItem, 
+    deleteRepair,
 };

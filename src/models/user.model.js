@@ -164,6 +164,54 @@ const userSchema = new Schema(
                         },
                     },
                 ],
+        bookRepairHistory: [
+            {
+                repairId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Repair", 
+                    },
+                date: {
+                    type: Date,
+                    default: Date.now,
+                    },
+                totalAmount: {
+                    type: Number,
+                    required: true,
+                    },
+            },
+            ],
+        underRepair: [
+            {
+                repairId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Repair",
+                    },
+                date: {
+                    type: Date,
+                    default: Date.now,
+                    },
+                totalAmount: {
+                    type: Number,
+                    required: true,
+                    },
+            },
+            ],
+        repairHistory: [
+            {
+                invoiceId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Invoice",
+                },
+                date: {
+                    type: Date,
+                    default: Date.now,
+                },
+                totalAmount: {
+                    type: Number,
+                    required: true,
+                },
+            },
+        ],
         salesCommission:{
             type:String,
             enum: {

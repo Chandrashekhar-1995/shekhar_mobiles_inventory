@@ -27,6 +27,7 @@ const repairSchema = new Schema(
         customerName: String,
         mobileNumber: Number,
         address: String,
+
         repairing: [{
             type: {
                 type: String,
@@ -44,7 +45,6 @@ const repairSchema = new Schema(
             repairItem: String,
             problem: String,
             sinceLong: String,
-            repairStatus: String,
             repairPrice: Number,
             expectedRepairingDate: Date,
             expectedRepairingTime: {
@@ -52,21 +52,33 @@ const repairSchema = new Schema(
                 match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
             },
             repairDescription: String,
-        }],
-        usedItems: [{
+
             usedItem: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Product",
             },
-            productName: String,
-            itemCode: String,
-            unit: String,
-            quantity: Number,
-            mrp: Number,
-            salePrice: Number,
-            total: Number,
-            itemDescription: String,
+            usedProductName: String,
+            usedItemCode: String,
+            usedItemSalePrice: Number,
+            usedItemQuantity: Number,
+            usedItemDescription: String,
+
+            repairStatus: {
+                type: String,
+                enum: ["booked", "in_progress", "repair_done", "delivered", "return"],
+                required: true,
+                default: "booked",
+            },
+            repairUnder: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+            repairBy: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
         }],
+
         totalAmount: {
             type: Number,
             required: true,
@@ -102,7 +114,7 @@ const repairSchema = new Schema(
         dueAmount: {
             type: Number,
         },
-        status: {
+        paymentStatus: {
             type: String,
             enum: ["paid", "unpaid", "partially_paid"],
             required: true,
@@ -112,20 +124,7 @@ const repairSchema = new Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
         },
-        repairStatus: {
-            type: String,
-            enum: ["booked", "in_progress", "repair_done", "delivered", "return"],
-            required: true,
-            default: "booked",
-        },
-        repairUnder: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        },
-        repairBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        },
+        
         deliverBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

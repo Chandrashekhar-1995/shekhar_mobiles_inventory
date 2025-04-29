@@ -42,3 +42,4 @@
 - create all invoice route api (CRUD)
 - create all purchaseInvoice route api (CRUD)
 - create all modelNo route api (CRUD) with controller
+- controller for update a single item in repair
