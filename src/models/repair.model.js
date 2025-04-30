@@ -34,6 +34,7 @@ const repairSchema = new Schema(
                 enum: ["mobile", "lcd", "pc_laptop", "others"],
                 default: "mobile",
             },
+            repairItem: String,
             brandName: String,
             modelNo: String,
             emeiNumber: String,
@@ -42,7 +43,6 @@ const repairSchema = new Schema(
             email: String,
             anyDamage: String,
             otherDetails: String,
-            repairItem: String,
             problem: String,
             sinceLong: String,
             repairPrice: Number,
@@ -53,15 +53,17 @@ const repairSchema = new Schema(
             },
             repairDescription: String,
 
-            usedItem: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Product",
-            },
-            usedProductName: String,
-            usedItemCode: String,
-            usedItemSalePrice: Number,
-            usedItemQuantity: Number,
-            usedItemDescription: String,
+            usedItem: [{
+                item:{
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Product",
+                },
+                ProductName: String,
+                ItemCode: String,
+                ItemSalePrice: Number,
+                ItemQuantity: Number,
+                ItemDescription: String,
+            }],
 
             repairStatus: {
                 type: String,
