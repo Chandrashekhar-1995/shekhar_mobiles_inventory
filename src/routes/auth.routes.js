@@ -1,9 +1,13 @@
 import { Router } from "express";
 const authRouter = Router();
-import { login, logout, register, registerAdmin } from "../controllers/auth.controllers.js";
+import { checkAuth, login, logout, register, registerAdmin } from "../controllers/auth.controllers.js";
 import { userLoginValidator, userRegistrationValidator } from "../validators/index.js";
 import { validate } from "../middlewares/validator.middleware.js";
+import { isLoggedIn } from "../middlewares/auth.middleware.js";
 
+
+// Register customer
+authRouter.post("/check", isLoggedIn, checkAuth);
 
 // Register customer
 authRouter.post("/register", userRegistrationValidator(), validate, register);

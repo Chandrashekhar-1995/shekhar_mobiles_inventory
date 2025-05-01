@@ -6,6 +6,17 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { findUserOrCustomer } from "../utils/dbHelpers.js";
 
 
+// check auth
+const checkAuth = asyncHandler( async (req, res, next) =>{
+    try {
+        
+        res.status(201).json(new ApiResponse(200, {user: req.user}, "All Checked."));
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Register customer
 const register = asyncHandler(async (req, res, next) => {
     const { name, email, mobileNumber, address, password } = req.body;
@@ -149,6 +160,7 @@ const logout = asyncHandler(async (req, res) => {
 
 
 export {
+    checkAuth,
     register,
     registerAdmin,
     login,
