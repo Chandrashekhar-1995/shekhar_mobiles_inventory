@@ -7,7 +7,7 @@ import { isLoggedIn } from "../middlewares/auth.middleware.js";
 
 
 // Register customer
-authRouter.post("/check", isLoggedIn, checkAuth);
+authRouter.get("/check", isLoggedIn, checkAuth);
 
 // Register customer
 authRouter.post("/register", userRegistrationValidator(), validate, register);
