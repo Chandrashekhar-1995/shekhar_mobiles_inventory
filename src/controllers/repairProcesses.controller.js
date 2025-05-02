@@ -34,7 +34,21 @@ const createRepairProcess = asyncHandler(async (req, res, next) => {
 });
 
 // Get all repair processes
-const getAllRepairProcesses = asyncHandler(async (req, res, next) => {
+const getAllRepairProcesses = asyncHandler( async (req, res, next) => {
+  try {
+    const allRepairProcesses = await RepairProcess.find();
+    if(!allRepairProcesses){
+      throw new ApiError(440, "No process found please create first")
+    }
+
+    res.status(200).json(new ApiResponse(200, allRepairProcesses, "All processes fetched successfully."));
+  } catch (error) {
+    next(error)
+  }
+});
+
+// Get all repair processes by faultType, deviceType
+const getAllRepairProcesseswithFilter = asyncHandler(async (req, res, next) => {
   try {
     const { faultType, deviceType } = req.query;
     const filter = {};
