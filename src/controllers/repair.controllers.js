@@ -81,7 +81,7 @@ const createRepair = asyncHandler(async (req, res, next) => {
             bookingDate,
             expectDeliveryDate,
             billTo: finalBillTo,
-            customer: finalCustomerId,
+            customer: customer._id,
             customerName: customer.name,
             mobileNumber: customer.mobileNumber,
             address: customer.address,

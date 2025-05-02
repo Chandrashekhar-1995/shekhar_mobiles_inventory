@@ -10,9 +10,9 @@ const processRepairing = async (repairing) => {
     const repairDetails = [];
 
     for (const repair of repairing) {
-        const { type } = repair;
+        const { deviceType } = repair;
 
-        if (!type) throw new ApiError(400, "Repair type is missing.");
+        if (!deviceType) throw new ApiError(400, "Repair type is missing.");
 
         let repairTypeAmount = 0;
 

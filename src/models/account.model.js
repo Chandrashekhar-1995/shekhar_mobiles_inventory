@@ -8,7 +8,7 @@ const accountSchema = new Schema(
       lowercase:true,
       required: [true, "Account name is required"],
     },
-    type:{
+    accountType:{
       type:String,
       enum: {
         values: ["cash", "qr_code", "razorpay", "bank"],
@@ -30,12 +30,13 @@ const accountSchema = new Schema(
       required: true,
       default: 0, // Initial balance starts at 0
     },
-    status:{
-      type:String,
-      enum:{
-        values:["active", "in_active"],
-        message: "{VALUE} is not a valid status",
-      }
+    createdBy:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"User"
+    },
+    isActive:{
+      type:Boolean,
+     default:true
     },
     transactions: [
       {

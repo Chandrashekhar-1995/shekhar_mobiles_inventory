@@ -1,5 +1,7 @@
 # Shekhar Mobile Shop
 
+  ## Guide 
+    pahale cash account ka id update kare
   ## Setup Backend
     - npm init 
     - npm i -D nodemon
