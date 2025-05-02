@@ -6,18 +6,22 @@ import { ApiError } from "../utils/ApiError.js";
 // Create a new repair process
 const createRepairProcess = asyncHandler(async (req, res, next) => {
   try {
-    const { faultType, faultSubType, deviceType, processName, processSteps } = req.body;
+    const {fault, subFault, deviceType, processName, steps } = req.body;
 
-    if (!processSteps || processSteps.length === 0) {
+    if (!fault || !deviceType) {
+      throw new ApiError(400, "Fault and device type is required.");
+    }
+
+    if (!steps || steps.length === 0) {
       throw new ApiError(400, "At least one process step is required.");
     }
 
     const newProcess = await RepairProcess.create({
-      faultType,
-      faultSubType,
-      deviceType,
-      processName,
-      processSteps,
+      fault, 
+      subFault, 
+      deviceType, 
+      processName, 
+      steps,
       createdBy: req.user._id
     });
 

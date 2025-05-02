@@ -27,6 +27,10 @@ const repairProcessSchema = new Schema(
       required: true,
       trim: true,
     },
+    faultID:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Fault",
+    },
     subFault: {
       type: String,
       trim: true
@@ -51,7 +55,6 @@ const repairProcessSchema = new Schema(
     updatedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true
       },
     isActive: {
       type: Boolean,
