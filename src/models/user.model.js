@@ -104,7 +104,7 @@ const userSchema = new Schema(
         designation:{
             type:String,
             enum: {
-                values: ["relationship_manager","admin","marketing_executive", "manager", "accountant", "clerk", "peon", "office_boy", "receptionist", "trainee"],
+                values: ["relationship_manager","admin","marketing_executive", "manager", "accountant", "clerk", "peon", "office_boy", "receptionist", "trainee","customer","supplier"],
                 message: '{VALUE} is not supported Designation'
               },
               default:'trainee',

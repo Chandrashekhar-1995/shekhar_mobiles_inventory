@@ -111,7 +111,7 @@ const login = asyncHandler(async (req, res, next) => {
             user.refreshToken = refreshToken;
             await user.save()
 
-            const loginUser= await User.findById(user._id).select("-password -refreshToken");
+            const loginUser= await User.findById(user._id).select("-password -refreshToken") || await Customer.findById(user._id).select("-password -refreshToken");
     
             res.cookie("accessToken", accessToken, { 
                 httpOnly: true, 
