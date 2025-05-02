@@ -125,10 +125,20 @@ const createProduct = asyncHandler( async (req, res, next) => {
 
 // fetch all product
 const fetchAllProduct = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     try {
-        const allProduct = await Product.find();
-        res.status(201).json(new ApiResponse(200, allProduct, "All product fetched successfully."));
+        const products = await Product.find().skip(skip).limit(limit);
+        const total = await Product.countDocuments();
 
+        if (products) {
+            res.status(200).json(
+                new ApiResponse(201, { products, total, page, limit }, "Products fetched successfully.")
+                )
+        } else {
+            res.status(404).json({ message: 'No Products found' });
+        }
     } catch (error) {
         next(error);
     }

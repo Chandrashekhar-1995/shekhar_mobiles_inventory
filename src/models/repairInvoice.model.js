@@ -96,7 +96,7 @@ const repairSchema = new Schema(
             repairItem:{
                 type:String,
             },
-            problem: {
+            fault: {
                 type:String,
             },
             sinceLong:{

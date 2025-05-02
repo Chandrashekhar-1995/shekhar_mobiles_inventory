@@ -29,7 +29,7 @@ const repairSchema = new Schema(
         address: String,
 
         repairing: [{
-            type: {
+            deviceType: {
                 type: String,
                 enum: ["mobile", "lcd", "pc_laptop", "others"],
                 default: "mobile",
@@ -43,7 +43,7 @@ const repairSchema = new Schema(
             email: String,
             anyDamage: String,
             otherDetails: String,
-            problem: String,
+            fault: String,
             sinceLong: String,
             repairPrice: Number,
             expectedRepairingDate: Date,
