@@ -42,9 +42,6 @@ const createInvoice = asyncHandler( async (req, res, next) => {
             placeOfSupply,
             billTo,
             customerId,
-            customerName,
-            mobileNumber,
-            address,
             items,
             discountAmount,
             paymentDate,
@@ -84,9 +81,6 @@ const createInvoice = asyncHandler( async (req, res, next) => {
             placeOfSupply,
             billTo : billTo.toLowerCase(),
             customer: finalCustomerId,
-            customerName,
-            mobileNumber,
-            address,
             discountAmount,
             paymentAccount:account._id,
             paymentDate,
@@ -158,7 +152,13 @@ const fetchAllInvoice = asyncHandler( async (req, res, next) =>{
     const skip = (page - 1) * limit;
 
     try {        
-        const invoices = await Invoice.find().skip(skip).limit(limit);
+        const invoices = await Invoice.find()
+        .populate({ path: "customer", select: "name mobileNumber address" })
+        .populate({ path: "items.item", select: "productName itemCode unit salePrice mrp" })
+        .populate({ path: "soldBy", select: "name" })
+        .populate({ path: "paymentAccount", select: "accountName" })
+        .skip(skip)
+        .limit(limit);
         const total = await Invoice.countDocuments();
         if (invoices) {
             res.status(200).json(
@@ -175,7 +175,12 @@ const fetchAllInvoice = asyncHandler( async (req, res, next) =>{
 // Endpoint to fetch invoice by id
 const fetchInvoiceByID = asyncHandler( async (req, res, next) =>{
     try {        
-        const invoice = await Invoice.findById(req.params.id);
+        const invoice = await Invoice.findById(req.params.id)
+        .populate({ path: "customer", select: "name mobileNumber address" })
+        .populate({ path: "items.item", select: "productName itemCode unit salePrice mrp" })
+        .populate({ path: "soldBy", select: "name" })
+        .populate({ path: "paymentAccount", select: "accountName" })
+
         if (invoice) {
             res.status(200).json(
                 new ApiResponse(201, { invoice }, "Invoice fetched successfully.")
@@ -205,7 +210,12 @@ const searchInvoice = asyncHandler( async (req, res, next) =>{
                 { billTo:{ $regex: search, $options: "i" } }
             ],
               
-            }).limit(20);
+            })
+            .populate({ path: "customer", select: "name mobileNumber address" })
+            .populate({ path: "items.item", select: "productName itemCode unit salePrice mrp" })
+            .populate({ path: "soldBy", select: "name" })
+            .populate({ path: "paymentAccount", select: "accountName" })
+            .limit(20);
 
         if (invoices.length < 0) {
             throw new ApiError(400, "No invoice found" );

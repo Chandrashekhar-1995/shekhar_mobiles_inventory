@@ -22,12 +22,7 @@ const repairProcessStepSchema = new Schema({
 
 const repairProcessSchema = new Schema(
   {
-    fault: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    faultID:{
+    fault:{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Fault",
     },

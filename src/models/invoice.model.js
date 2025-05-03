@@ -37,15 +37,6 @@ const invoiceSchema = new Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",
         },
-        customerName: {
-            type: String,
-        },
-        mobileNumber: {
-            type: Number,
-        },
-        address: {
-            type: String,
-        },
         items: [
             {
                 item: {
@@ -53,25 +44,9 @@ const invoiceSchema = new Schema(
                     ref: "Product",
                     required: true,
                 },
-                productName: {
-                    type:String,
-                },
-                itemCode: {
-                    type:String,
-                },
-                unit:{
-                    type:String
-                },
                 quantity: {
                     type: Number,
                     required: true,
-                },
-                salePrice: {
-                    type: Number,
-                    required: true,
-                },
-                mrp:{
-                    type:Number
                 },
                 discount: {
                     type: Number,

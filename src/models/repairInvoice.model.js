@@ -2,149 +2,71 @@ import mongoose, { Schema } from "mongoose";
 
 const repairSchema = new Schema(
     {
-        invoiceType: {
-            type: String,
-            enum: ["non_gst", "gst", "bill_of_supply"],
-            default: "non_gst"
+        invoiceType:{
+            type:String,
+            enum:{
+                values:["non_gst", "gst", "bill_of_supply"],
+                message: '{VALUE} is not supported invoice type'
+            },
+            default:"non_gst"
         },
-        repairNumber: {
+        purchasenIvoiceNumber: {
             type: String,
             required: true,
             unique: true,
         },
-        bookingDate: {
+        date: {
             type: Date,
             default: Date.today,
         },
-        expectDelivery: [{
-            date:{
-                type: Date,
-            },
-            time: {
-                type: String,
-                match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/  // Format: HH:MM
-            }
-        }],
-        deliveryDate: {
+        dueDate: {
             type: Date,
+            default: Date.today,
         },
         placeOfSupply:{
             type: String,
             default:"Uttar Pradesh",
         },
-        billTo: {
+        from: {
             type: String,
-            enum: ["cash", "customer"],
+            enum: ["cash", "supplier"],
             required: true,
             default:"cash"
         },
-        customer: {
+        supplier: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",
         },
-        customerName: {
-            type: String,
-        },
-        mobileNumber: {
-            type: Number,
-        },
-        address: {
-            type: String,
-        },
-        repairing:[{
-            repairRef: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Repair",
+        items: [
+            {
+                item: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Product",
+                    required: true,
+                },
+                quantity: {
+                    type: Number,
+                    required: true,
+                },
+                discount: {
+                    type: Number,
+                    default: 0,
+                },
+                tax:{
+                    type:Number
+                },
+                cess:{
+                    type:Number
+                },
+                total: {
+                    type: Number,
+                    required: true,
+                },
+                itemDescription: {
+                    type: String,
+                },
             },
-            type: {
-                type: String,
-                enum: ["mobile", "lcd", "pc_laptop", "others"],
-                default: "mobile"
-            },
-            mobile: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Mobile",
-            },
-            brand: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Brand",
-            },
-            brandName: {
-                type:String,
-            },
-            modelNumber: {
-                type:String,
-            },
-            emeiNumber: {
-                type:Number,
-            },
-            emeiNumberSecond: {
-                type:Number,
-            },
-            lockOrPassword: {
-                type:String,
-            },
-            email: {
-                type:String,
-            },
-            anyDamage: {
-                type:String,
-            },
-            otherDetails: {
-                type:String,
-            },
-            repairItem:{
-                type:String,
-            },
-            fault: {
-                type:String,
-            },
-            sinceLong:{
-                type:String
-            },
-            repairStatus: {
-                type:String,
-            },
-            repairPrice:{
-                type: Number
-            },
-            expectedRepairingTime: {
-                type: Number,
-            },
-            repairDescription:{
-                type:String,
-            },
-        }],
-        usedItems: [{
-            usedItem: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Product",
-            },
-            productName: {
-                type:String,
-            },
-            itemCode: {
-                type:String,
-            },
-            unit: {
-                type:String,
-            },
-            quantity: {
-                type: Number,
-            },
-            mrp: {
-                type: Number,
-            },
-            salePrice: {
-                type: Number,
-            },
-            total: {
-                type: Number,
-            },
-            itemDescription: {
-                type: String,
-            },
-        }],
+        ],
         totalAmount: {
             type: Number,
             required: true,
@@ -152,9 +74,6 @@ const repairSchema = new Schema(
         discountAmount: {
             type: Number,
             default: 0,
-        },
-        advanceAmount: {
-            type: Number,
         },
         totalPayableAmount: {
             type: Number,
@@ -172,11 +91,11 @@ const repairSchema = new Schema(
             type: String,
             max: 500,
         },
-        customerNote: {
+        supplierNote: {
             type: String,
             max: 500,
         },
-        receivedAmount:{
+        paidAmount:{
             type:Number
         },
         dueAmount:{
@@ -186,27 +105,9 @@ const repairSchema = new Schema(
             type:String,
             enum:["paid", "unpaid", "partially_paid"],
             required:true,
-            default:"unpaid"
+            default:"paid"
         },
-        bookBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        },
-        repairStatus:{
-            type:String,
-            enum:["booked", "in_progress", "repaire_done", "delivered", "return"],
-            required:true,
-            default:"booked"
-        },
-        repairUnder: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        },
-        repairBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-        },
-        deliverBy: {
+        purchaseBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
         },

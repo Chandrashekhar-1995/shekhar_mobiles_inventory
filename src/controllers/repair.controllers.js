@@ -150,11 +150,17 @@ const fetchAllRepair = asyncHandler( async (req, res, next) =>{
     const skip = (page - 1) * limit;
 
     try {        
-        const invoices = await Repair.find().skip(skip).limit(limit);
+        const invoices = await Repair.find()
+        .populate({ path: "bookBy", select: "name" })
+        .populate({ path: "deliverBy", select: "name" })
+        .populate({ path: "repairing.repairUnder", select: "name" })
+        .populate({ path: "repairing.repairBy", select: "name" })
+        .skip(skip)
+        .limit(limit);
         const total = await Repair.countDocuments();
         if (invoices) {
             res.status(200).json(
-                new ApiResponse(201, { invoices, total, page, limit }, "Repair fetched successfully.")
+                new ApiResponse(200, { invoices, total, page, limit }, "Repair fetched successfully.")
             )
           } else {
             res.status(404).json({ message: 'No Repair invoices found' });
@@ -182,12 +188,15 @@ const fetchRepairByID = asyncHandler( async (req, res, next) =>{
 
 // search Repair
 const searchRepair = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    if (!search) {
+        throw new ApiError(400, "Search Query is required." );
+    }
+    
     try {
-        const { search } = req.query;
-        if (!search) {
-                throw new ApiError(400, "Search Query is required." );
-              }
-        
         // Case-insensitive search for matching names
         const invoices = await Repair.find({
             $or: [
@@ -197,13 +206,16 @@ const searchRepair = asyncHandler( async (req, res, next) =>{
                 { mobileNumber:{ $regex: search, $options: "i" } }
             ],
               
-            }).limit(20);
+            })
+            .skip(skip)
+            .limit(limit);
+            const total = await Repair.countDocuments();
 
         if (invoices.length < 0) {
             throw new ApiError(400, "No Repair found" );
           }
 
-        res.status(200).json(new ApiResponse(200, invoices, "Repairs Fetched"));
+        res.status(200).json(new ApiResponse(200, { invoices, total, page, limit }, "Repairs Fetched"));
 
     } catch (error) {
         next(error);

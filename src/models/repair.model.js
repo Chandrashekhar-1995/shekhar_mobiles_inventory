@@ -44,6 +44,7 @@ const repairSchema = new Schema(
             anyDamage: String,
             otherDetails: String,
             fault: String,
+            subFaults: String,
             sinceLong: String,
             repairPrice: Number,
             expectedRepairingDate: Date,

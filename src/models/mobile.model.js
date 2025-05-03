@@ -15,9 +15,6 @@ const mobileSchema = new Schema(
             ref: "Brand",
             required: true,
         },
-        brandName:{
-            type:String,
-        },
         mobileName:{
             type:String,
         },

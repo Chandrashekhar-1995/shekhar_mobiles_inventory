@@ -10,7 +10,7 @@ const createMobile = asyncHandler( async (req, res, next) => {
         const {
             MobileType,
             brand,
-            brandName,
+
             modelNo,
             emeiNumber,
             emeiNumberSecond,
@@ -74,9 +74,18 @@ const createMobile = asyncHandler( async (req, res, next) => {
 
 
 const fetchAllMobile = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     try {
-        const allMobiles = await Mobile.find();
-        res.status(201).json(new ApiResponse(200, allMobiles, "All mobile fetched successfully."));
+        const mobiles = await Mobile.find()
+        .populate({ path: "brand", select: "brandName"})
+        .skip(skip)
+        .limit(limit);
+        const total = await Mobile.countDocuments();
+
+        res.status(201).json(new ApiResponse(200, {mobiles, total, page, limit}, "Mobile fetched successfully."));
 
     } catch (error) {
         next(error);
@@ -87,7 +96,8 @@ const fetchAllMobile = asyncHandler( async (req, res, next) =>{
 const fetchMobileByID = asyncHandler( async (req, res, next) =>{
     const {id} = req.params;
     try {
-        const mobile = await Mobile.findById(id);
+        const mobile = await Mobile.findById(id)
+        .populate({ path: "brand", select: "brandName"})
           if (!mobile) {
               throw new ApiError(404, "Mobile not found, please select a correct mobile");
           }
@@ -100,12 +110,15 @@ const fetchMobileByID = asyncHandler( async (req, res, next) =>{
 
 
 const searchMobile = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    if (!search) {
+        throw new ApiError(400, "Search Query is required." );
+    }
+    
     try {
-        const { search } = req.query;
-        if (!search) {
-                throw new ApiError(400, "Search Query is required." );
-              }
-        
         // Case-insensitive search for matching names
         const mobiles = await Mobile.find({
             $or: [
@@ -116,13 +129,17 @@ const searchMobile = asyncHandler( async (req, res, next) =>{
                 { emeiNumberSecond:{ $regex: search, $options: "i" } }
             ],
               
-            }).limit(20);
+            })
+            .populate({ path: "brand", select: "brandName"})
+            .skip(skip)
+            .limit(limit);
+            const total = await Repair.countDocuments();
 
         if (!mobiles) {
             throw new ApiError(400, "No mobile found" );
           }
 
-        res.status(200).json(new ApiResponse(200, mobiles, "Mobiles Fetched"));
+        res.status(200).json(new ApiResponse(200, {mobiles, total, page, limit}, "Mobiles Fetched"));
 
     } catch (error) {
         next(error);

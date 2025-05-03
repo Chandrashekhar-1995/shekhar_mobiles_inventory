@@ -149,19 +149,12 @@ const userSchema = new Schema(
               }
         },
         saleHistory: [
-                    {
-                        invoiceId: {
-                            type: mongoose.Schema.Types.ObjectId,
-                            ref: "Invoice", // Assumes you have a Product model
-                        },
-                        date: {
-                            type: Date,
-                            default: Date.now,
-                        },
-                        totalAmount: {
-                            type: Number,
-                            required: true,
-                        },
+            {
+                invoiceId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Invoice",
+                },
+
                     },
                 ],
         bookRepairHistory: [
@@ -169,14 +162,6 @@ const userSchema = new Schema(
                 repairId: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Repair", 
-                    },
-                date: {
-                    type: Date,
-                    default: Date.now,
-                    },
-                totalAmount: {
-                    type: Number,
-                    required: true,
                     },
             },
             ],
@@ -186,14 +171,6 @@ const userSchema = new Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Repair",
                     },
-                date: {
-                    type: Date,
-                    default: Date.now,
-                    },
-                totalAmount: {
-                    type: Number,
-                    required: true,
-                    },
             },
             ],
         repairHistory: [
@@ -201,14 +178,6 @@ const userSchema = new Schema(
                 invoiceId: {
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Invoice",
-                },
-                date: {
-                    type: Date,
-                    default: Date.now,
-                },
-                totalAmount: {
-                    type: Number,
-                    required: true,
                 },
             },
         ],

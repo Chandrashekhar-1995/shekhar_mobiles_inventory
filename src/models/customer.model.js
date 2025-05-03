@@ -17,7 +17,6 @@ const customerSchema = new Schema(
             type: String,
             validate: {
                 validator: function (value) {
-                    // Allow null or validate phone number format
                     return value === null || /^[0-9]{10}$/.test(value);
                 },
                 message: '{VALUE} is not a valid mobile number!',
@@ -30,7 +29,7 @@ const customerSchema = new Schema(
             unique: true,
             validate: {
                 validator: function (value) {
-                    return /^[6-9]\d{9}$/.test(value); // Validates Indian mobile number format
+                    return /^[6-9]\d{9}$/.test(value);
                 },
                 message: (props) => `${props.value} is not a valid mobile number!`,
             },
@@ -141,32 +140,15 @@ const customerSchema = new Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Invoice",
                 },
-                date: {
-                    type: Date,
-                    default: Date.now,
-                },
-                totalAmount: {
-                    type: Number,
-                    required: true,
-                },
+
             },
         ],
-        repairHistory: [
-            {
-                repairId: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "Repair",
-                },
-                date: {
-                    type: Date,
-                    default: Date.now,
-                },
-                totalAmount: {
-                    type: Number,
-                    required: true,
-                },
+        repairHistory: [{
+            repairId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Repair",
             },
-        ],
+        }],
         accountType:{
             type:String,
             enum: {
