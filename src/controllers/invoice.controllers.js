@@ -60,9 +60,10 @@ const createInvoice = asyncHandler( async (req, res, next) => {
 
         if (!items || items.length === 0) {
             throw new ApiError(400, "Item details are required.");
-        }     
+        }
 
-        const finalCustomerId = billTo === "Cash" ? process.env.CASH_ACCOUNT_ID : customerId;
+        const finalBillTo = billTo.toLowerCase();
+        const finalCustomerId = finalBillTo === "cash" ? process.env.CASH_CUSTOMER_ID : customerId;
         const customer = await Customer.findById(finalCustomerId);
         if (!customer) {
             throw new ApiError(404, "Customer not found.");
@@ -122,7 +123,7 @@ const createInvoice = asyncHandler( async (req, res, next) => {
             referenceId:"",
             transactionId:transactionId,
             invoiceId:newInvoice._id,
-            paymentMode:paymentMode,
+            paymentMode:paymentMode.toLowerCase(),
         })
         await account.save();
 
