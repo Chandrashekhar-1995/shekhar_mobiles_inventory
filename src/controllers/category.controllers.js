@@ -43,7 +43,7 @@ const fetchAllCategory = asyncHandler( async (req, res, next) => {
         const categories = await Category.find()
         .skip(skip)
         .limit(limit);
-        const total = await Invoice.countDocuments();
+        const total = await Category.countDocuments();
 
         if(categories){
             res.status(200).json(new ApiResponse(200, { categories, total, page, limit }, "Categories fetched successfully."));

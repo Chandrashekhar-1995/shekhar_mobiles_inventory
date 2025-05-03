@@ -95,9 +95,21 @@ const createUser = asyncHandler(async (req, res, next) => {
 
 // fetch all user
 const fetchAllUser = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
     try {
-        const allUsers = await User.find();
-        res.status(201).json(new ApiResponse(200, allUsers, "All users fetched successfully."));
+        const users = await User.find()
+        .select("-password -refreshToken")
+        .skip(skip)
+        .limit(limit);
+        const total = await User.countDocuments();
+
+        if(users){
+            res.status(201).json(new ApiResponse(200, (users, total, page, limit), "All users fetched successfully."));
+        } else {
+            throw new ApiError(404, "No user found")
+        }
 
     } catch (error) {
         next(error);
@@ -109,7 +121,8 @@ const fetchAllUser = asyncHandler( async (req, res, next) =>{
 const fetchUserByID = asyncHandler( async (req, res, next) => {
   const {id} = req.params;
   try {
-    const user = await User.findById(id);
+    const user = await User.findById(id)
+    .select("-password -refreshToken")
     res.status(200).json(new ApiResponse(200, user, "User Fetched"));
     
   } catch (error) {
@@ -119,20 +132,30 @@ const fetchUserByID = asyncHandler( async (req, res, next) => {
 
 // Search User by Name or Mobile number
 const searchUser = asyncHandler(async (req, res, next) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    
+    if (!search) {
+        throw new ApiError(400, "Search Query is required.");
+    }
     try {
-      const { search } = req.query;
-  
-      if (!search) {
-        throw new ApiError(400, "Search Query is required." );
-      }
-  
-      // Case-insensitive search for matching names
       const users = await User.find({
         $or: [{ name: { $regex: search, $options: "i" }, }, { mobileNumber:{ $regex: search, $options: "i" } }],
         
-      }).limit(20);
+        })
+        .select("-password -refreshToken")
+        .skip(skip)
+        .limit(limit);
+        const total = await User.countDocuments();
   
-      res.status(200).json(new ApiResponse(200, users, "User Fetched"));
+      if(users){
+        res.status(201).json(new ApiResponse(200, (users, total, page, limit), "All users fetched successfully."));
+    } else {
+        throw new ApiError(404, "No user found")
+    }
+
     } catch (err) {
       next(err);;
     }

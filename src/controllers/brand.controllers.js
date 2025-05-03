@@ -32,7 +32,7 @@ const fetchAllBrand = asyncHandler( async (req, res, next) =>{
         const brands = await Brand.find()
         .skip(skip)
         .limit(limit);
-        const total = await Invoice.countDocuments();
+        const total = await Brand.countDocuments();
 
         if(brands){
             res.status(201).json(new ApiResponse(200, { brands, total, page, limit }, "All brand fetched successfully."));

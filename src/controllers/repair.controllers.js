@@ -150,7 +150,7 @@ const fetchAllRepair = asyncHandler( async (req, res, next) =>{
     const skip = (page - 1) * limit;
 
     try {        
-        const invoices = await Repair.find()
+        const repairs = await Repair.find()
         .populate({ path: "bookBy", select: "name" })
         .populate({ path: "deliverBy", select: "name" })
         .populate({ path: "repairing.repairUnder", select: "name" })
@@ -160,7 +160,7 @@ const fetchAllRepair = asyncHandler( async (req, res, next) =>{
         const total = await Repair.countDocuments();
         if (invoices) {
             res.status(200).json(
-                new ApiResponse(200, { invoices, total, page, limit }, "Repair fetched successfully.")
+                new ApiResponse(200, { repairs, total, page, limit }, "Repair fetched successfully.")
             )
           } else {
             res.status(404).json({ message: 'No Repair invoices found' });
@@ -198,7 +198,7 @@ const searchRepair = asyncHandler( async (req, res, next) =>{
     
     try {
         // Case-insensitive search for matching names
-        const invoices = await Repair.find({
+        const repairs = await Repair.find({
             $or: [
                 { repairInvoiceNumber: { $regex: search, $options: "i" }, }, 
                 {bookingDate: { $regex: search, $options: "i" }, }, 
@@ -215,7 +215,7 @@ const searchRepair = asyncHandler( async (req, res, next) =>{
             throw new ApiError(400, "No Repair found" );
           }
 
-        res.status(200).json(new ApiResponse(200, { invoices, total, page, limit }, "Repairs Fetched"));
+        res.status(200).json(new ApiResponse(200, { repairs, total, page, limit }, "Repairs Fetched"));
 
     } catch (error) {
         next(error);

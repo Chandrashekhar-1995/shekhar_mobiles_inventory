@@ -104,7 +104,7 @@ const fetchAllCustomer = asyncHandler( async (req, res, next) =>{
       .select("-password -refreshToken")
       .skip(skip)
       .limit(limit);
-      const total = await Invoice.countDocuments();
+      const total = await Customer.countDocuments();
 
       if(customers){
         res.status(200).json(new ApiResponse(200, { customers, total, page, limit }, "All customers fetched successfully."));
