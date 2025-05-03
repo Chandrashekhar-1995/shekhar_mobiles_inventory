@@ -7,10 +7,12 @@ const faultSchema = new Schema({
         trim:true,
         unique: true,
     },
-    subFault: {
-        type: String,
-        trim: true
-      },
+    subFaults: [
+        {
+            type: String,
+            trim: true,
+        },
+    ],
 });
 
 export const Fault = mongoose.model("Fault", faultSchema);

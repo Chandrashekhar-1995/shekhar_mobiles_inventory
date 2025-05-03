@@ -144,9 +144,6 @@ const addSubcategory = asyncHandler(async (req, res, next) => {
         throw new ApiError(400, "Category name and subcategories are required.");
       }
 
-      console.log(category, subcategories);
-      
-    
       // Ensure subcategories is an array
       const subcategoryList = Array.isArray(subcategories)
         ? subcategories

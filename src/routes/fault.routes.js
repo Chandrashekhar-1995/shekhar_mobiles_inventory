@@ -1,6 +1,6 @@
 import express from "express";
 import { isAdmin, isLoggedIn, isUser } from "../middlewares/auth.middleware.js";
-import { createFault, deleteFault, fetchAllFault, fetchFaultByID, searchFault, updateFault } from "../controllers/fault.controllers.js";
+import { addSubFault, createFault, deleteFault, fetchAllFault, fetchFaultByID, searchFault, updateFault } from "../controllers/fault.controllers.js";
 
 const faultRouter = express.Router();
 
@@ -12,6 +12,7 @@ faultRouter.get("/:id", isLoggedIn, isUser, fetchFaultByID );
 faultRouter.get("/", isLoggedIn, isUser, searchFault);
 faultRouter.put("/:id", isLoggedIn, isUser, updateFault );
 faultRouter.delete("/:id", isLoggedIn, isAdmin, deleteFault );
+faultRouter.post("/add-subFault", isLoggedIn, isAdmin, addSubFault );
 
 
 export default faultRouter;

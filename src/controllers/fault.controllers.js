@@ -7,14 +7,22 @@ import { Fault } from "../models/fault.model.js";
 const createFault = asyncHandler( async(req, res,next)=>{
 
     try {
-        const { fault } = req.body;
+        const { fault, subFaults } = req.body;
+        if (!fault) {
+            throw new ApiError(400, "Fault name is required.");
+        }
 
         const existingFault = await Fault.findOne({ fault });
         if (existingFault) {
             throw new ApiError(409, "Fault already exists.");
         }
 
-        const newFault = await Fault.create({ fault });
+        const newFault = new Fault({
+            fault,
+            subFaults: subFaults || [], 
+        });
+        
+        await newFault.save();
 
         res.status(201).json(new ApiResponse(201, newFault, "Fault created successfully."));
  
@@ -125,11 +133,58 @@ const deleteFault = asyncHandler( async (req, res, next) =>{
 });
 
 
+const addSubFault = asyncHandler(async (req, res, next) => {
+    const { fault, subFaults } = req.body;
+  
+  try {
+      // Validation
+      if (!fault || !subFaults) {
+        throw new ApiError(400, "Fault and subfault are required.");
+      }
+
+      // Ensure subcategories is an array
+      const subFaultsList = Array.isArray(subFaults)
+        ? subFaults
+        : [subFaults];
+    
+      const existingFault = await Fault.findOne({ fault: fault });
+    
+      if (!existingFault) {
+        throw new ApiError(404, "Fault not found.");
+      }
+
+      const existingSubFaults = existingFault.subFaults.map((s) =>
+        s.toLowerCase()
+      );
+    
+      const newSubFaults = subcategoryList.filter(
+        (sub) => !existingSubFaults.includes(sub.toLowerCase())
+      );
+    
+      if (newSubFaults.length === 0) {
+        return res
+          .status(200)
+          .json(new ApiResponse(200, existingFault, "No new sub fault to add."));
+      }
+    
+      existingFault.subFaults.push(...newSubFaults);
+      await existingFault.save();
+    
+      return res.status(200).json(
+        new ApiResponse(200, existingFault, "Sub Fault added successfully.")
+      );
+  } catch (error) {
+    next(error)
+  }
+  });
+
+
 export {
     createFault,
     fetchAllFault,
     fetchFaultByID,
     searchFault,
     updateFault,
-    deleteFault
+    deleteFault,
+    addSubFault,
 }
