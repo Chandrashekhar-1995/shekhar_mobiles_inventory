@@ -25,9 +25,20 @@ const createModelNo = asyncHandler( async(req, res,next)=>{
 
 
 const fetchAllModelNo = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     try {
-        const allModels = await ModelNo.find();
-        res.status(201).json(new ApiResponse(200, allModels, "All model fetched successfully."));
+        const models = await ModelNo.find()
+        .skip(skip)
+        .limit(limit);
+        const total = await ModelNo.countDocuments();
+
+        if(models){
+            res.status(201).json(new ApiResponse(200, {models, total, page, limit}, "Model fetched successfully."));
+        }else{
+            throw new ApiError(400, "No model found" );
+        }
 
     } catch (error) {
         next(error);
@@ -55,13 +66,16 @@ const searchModelNo = asyncHandler( async (req, res, next) =>{
         
         const models = await ModelNo.find({
             modelNo: { $regex: search, $options: "i" } 
-        }).limit(20);
+        })
+        .skip(skip)
+        .limit(limit);
+        const total = await ModelNo.countDocuments();
 
-        if (models.length , 0) {
-            throw new ApiError(404, "No model no found" );
-          }
-
-        res.status(200).json(new ApiResponse(200, models, "Brand Fetched"));
+        if(models){
+            res.status(201).json(new ApiResponse(200, {models, total, page, limit}, "Model fetched successfully."));
+        }else{
+            throw new ApiError(400, "No model found" );
+        }
 
     } catch (error) {
         next(error);

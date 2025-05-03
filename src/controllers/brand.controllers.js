@@ -24,11 +24,21 @@ const createBrand = asyncHandler( async(req, res,next)=>{
     };
 });
 
-
 const fetchAllBrand = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     try {
-        const allBrands = await Brand.find();
-        res.status(201).json(new ApiResponse(200, allBrands, "All brand fetched successfully."));
+        const brands = await Brand.find()
+        .skip(skip)
+        .limit(limit);
+        const total = await Invoice.countDocuments();
+
+        if(brands){
+            res.status(201).json(new ApiResponse(200, { brands, total, page, limit }, "All brand fetched successfully."));
+        }else{
+            throw new ApiError(404, "No Brand found")
+        }
 
     } catch (error) {
         next(error);
@@ -48,21 +58,27 @@ const fetchBrandByID = asyncHandler( async (req, res, next) =>{
 
 
 const searchBrand = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    if (!search) {
+        throw new ApiError(400, "Search Query is required." );
+    }
     try {
-        const { search } = req.query;
-        if (!search) {
-                throw new ApiError(400, "Search Query is required." );
-              }
-        
         const brands = await Brand.find({
             brandName: { $regex: search, $options: "i" } 
-        }).limit(20);
+        })
+        .skip(skip)
+        .limit(limit);
+        const total = await Brand.countDocuments();
 
-        if (brands.length , 0) {
-            throw new ApiError(400, "No brand found" );
+        if (brands) {
+            res.status(200).json(new ApiResponse(200, {brands, total, page, limit}, "Brand Fetched"));
+        } else {
+              throw new ApiError(400, "No brand found" );
           }
 
-        res.status(200).json(new ApiResponse(200, brands, "Brand Fetched"));
 
     } catch (error) {
         next(error);

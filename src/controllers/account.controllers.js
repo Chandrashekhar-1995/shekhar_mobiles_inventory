@@ -41,10 +41,21 @@ const createAccount = asyncHandler( async(req, res,next)=>{
 
 
 const fetchAllAccount = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     try {
-        const allAccounts = await Account.find();
-        res.status(201).json(new ApiResponse(201, allAccounts, " All Account Fetched"));
+        const accounts = await Account.find()
+        .skip(skip)
+        .limit(limit);
+        const total = await Invoice.countDocuments();
 
+        if(accounts){
+            res.status(201).json(new ApiResponse(201, { accounts, total, page, limit }, " All Account Fetched"));
+        } else{
+            throw new ApiError(404, "No account found")
+        }
+            
     } catch (error) {
         next(error);
     }
@@ -63,18 +74,26 @@ const fetchAccountByID = asyncHandler( async (req, res, next) =>{
 
 
 const searchAccount = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    if (!search) {
+        throw new ApiError(400, "Search Query is required." );
+    }
     try {
-        const { search } = req.query;
-        if (!search) {
-                throw new ApiError(400, "Search Query is required." );
-              }
-        
         const accounts = await Account.find({
-                $or: [{ accountName: { $regex: search, $options: "i" }, }, { type:{ $regex: search, $options: "i" } }],
-                
-              }).limit(20);
+            $or: [{ accountName: { $regex: search, $options: "i" }, }, { type:{ $regex: search, $options: "i" } }],   
+            })
+            .skip(skip)
+            .limit(limit);
+            const total = await Account.countDocuments();
 
-        res.status(200).json(new ApiResponse(200, accounts, "Accounts Fetched"));
+            if(accounts){
+                res.status(201).json(new ApiResponse(201, { accounts, total, page, limit }, " All Account Fetched"));
+            } else{
+                throw new ApiError(404, "No account found")
+            }
 
     } catch (error) {
         next(error);

@@ -8,6 +8,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { findUserOrCustomer } from "../utils/dbHelpers.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import { error } from "console";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -95,9 +96,21 @@ const createCustomer = asyncHandler(async (req, res, next) => {
 
 // fetch all customer
 const fetchAllCustomer = asyncHandler( async (req, res, next) =>{
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
     try {
-        const allCustomer = await Customer.find().select("-password -refreshToken");;
-        res.status(200).json(new ApiResponse(200, allCustomer, "All customers fetched successfully."));
+      const customers = await Customer.find({ name: { $ne: "cash" } })
+      .select("-password -refreshToken")
+      .skip(skip)
+      .limit(limit);
+      const total = await Invoice.countDocuments();
+
+      if(customers){
+        res.status(200).json(new ApiResponse(200, { customers, total, page, limit }, "All customers fetched successfully."));
+      } else {
+        throw new ApiError(404, "No Customer found please create customer")
+      }
 
     } catch (error) {
         next(error);
@@ -109,7 +122,8 @@ const fetchAllCustomer = asyncHandler( async (req, res, next) =>{
 const fetchCustomerByID = asyncHandler( async (req, res, next) => {
   const {id} = req.params;
   try {
-    const customer = await Customer.findById(id);
+    const customer = await Customer.findById(id)
+    .select("-password -refreshToken")
     res.status(200).json(new ApiResponse(200, customer, "Customers Fetched"));
     
   } catch (error) {
@@ -119,24 +133,48 @@ const fetchCustomerByID = asyncHandler( async (req, res, next) => {
 
 // Search Customers by Name or Mobile number
 const searchCustomers = asyncHandler(async (req, res, next) => {
-    try {
-      const { search } = req.query;
-  
-      if (!search) {
-        throw new ApiError(400, "Search Query is required." );
-      }
-  
-      // Case-insensitive search for matching names
-      const customers = await Customer.find({
-        $or: [{ name: { $regex: search, $options: "i" }, }, { mobileNumber:{ $regex: search, $options: "i" } }],
-        
-      }).limit(20);
-  
-      res.status(200).json(new ApiResponse(200, customers, "Customers Fetched"));
-    } catch (err) {
-      next(err);;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const { search } = req.query;
+
+  if (!search) {
+    throw new ApiError(400, "Search Query is required.");
+  }
+
+  try {
+    const customers = await Customer.find({
+      name: { $ne: "cash" }, // Exclude "cash"
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { mobileNumber: { $regex: search, $options: "i" } }
+      ],
+    })
+      .select("-password -refreshToken")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Customer.countDocuments({
+      name: { $ne: "cash" },
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { mobileNumber: { $regex: search, $options: "i" } }
+      ],
+    });
+
+    if (customers.length > 0) {
+      res.status(200).json(
+        new ApiResponse(200, { customers, total, page, limit }, "Customers Fetched")
+      );
+    } else {
+      throw new ApiError(404, "No Customer found");
     }
-  });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 
   // Update customer by id

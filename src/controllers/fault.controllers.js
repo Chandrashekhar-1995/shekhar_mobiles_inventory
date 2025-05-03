@@ -33,10 +33,17 @@ const createFault = asyncHandler( async(req, res,next)=>{
 
 
 const fetchAllFault = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     try {
-        const allFaults = await Fault.find();
-        if (allFaults && allFaults.length > 0) {
-            res.status(201).json(new ApiResponse(200, allFaults, "All faults fetched successfully."));
+        const faults = await Fault.find()
+        .skip(skip)
+        .limit(limit);
+        const total = await Invoice.countDocuments()
+
+        if (faults) {
+            res.status(201).json(new ApiResponse(200, { faults, total, page, limit }, "All faults fetched successfully."));
         } else {
             throw new ApiError(404, "No Fault found please create a fault")
         }
@@ -61,6 +68,13 @@ const fetchFaultByID = asyncHandler( async (req, res, next) =>{
 
 
 const searchFault = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    if (!search) {
+        throw new ApiError(400, "Search Query is required." );
+    }
     try {
         const { search } = req.query;
         if (!search) {
@@ -69,13 +83,17 @@ const searchFault = asyncHandler( async (req, res, next) =>{
         
         const faults = await Fault.find({
             fault: { $regex: search, $options: "i" } 
-        }).limit(20);
+        })
+        .skip(skip)
+        .limit(limit);
+        const total = await Fault.countDocuments();
 
-        if (faults.length , 0) {
-            throw new ApiError(400, "No fault found" );
+        if (faults) {
+            res.status(200).json(new ApiResponse(200, {faults, total, page, limit}, "Fault Fetched"));
+        } else {
+              throw new ApiError(400, "No fault found" );
           }
 
-        res.status(200).json(new ApiResponse(200, faults, "Fault Fetched"));
 
     } catch (error) {
         next(error);

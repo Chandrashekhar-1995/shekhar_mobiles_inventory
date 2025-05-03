@@ -168,27 +168,31 @@ const fetchPurchaseInvoiceByID = asyncHandler( async (req, res, next) => {
 
 
 const searchPurchaseInvoice = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    
+    if (!search) {
+        throw new ApiError(400, "Search Query is required.");
+      }
     try {
-        const { search } = req.query;
-        if (!search) {
-                throw new ApiError(400, "Search Query is required." );
-              }
-        
-        // Case-insensitive search for matching names
-        const invoices = await PurchaseInvoice.find({
+        const purchaseInvoices = await PurchaseInvoice.find({
             $or: [
                 { invoiceNumber: { $regex: search, $options: "i" }, }, 
                 { supplierName:{ $regex: search, $options: "i" } },
                 { mobileNumber:{ $regex: search, $options: "i" } }
             ],
               
-            }).limit(20);
-
-        if (invoices.length < 0) {
-            throw new ApiError(400, "No invoice found" );
-          }
-
-        res.status(200).json(new ApiResponse(200, invoices, "Invoices Fetched"));
+            }).skip(skip)
+            .limit(limit);
+            const total = await PurchaseInvoice.countDocuments();
+    
+            if (purchaseInvoices) {
+                res.status(200).json(new ApiResponse(200, {purchaseInvoices, total, page, limit}, "Invoices Fetched"));
+            } else {
+                throw new ApiError(400, "No invoice found" );
+              }
 
     } catch (error) {
         next(error);

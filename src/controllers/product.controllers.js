@@ -159,20 +159,29 @@ const fetchProductByID = asyncHandler( async (req, res, next) => {
 
 // Search Product by Name or code
 const searcProduct = asyncHandler(async (req, res, next) => {
-  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     const { search } = req.query;
-
     if (!search) {
-      throw new ApiError(400, "Search Query is required." );
+        throw new ApiError(400, "Search Query is required." );
     }
-
-    // Case-insensitive search for matching names
+  try {
     const products = await Product.find({
       $or: [{ productName: { $regex: search, $options: "i" }, }, { itemCode:{ $regex: search, $options: "i" } }],
-      
-    }).limit(20);
+    })
+    .skip(skip)
+    .limit(limit);
+    const total = await Product.countDocuments();
 
-    res.status(200).json(new ApiResponse(200, products, "Products Fetched"));
+    if (products) {
+        res.status(200).json(
+            new ApiResponse(201, { products, total, page, limit }, "Products fetched successfully.")
+            )
+    } else{
+        throw new ApiError(400, "No product found" );
+    }
+
   } catch (err) {
     next(err);;
   }

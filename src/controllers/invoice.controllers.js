@@ -183,7 +183,7 @@ const fetchInvoiceByID = asyncHandler( async (req, res, next) =>{
 
         if (invoice) {
             res.status(200).json(
-                new ApiResponse(201, { invoice }, "Invoice fetched successfully.")
+                new ApiResponse(201, invoice, "Invoice fetched successfully.")
             )
           } else {
             res.status(404).json({ message: 'No invoices found' });
@@ -195,13 +195,14 @@ const fetchInvoiceByID = asyncHandler( async (req, res, next) =>{
 
 // search invoice
 const searchInvoice = asyncHandler( async (req, res, next) =>{
-    try {
-        const { search } = req.query;
-        if (!search) {
-                throw new ApiError(400, "Search Query is required." );
-              }
-        
-        // Case-insensitive search for matching names
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    if (!search) {
+        throw new ApiError(400, "Search Query is required." );
+    }
+    try { 
         const invoices = await Invoice.find({
             $or: [
                 { invoiceNumber: { $regex: search, $options: "i" }, }, 
@@ -215,13 +216,15 @@ const searchInvoice = asyncHandler( async (req, res, next) =>{
             .populate({ path: "items.item", select: "productName itemCode unit salePrice mrp" })
             .populate({ path: "soldBy", select: "name" })
             .populate({ path: "paymentAccount", select: "accountName" })
-            .limit(20);
+            .skip(skip)
+            .limit(limit);
+            const total = await Invoice.countDocuments();
 
-        if (invoices.length < 0) {
-            throw new ApiError(400, "No invoice found" );
-          }
-
-        res.status(200).json(new ApiResponse(200, invoices, "Invoices Fetched"));
+            if(invoices){
+                res.status(200).json(new ApiResponse(200, {invoices, total, page, limit}, "Invoices Fetched"));
+            } else{
+                throw new ApiError(400, "No invoice found" );
+            }
 
     } catch (error) {
         next(error);

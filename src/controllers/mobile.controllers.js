@@ -85,7 +85,11 @@ const fetchAllMobile = asyncHandler( async (req, res, next) =>{
         .limit(limit);
         const total = await Mobile.countDocuments();
 
-        res.status(201).json(new ApiResponse(200, {mobiles, total, page, limit}, "Mobile fetched successfully."));
+        if(mobiles){
+            res.status(201).json(new ApiResponse(200, {mobiles, total, page, limit}, "Mobile fetched successfully."))
+        }else{
+            throw new ApiError(400, "No mobile found" );
+        }
 
     } catch (error) {
         next(error);
@@ -119,7 +123,6 @@ const searchMobile = asyncHandler( async (req, res, next) =>{
     }
     
     try {
-        // Case-insensitive search for matching names
         const mobiles = await Mobile.find({
             $or: [
                 { MobileType: { $regex: search, $options: "i" }, }, 
@@ -133,13 +136,13 @@ const searchMobile = asyncHandler( async (req, res, next) =>{
             .populate({ path: "brand", select: "brandName"})
             .skip(skip)
             .limit(limit);
-            const total = await Repair.countDocuments();
+            const total = await Mobile.countDocuments();
 
-        if (!mobiles) {
-            throw new ApiError(400, "No mobile found" );
+        if (mobiles) {
+            res.status(200).json(new ApiResponse(200, {mobiles, total, page, limit}, "Mobiles Fetched"));
+        } else {
+            throw new ApiError(400, "No mobile found" )
           }
-
-        res.status(200).json(new ApiResponse(200, {mobiles, total, page, limit}, "Mobiles Fetched"));
 
     } catch (error) {
         next(error);

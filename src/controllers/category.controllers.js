@@ -35,10 +35,21 @@ const createCategory = asyncHandler( async (req, res, next) => {
 
 
 const fetchAllCategory = asyncHandler( async (req, res, next) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     try {
-        const category = await Category.find();
-        res.status(200).json(new ApiResponse(200, category, "All categories fetched successfully."));
+        const categories = await Category.find()
+        .skip(skip)
+        .limit(limit);
+        const total = await Invoice.countDocuments();
+
+        if(categories){
+            res.status(200).json(new ApiResponse(200, { categories, total, page, limit }, "Categories fetched successfully."));
+        } else {
+            throw new ApiError(404, "No category found")
+        }
     } catch (error) {
         next(error);
     }
@@ -57,21 +68,27 @@ const fetchCategoryByID = asyncHandler( async (req, res, next) =>{
 
 
 const searchCategory = asyncHandler( async (req, res, next) =>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const { search } = req.query;
+    if (!search) {
+        throw new ApiError(400, "Search Query is required." );
+    }
     try {
-        const { search } = req.query;
-        if (!search) {
-                throw new ApiError(400, "Search Query is required." );
-              }
-        
         const categories = await Category.find({
             categoryName: { $regex: search, $options: "i" } 
-        }).limit(20);
+        })
+        .skip(skip)
+        .limit(limit);
+        const total = await Category.countDocuments();
 
         if (!categories) {
-            throw new ApiError(400, "No category found" );
+            res.status(200).json(new ApiResponse(200, {categories, total, page, limit}, "Categories Fetched"));
+        } else {
+              throw new ApiError(400, "No category found" );
           }
 
-        res.status(200).json(new ApiResponse(200, categories, "Categories Fetched"));
 
     } catch (error) {
         next(error);
