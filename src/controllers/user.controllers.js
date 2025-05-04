@@ -106,7 +106,7 @@ const fetchAllUser = asyncHandler( async (req, res, next) =>{
         const total = await User.countDocuments();
 
         if(users){
-            res.status(201).json(new ApiResponse(200, (users, total, page, limit), "All users fetched successfully."));
+            res.status(201).json(new ApiResponse(200, {users, total, page, limit}, "All users fetched successfully."));
         } else {
             throw new ApiError(404, "No user found")
         }
@@ -151,7 +151,7 @@ const searchUser = asyncHandler(async (req, res, next) => {
         const total = await User.countDocuments();
   
       if(users){
-        res.status(201).json(new ApiResponse(200, (users, total, page, limit), "All users fetched successfully."));
+        res.status(201).json(new ApiResponse(200, {users, total, page, limit}, "All users fetched successfully."));
     } else {
         throw new ApiError(404, "No user found")
     }

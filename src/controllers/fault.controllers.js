@@ -40,7 +40,7 @@ const fetchAllFault = asyncHandler( async (req, res, next) =>{
         const faults = await Fault.find()
         .skip(skip)
         .limit(limit);
-        const total = await Invoice.countDocuments()
+        const total = await Fault.countDocuments()
 
         if (faults) {
             res.status(201).json(new ApiResponse(200, { faults, total, page, limit }, "All faults fetched successfully."));
