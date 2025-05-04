@@ -39,18 +39,20 @@ const getAllRepairProcesses = asyncHandler( async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
   try {
-    const repairProcesses = await RepairProcess.find()
+    const processes = await RepairProcess.find()
       .populate({ path: "fault", select: "fault" })
       .populate({ path: "createdBy", select: "name" })
       .populate({ path: "updatedBy", select: "name" })
       .skip(skip)
       .limit(limit);
-      const total = await Repair.countDocuments();
-    if(!repairProcesses){
-      throw new ApiError(440, "No process found please create first")
+      const total = await RepairProcess.countDocuments();
+
+    if(processes && processes.length < 0){
+      res.status(200).json(new ApiResponse(200, { processes, total, page, limit }, "All processes fetched successfully."));
+    } else {
+      throw new ApiError(404, "No process found please create first")
     }
 
-    res.status(200).json(new ApiResponse(200, { repairProcesses, total, page, limit }, "All processes fetched successfully."));
   } catch (error) {
     next(error)
   }

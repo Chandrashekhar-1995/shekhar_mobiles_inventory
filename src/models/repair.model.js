@@ -24,10 +24,6 @@ const repairSchema = new Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",
         },
-        customerName: String,
-        mobileNumber: Number,
-        address: String,
-
         repairing: [{
             deviceType: {
                 type: String,

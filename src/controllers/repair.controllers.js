@@ -82,9 +82,6 @@ const createRepair = asyncHandler(async (req, res, next) => {
             expectDeliveryDate,
             billTo: finalBillTo,
             customer: customer._id,
-            customerName: customer.name,
-            mobileNumber: customer.mobileNumber,
-            address: customer.address,
             repairing: repairDetails,
             discountAmount,
             advanceAmount,
@@ -152,13 +149,14 @@ const fetchAllRepair = asyncHandler( async (req, res, next) =>{
     try {        
         const repairs = await Repair.find()
         .populate({ path: "bookBy", select: "name" })
-        .populate({ path: "deliverBy", select: "name" })
+        .populate({ path: "customer", select: "name" })
+        .populate({ path: "deliverBy", select: "name address mobileNumber" })
         .populate({ path: "repairing.repairUnder", select: "name" })
         .populate({ path: "repairing.repairBy", select: "name" })
         .skip(skip)
         .limit(limit);
         const total = await Repair.countDocuments();
-        if (invoices) {
+        if (repairs) {
             res.status(200).json(
                 new ApiResponse(200, { repairs, total, page, limit }, "Repair fetched successfully.")
             )
@@ -173,7 +171,12 @@ const fetchAllRepair = asyncHandler( async (req, res, next) =>{
 // Endpoint to fetch Repair by id
 const fetchRepairByID = asyncHandler( async (req, res, next) =>{
     try {        
-        const invoice = await Repair.findById(req.params.id);
+        const invoice = await Repair.findById(req.params.id)
+        .populate({ path: "bookBy", select: "name" })
+        .populate({ path: "customer", select: "name" })
+        .populate({ path: "deliverBy", select: "name address mobileNumber" })
+        .populate({ path: "repairing.repairUnder", select: "name" })
+        .populate({ path: "repairing.repairBy", select: "name" })
         if (invoice) {
             res.status(200).json(
                 new ApiResponse(201, { invoice }, "Repair fetched successfully.")
@@ -200,13 +203,18 @@ const searchRepair = asyncHandler( async (req, res, next) =>{
         // Case-insensitive search for matching names
         const repairs = await Repair.find({
             $or: [
-                { repairInvoiceNumber: { $regex: search, $options: "i" }, }, 
+                { repairNumber: { $regex: search, $options: "i" }, }, 
                 {bookingDate: { $regex: search, $options: "i" }, }, 
                 { customerName:{ $regex: search, $options: "i" } },
                 { mobileNumber:{ $regex: search, $options: "i" } }
             ],
               
             })
+            .populate({ path: "bookBy", select: "name" })
+            .populate({ path: "customer", select: "name" })
+            .populate({ path: "deliverBy", select: "name address mobileNumber" })
+            .populate({ path: "repairing.repairUnder", select: "name" })
+            .populate({ path: "repairing.repairBy", select: "name" })
             .skip(skip)
             .limit(limit);
             const total = await Repair.countDocuments();
