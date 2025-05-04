@@ -3,67 +3,54 @@ import mongoose, { Schema } from "mongoose";
 const repairProcessStepSchema = new Schema({
   stepName: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
-  description: {
-    type: String,
-    trim: true
-  },
-  isCritical: {
-    type: Boolean,
-    default: false
-  },
-  expectedOutcome: {
-    type: String,
-    trim: true
-  }
-}, { _id: false });
-
-const repairProcessSchema = new Schema(
-  {
-    fault:{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Fault",
-    },
-    subFault: {
+  description: String,
+  checklistItems: [{
+    itemName: {
       type: String,
-      trim: true
-    },
-    deviceType: {
-      type: String,
-      required: true,
-      enum: ["mobile", "lcd", "pc_laptop", "others"],
-      default: "mobile"
-    },
-    processName: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    processSteps: [repairProcessStepSchema],
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
       required: true
     },
-    updatedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    isActive: {
+    isChecked: {
       type: Boolean,
-      default: true
+      default: false
     }
-  },
-  { 
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+  }],
+  order: {
+    type: Number,
+    required: true
   }
-);
+});
 
-// Index for faster queries
-repairProcessSchema.index({ faultType: 1, deviceType: 1 });
+const repairProcessSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  fault: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Fault",
+    required: true
+  },
+  deviceType: {
+    type: String,
+    enum: ["mobile", "lcd", "pc_laptop", "others"],
+    default: "mobile"
+  },
+  steps: [repairProcessStepSchema],
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, { timestamps: true });
 
 export const RepairProcess = mongoose.model("RepairProcess", repairProcessSchema);
