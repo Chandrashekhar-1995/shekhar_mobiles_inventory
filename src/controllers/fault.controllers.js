@@ -153,19 +153,16 @@ const deleteFault = asyncHandler( async (req, res, next) =>{
 
 const addSubFault = asyncHandler(async (req, res, next) => {
     const { fault, subFaults } = req.body;
-  
   try {
-      // Validation
       if (!fault || !subFaults) {
         throw new ApiError(400, "Fault and subfault are required.");
       }
 
-      // Ensure subcategories is an array
       const subFaultsList = Array.isArray(subFaults)
         ? subFaults
         : [subFaults];
     
-      const existingFault = await Fault.findOne({ fault: fault });
+      const existingFault = await Fault.findById(fault);
     
       if (!existingFault) {
         throw new ApiError(404, "Fault not found.");
@@ -175,14 +172,12 @@ const addSubFault = asyncHandler(async (req, res, next) => {
         s.toLowerCase()
       );
     
-      const newSubFaults = subcategoryList.filter(
+      const newSubFaults = subFaultsList.filter(
         (sub) => !existingSubFaults.includes(sub.toLowerCase())
       );
     
       if (newSubFaults.length === 0) {
-        return res
-          .status(200)
-          .json(new ApiResponse(200, existingFault, "No new sub fault to add."));
+        throw new ApiError(400, "No new sub fault to add.");
       }
     
       existingFault.subFaults.push(...newSubFaults);

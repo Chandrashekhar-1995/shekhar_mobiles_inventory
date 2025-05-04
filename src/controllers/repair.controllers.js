@@ -212,6 +212,7 @@ const searchRepair = asyncHandler( async (req, res, next) =>{
             })
             .populate({ path: "bookBy", select: "name" })
             .populate({ path: "customer", select: "name" })
+            .populate({ path: "repairing.fault", select: "fault" })
             .populate({ path: "deliverBy", select: "name address mobileNumber" })
             .populate({ path: "repairing.repairUnder", select: "name" })
             .populate({ path: "repairing.repairBy", select: "name" })
