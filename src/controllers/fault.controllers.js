@@ -4,10 +4,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Fault } from "../models/fault.model.js";
 
-const createFault = asyncHandler( async(req, res,next)=>{
-
+const createFault = asyncHandler(async (req, res, next) => {
     try {
         const { fault, subFaults } = req.body;
+
         if (!fault) {
             throw new ApiError(400, "Fault name is required.");
         }
@@ -17,18 +17,19 @@ const createFault = asyncHandler( async(req, res,next)=>{
             throw new ApiError(409, "Fault already exists.");
         }
 
+        const finalSubFaults = Array.isArray(subFaults) && subFaults.length > 0 ? subFaults : [fault];
+
         const newFault = new Fault({
             fault,
-            subFaults: subFaults || [], 
+            subFaults: finalSubFaults,
         });
-        
+
         await newFault.save();
 
         res.status(201).json(new ApiResponse(201, newFault, "Fault created successfully."));
- 
     } catch (error) {
         next(error);
-    };
+    }
 });
 
 
