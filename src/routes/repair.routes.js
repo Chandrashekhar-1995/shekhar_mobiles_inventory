@@ -15,18 +15,4 @@ repairRouter.delete("/:id", isLoggedIn, isAdmin, deleteRepair );
 
 
 
-
-// Repair Process Routes
-repairRouter.post('/processes', auth, createRepairProcess);
-repairRouter.get('/processes', auth, getRepairProcesses);
-repairRouter.get('/processes/by-fault/:faultId/:deviceType', auth, getProcessByFault);
-repairRouter.put('/processes/:id', auth, updateRepairProcess);
-
-// Repair Tracking Routes
-repairRouter.post('/tracking', auth, startRepairTracking);
-repairRouter.put('/tracking/:id', auth, updateRepairTracking);
-repairRouter.get('/tracking/:repairId/:repairItemIndex', auth, getRepairTracking);
-
-
-
 export default repairRouter; 

@@ -162,7 +162,7 @@ const fetchAllRepair = asyncHandler( async (req, res, next) =>{
                 new ApiResponse(200, { repairs, total, page, limit }, "Repair fetched successfully.")
             )
           } else {
-            res.status(404).json({ message: 'No Repair invoices found' });
+            throw new ApiError(404, "No Repair found" );
           }
     } catch (error) {
         next(error);

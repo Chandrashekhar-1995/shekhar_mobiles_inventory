@@ -1,9 +1,12 @@
-import { RepairTracking } from '../models/repairTracking.model';
-import { Repair } from '../models/repair.model';
-import { RepairProcess } from '../models/repairProcess.model';
+import { RepairTracking } from "../models/repairTracking.model.js";
+import { Repair } from "../models/repair.model.js";
+import { RepairProcess } from "../models/repairProcess.model.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 // Start tracking a repair process
-export const startRepairTracking = async (req, res) => {
+const startRepairTracking = asyncHandler( async (req, res, next) => {
   try {
     const { repairId, repairItemIndex, processId } = req.body;
     const userId = req.user._id;
@@ -11,18 +14,18 @@ export const startRepairTracking = async (req, res) => {
     // Validate repair exists
     const repair = await Repair.findById(repairId);
     if (!repair) {
-      return res.status(404).json({ message: 'Repair not found' });
+      throw new ApiError(404, 'Repair not found');
     }
 
     // Validate repair item exists
     if (!repair.repairing[repairItemIndex]) {
-      return res.status(400).json({ message: 'Invalid repair item index' });
+     throw new ApiError(404, 'Repair item not found'); 
     }
 
     // Validate process exists
     const process = await RepairProcess.findById(processId);
     if (!process) {
-      return res.status(404).json({ message: 'Process not found' });
+      throw new ApiError(404, 'Repair process not found');
     }
 
     // Check if tracking already exists
@@ -32,7 +35,7 @@ export const startRepairTracking = async (req, res) => {
     });
 
     if (existingTracking) {
-      return res.status(400).json({ message: 'Tracking already exists for this repair item' });
+      throw new ApiError(400, 'Repair tracking already exists for this item');
     }
 
     // Create steps for tracking
@@ -60,14 +63,16 @@ export const startRepairTracking = async (req, res) => {
     repair.repairing[repairItemIndex].repairStatus = 'in_progress';
     await repair.save();
 
-    res.status(201).json(tracking);
+    res.status(201).json(
+      new ApiResponse(201, tracking, 'Repair tracking started successfully')
+    )
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
-};
+});
 
 // Update repair tracking progress
-export const updateRepairTracking = async (req, res) => {
+ const updateRepairTracking = asyncHandler( async (req, res, next) => {
   try {
     const { id } = req.params;
     const { currentStep, steps, completedStep } = req.body;
@@ -75,7 +80,7 @@ export const updateRepairTracking = async (req, res) => {
 
     const tracking = await RepairTracking.findById(id);
     if (!tracking) {
-      return res.status(404).json({ message: 'Tracking not found' });
+      throw new ApiError(404, 'Repair tracking not found');
     }
 
     // Update current step
@@ -112,14 +117,17 @@ export const updateRepairTracking = async (req, res) => {
     }
 
     await tracking.save();
-    res.json(tracking);
+
+    res.status(200).json(
+      new ApiResponse(200, tracking, 'Repair tracking updated successfully')
+    );
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
-};
+});
 
 // Get tracking for a repair item
-export const getRepairTracking = async (req, res) => {
+const getRepairTracking = asyncHandler( async (req, res, next) => {
   try {
     const { repairId, repairItemIndex } = req.params;
 
@@ -131,11 +139,19 @@ export const getRepairTracking = async (req, res) => {
     .populate('repair', 'repairNumber');
 
     if (!tracking) {
-      return res.status(404).json({ message: 'Tracking not found' });
+      throw new ApiError(404, 'Repair tracking not found');
     }
 
-    res.json(tracking);
+    res.status(200).json(
+      new ApiResponse(200, tracking, 'Repair tracking fetched successfully')
+    );
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-};
+});
+
+export {
+  startRepairTracking,
+  updateRepairTracking,
+  getRepairTracking 
+}

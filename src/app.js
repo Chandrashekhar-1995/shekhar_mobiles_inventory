@@ -30,8 +30,8 @@ import purchaseInvoiceRouter from "./routes/purchaseInvoice.routes.js";
 import repairRouter from "./routes/repair.routes.js";
 import {errorHandler} from "./middlewares/errorHandler.middleware.js";
 import modelNoRouter from "./routes/modelNo.routes.js";
-import repairProcessesRouter from "./routes/repairProcesses.routes.js";
 import faultRouter from "./routes/fault.routes.js";
+import repairProcessRoutes from "./routes/repairProcess.routes.js";
 
 
 app.use("/api/v1/healthcheck", healthCheckRouter );
@@ -49,7 +49,7 @@ app.use("/api/v1/invoice/", invoiceRouter );
 app.use("/api/v1/purchase-invoice/", purchaseInvoiceRouter);
 app.use("/api/v1/repair/", repairRouter);
 app.use("/api/v1/fault/", faultRouter);
-app.use("/api/v1/repair-process/", repairProcessesRouter);
+app.use("/api/v1/repair-process/", repairProcessRoutes);
 
 // Error Handler Middleware (must be after all routes)
 app.use(errorHandler);
