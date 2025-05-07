@@ -15,7 +15,7 @@ import {
 const repairProcessRoutes = express.Router();
 
 // Repair Process Routes
-repairProcessRoutes.post('/processes', isLoggedIn, isUser, createRepairProcess);
+repairProcessRoutes.post('/create', isLoggedIn, isUser, createRepairProcess);
 repairProcessRoutes.get('/processes', isLoggedIn, isUser, getRepairProcesses);
 repairProcessRoutes.get('/processes/by-fault/:faultId/:deviceType', isLoggedIn, isUser, getProcessByFault);
 repairProcessRoutes.put('/processes/:id', isLoggedIn, isUser, updateRepairProcess);

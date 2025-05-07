@@ -7,7 +7,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 // Create a new standard repair process
 const createRepairProcess = asyncHandler(async (req, res, next) => {
   try {
-    const { name, fault, deviceType, steps } = req.body;
+    const { processName, fault, subFaults, deviceType, steps } = req.body;
 
     const faultExists = await Fault.findById(fault);
     if (!faultExists) {
@@ -15,8 +15,9 @@ const createRepairProcess = asyncHandler(async (req, res, next) => {
     }
 
     const process = new RepairProcess({
-      name,
+      processName,
       fault,
+      subFaults,
       deviceType,
       steps,
       createdBy : req.user._id

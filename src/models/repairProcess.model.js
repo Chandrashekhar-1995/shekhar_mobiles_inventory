@@ -23,7 +23,7 @@ const repairProcessStepSchema = new Schema({
 });
 
 const repairProcessSchema = new Schema({
-  name: {
+  processName: {
     type: String,
     required: true,
     unique: true
@@ -32,6 +32,9 @@ const repairProcessSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Fault",
     required: true
+  },
+  subFaults:{
+    type:String
   },
   deviceType: {
     type: String,
