@@ -19,13 +19,13 @@ const fetchLastInvoice = asyncHandler( async (req, res, next) =>{
     try {
         const lastInvoice = await Invoice.findOne().sort({ createdAt: -1 });
 
-        if (lastInvoice) {
-            res.status(201).json(
-                new ApiResponse(201, { lastInvoice }, "Invoice created successfully.")
-            )
-          } else {
-            res.status(404).json({ message: 'No invoices found' });
-          }
+        if (!lastInvoice) {
+            throw new ApiError(404, "No invoice found.");
+          } 
+        
+        res.status(201).json(
+            new ApiResponse(200, { lastInvoice }, "Invoice fetched successfully.")
+        )
     } catch (error) {
         next(error);
     }

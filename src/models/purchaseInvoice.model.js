@@ -30,9 +30,9 @@ const purchaseInvoiceSchema = new Schema(
         },
     billFrom: {
         type: String,
-        enum: ["Cash", "Supplier"], 
+        enum: ["cash", "supplier"], 
         required: true,
-        default:"Cash"
+        default:"cash"
     },
     supplierId: {
         type: mongoose.Schema.Types.ObjectId, 

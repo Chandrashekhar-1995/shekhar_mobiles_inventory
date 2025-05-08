@@ -39,7 +39,7 @@ const getRepairProcesses = asyncHandler( async (req, res, next) => {
   const skip = (page - 1) * limit;
   try {
     const processes = await RepairProcess.find({ isActive: true })
-      .populate("fault", "name")
+      .populate("fault", "fault")
       .populate( "createdBy", "name")
       .skip(skip)
       .limit(limit)

@@ -15,11 +15,11 @@ const generatePurchaseInvoiceNumber = async () => {
 const fetchLastPurchaseInvoice = asyncHandler( async (req, res, next) => {
     try {
         const lastPurchaseInvoice = await PurchaseInvoice.findOne().sort({ createdAt: -1 });
-        if (lastPurchaseInvoice) {
-            res.status(200).json(new ApiResponse(200, { lastPurchaseInvoice }, "Last purchase invoice fetched successfully."));
-        } else {
-            res.status(404).json({ message: 'No purchase invoices found' });
-        }
+        if (!lastPurchaseInvoice) {
+            throw new ApiError(404, "No purchase invoice found.");
+        } 
+
+        res.status(200).json(new ApiResponse(200, { lastPurchaseInvoice }, "Last purchase invoice fetched successfully."));
     } catch (error) {
         next(error);
     }

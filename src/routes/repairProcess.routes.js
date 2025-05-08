@@ -16,9 +16,9 @@ const repairProcessRoutes = express.Router();
 
 // Repair Process Routes
 repairProcessRoutes.post('/create', isLoggedIn, isUser, createRepairProcess);
-repairProcessRoutes.get('/processes', isLoggedIn, isUser, getRepairProcesses);
-repairProcessRoutes.get('/processes/by-fault/:faultId/:deviceType', isLoggedIn, isUser, getProcessByFault);
-repairProcessRoutes.put('/processes/:id', isLoggedIn, isUser, updateRepairProcess);
+repairProcessRoutes.get('/all', isLoggedIn, isUser, getRepairProcesses);
+repairProcessRoutes.get('/by-fault/:faultId/:deviceType', isLoggedIn, isUser, getProcessByFault);
+repairProcessRoutes.put('/:id', isLoggedIn, isUser, updateRepairProcess);
 
 // Repair Tracking Routes
 repairProcessRoutes.post('/tracking', isLoggedIn, isUser, startRepairTracking);
