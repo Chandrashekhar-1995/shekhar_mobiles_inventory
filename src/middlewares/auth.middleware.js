@@ -187,7 +187,7 @@ const roleBasedAuth = (allowedRoles = []) => {
                 throw new ApiError(401, "Unauthorized: Please login first");
             }
 
-            if (!allowedRoles.includes(user.designation)) {
+            if (!allowedRoles.includes(req.user.designation)) {
                 throw new ApiError(403, "Access denied"
                     // `Forbidden: Required roles - ${allowedRoles.join(", ")}`
                 );

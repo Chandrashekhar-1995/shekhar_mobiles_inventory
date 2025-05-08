@@ -2,14 +2,14 @@ import mongoose, { Schema } from "mongoose";
 
 const purchaseInvoiceSchema = new Schema(
     {
-    invoiceType: {
-        type: String, 
-        enum:{
-            values:["Non GST", "GST", "Bill of Supply"],
-            message: '{VALUE} is not supported invoice type'
+        invoiceType:{
+            type:String,
+            enum:{
+                values:["non_gst", "gst", "bill_of_supply"],
+                message: '{VALUE} is not supported invoice type'
+            },
+            default:"non_gst"
         },
-        default:"Non GST"
-    },
     invoiceNumber: {
         type: String, 
         required: true, 
@@ -34,35 +34,15 @@ const purchaseInvoiceSchema = new Schema(
         required: true,
         default:"cash"
     },
-    supplierId: {
+    supplier: {
         type: mongoose.Schema.Types.ObjectId, 
         ref: "Customer" 
-    },
-    supplierName: {
-        type: String 
-
-    },
-    mobileNumber: {
-        type: String
-    },
-    address: {
-        type: String
     },
     items: [
         {
         item: {
             type: mongoose.Schema.Types.ObjectId, ref: "Product",
             required: true,
-        },
-        productName: {
-            type: String, 
-            required: true
-        },
-        itemCode: {
-            type: String
-        },
-        unit: {
-            type: String
         },
         quantity: {
             type: Number, 
@@ -71,9 +51,6 @@ const purchaseInvoiceSchema = new Schema(
         purchasePrice: {
             type: Number, 
             required: true
-        },
-        mrp: {
-            type: Number
         },
         discount: {
             type: Number

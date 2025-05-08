@@ -4,6 +4,7 @@ import { Product } from "../models/product.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import { processItems } from "../middlewares/purchaseInvoice.middleware.js";
 
 const generatePurchaseInvoiceNumber = async () => {
     const lastInvoice = await PurchaseInvoice.findOne().sort({ createdAt: -1 });
@@ -34,11 +35,8 @@ const createPurchaseInvoice = asyncHandler( async (req, res, next) => {
             dueDate,
             placeOfSupply,
             billFrom,
-            supplierId,
-            supplierName,
-            mobileNumber,
-            address,
-            items,
+            supplier,
+            items, /// todo
             discountAmount,
             paymentDate,
             paymentMode,
@@ -55,12 +53,16 @@ const createPurchaseInvoice = asyncHandler( async (req, res, next) => {
             throw new ApiError(400, "Item details are required.");
         }
 
-        const finalSupplierId = billFrom === "Cash" ? "6790a5b3d50038409a777e3d" : supplierId;
-        const supplier = await Customer.findById(finalSupplierId);
-        if (!supplier) {
+        const finalBillFrom = billFrom.toLowerCase();
+        const finalSupplierId = finalBillFrom === "cash" ? process.env.CASH_CUSTOMER_ID : supplier;
+        const extingSupplier = await Customer.findById(finalSupplierId);
+        if (!extingSupplier) {
             throw new ApiError(404, "Supplier not found.");
         }
-        //here write logic for check Customer.desiganation==="Supplier"
+        
+        if(!extingSupplier.designation==="supplier"){
+            throw new ApiError(400, "Selected customer is not a supplier.");
+        }
 
         const newPurchaseInvoice = new PurchaseInvoice({
             invoiceType,
@@ -68,11 +70,8 @@ const createPurchaseInvoice = asyncHandler( async (req, res, next) => {
             date,
             dueDate,
             placeOfSupply,
-            billFrom,
+            billFrom:finalBillFrom,
             supplier: finalSupplierId,
-            supplierName,
-            mobileNumber,
-            address,
             discountAmount,
             paymentDate,
             paymentMode,
@@ -80,46 +79,18 @@ const createPurchaseInvoice = asyncHandler( async (req, res, next) => {
             transactionId,
             privateNote,
             supplierNote,
-            soldBy: soldBy ? soldBy : req.user._id,
+            purchaseBy: soldBy ? soldBy : req.user._id,
             deliveryTerm,
             srNumber
         });
 
-        let totalAmount = 0;
-        const itemDetails = [];
-        for (const item of items) {
-            const product = await Product.findById(item.item);
-            if (!product) {
-                throw new ApiError(404, `Item with ID ${item.item} not found.`);
-            }
-
-            const itemTotal = item.quantity * item.purchasePrice;
-            const discountAmount = item.discount ? (itemTotal * item.discount) / 100 : 0;
-            const netTotal = itemTotal - discountAmount;
-            totalAmount += netTotal;
-
-            itemDetails.push({
-                item: item.item,
-                productName: item.productName,
-                itemCode: item.itemCode,
-                unit: item.unit,
-                quantity: item.quantity,
-                purchasePrice: item.purchasePrice,
-                mrp: item.mrp,
-                discount: item.discount || 0,
-                total: netTotal,
-                itemDescription: item.itemDescription,
-            });
-
-            product.stockQuantity += item.quantity;
-            await product.save();
-        }
+        const result = await processItems(items, newPurchaseInvoice._id);
+        const { itemDetails, totalAmount } = result;
 
         newPurchaseInvoice.items = itemDetails;
         newPurchaseInvoice.totalAmount = totalAmount;
-        newPurchaseInvoice.totalPayableAmount = totalAmount - discountAmount;
-        newPurchaseInvoice.receivedAmount = receivedAmount;
-        newPurchaseInvoice.dueAmount = newPurchaseInvoice.totalPayableAmount - receivedAmount;
+        newPurchaseInvoice.totalPayableAmount = totalAmount - (Number(discountAmount) || 0);
+        newPurchaseInvoice.dueAmount = newPurchaseInvoice.totalPayableAmount - (Number(receivedAmount) || 0);
         newPurchaseInvoice.status = newPurchaseInvoice.dueAmount === 0
             ? "Paid"
             : receivedAmount > 0
@@ -141,7 +112,12 @@ const fetchAllPurchaseInvoice = asyncHandler( async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     try {
-        const purchaseInvoices = await PurchaseInvoice.find().skip(skip).limit(limit);
+        const purchaseInvoices = await PurchaseInvoice.find()
+        .populate({ path: "supplier", select: "name address mobileNumber" })
+        .populate({ path: "items.item", select: "productName itemCode" })
+        .populate({ path: "purchaseBy", select: "name" })
+        .skip(skip)
+        .limit(limit);
         const total = await PurchaseInvoice.countDocuments();
         if (purchaseInvoices) {
             res.status(200).json(new ApiResponse(200, { purchaseInvoices, total, page, limit }, "Purchase invoices fetched successfully."));
