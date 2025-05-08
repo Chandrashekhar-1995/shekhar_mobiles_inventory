@@ -21,7 +21,7 @@ const createUser = asyncHandler(async (req, res, next) => {
         name, email, avatar, mobileNumber, address, city, state, pinCode, country, gender, dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, 
         dapartment, panNo, emergencyContactPerson, emergencyContactNumber, bloodGroup, 
         identityDocument, documentNumber, communication, salesCommission, remark 
-    } = req.body;
+    } = req.body; 
 
         // Validate required fields
         if (!name?.trim() || !mobileNumber || !address?.trim()) {
@@ -69,10 +69,10 @@ const createUser = asyncHandler(async (req, res, next) => {
             marrigeAniversary, 
             bio, 
             remark, 
-            designation, 
+            designation : designation ? designation : "trainee", 
             refferedBy,
             joiningDate,
-            dapartment,
+            dapartment : dapartment ? dapartment : "sales",
             emergencyContactPerson,
             emergencyContactNumber,
             bloodGroup,

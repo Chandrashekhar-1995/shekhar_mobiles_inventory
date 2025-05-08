@@ -43,7 +43,22 @@ const userRegistrationValidator = () => {
   ];
 };
 
-const userLoginValidator = () => {
+const userCreateValidator = () => {
+  return [
+    body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("All fields is required"),
+    body("address")
+    .notEmpty()
+    .withMessage("Password cannot be empty"),
+    body("mobileNumber")
+    .notEmpty()
+    .withMessage("Mobile Number required"),
+  ];
+};
+
+const  userLoginValidator = () => {
   return [
     body("identifier")
     .trim()
@@ -55,4 +70,4 @@ const userLoginValidator = () => {
   ];
 };
 
-export { userRegistrationValidator, userLoginValidator };
+export { userRegistrationValidator, userLoginValidator, userCreateValidator };

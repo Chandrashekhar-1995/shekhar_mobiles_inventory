@@ -97,7 +97,7 @@ const createCustomer = asyncHandler(async (req, res, next) => {
 // fetch all customer
 const fetchAllCustomer = asyncHandler( async (req, res, next) =>{
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 200;
   const skip = (page - 1) * limit;
     try {
       const customers = await Customer.find({ name: { $ne: "cash" } })

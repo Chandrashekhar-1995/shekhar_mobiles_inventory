@@ -18,7 +18,6 @@ const userSchema = new Schema(
             type: String,
             unique: true,
             lowercase: true,
-            required: [true, "Email is required"],
             trim: true,
             validate: {
                 validator: function (value) {
@@ -82,7 +81,6 @@ const userSchema = new Schema(
         },
         dateOfBirth: {
             type: Date,
-            required: false,
         },
         marrigeAniversary: {
             type: Date,
@@ -98,9 +96,6 @@ const userSchema = new Schema(
             type:String,
             max:[50, 'Maximum 50 chareters allowed'],
         }, 
-        refreshToken: {
-            type: String,
-        },
         designation:{
             type:String,
             enum: {
@@ -163,6 +158,9 @@ const userSchema = new Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Repair", 
                     },
+                amount:{
+                    type:Number,
+                }
             },
             ],
         underRepair: [
@@ -182,11 +180,12 @@ const userSchema = new Schema(
             },
         ],
         salesCommission:{
-            type:String,
-            enum: {
-                values: ['yes', 'no' ],
-                message: '{VALUE} not Supported'
-              }
+            type:Boolean,
+            default: false,
+        },
+        balance:{
+            type:Number,
+            default:0,  
         },
         remark:{
             type:String,
@@ -196,9 +195,9 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
           },
-          refreshToken: {
+        refreshToken: {
             type: String,
-          },
+        },
           forgotPasswordToken: {
             type: String,
           },
