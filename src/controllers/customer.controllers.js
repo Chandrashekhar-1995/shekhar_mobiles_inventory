@@ -3,12 +3,12 @@ import xlsx from "xlsx";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import bcrypt from "bcryptjs";
 import { Customer } from "../models/customer.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { findUserOrCustomer } from "../utils/dbHelpers.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import { error } from "console";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -41,7 +41,7 @@ const createCustomer = asyncHandler(async (req, res, next) => {
 
         // Generate password: first 3 letters of name (lowercase) + last 4 digits of mobile number
         const generatePassword = (name, mobileNumber) => {
-          const namePart = name.trim().slice(0, 3).toLowerCase();
+          const namePart = name.trim().slice(0, 3).toUpperCase();
           const mobilePart = mobileNumber.trim().slice(-4);
           return `${namePart}${mobilePart}`;
         };
@@ -174,8 +174,6 @@ const searchCustomers = asyncHandler(async (req, res, next) => {
     next(err);
   }
 });
-
-
 
   // Update customer by id
 const updateCustomer = asyncHandler(async (req, res, next) => {
@@ -315,81 +313,109 @@ const bulkUploadTemplate = asyncHandler( async (req, res, next) =>{
 });
 
 // download bulk upload template for customer
-const bulkUploadCustomer = asyncHandler( async (req, res, next) =>{
+const bulkUploadCustomer = asyncHandler(async (req, res, next) => {
   try {
-        if (!req.file) {
-        throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
-            };
+    if (!req.file) {
+      throw new ApiError(400, "No file uploaded. Please upload an Excel or CSV file.");
+    }
 
-         // Parse the uploaded file
-         const workbook = xlsx.readFile(req.file.path);
-         const sheetName = workbook.SheetNames[0];
-         const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    // Parse the uploaded file
+    const workbook = xlsx.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-        const headerMapping = {
-          "Name *": "name",
-          "Mobile Number *": "mobileNumber",
-          "Other Contact No.":"contactNumber",
-          "Village *":"address",
-          "City":"city",
-          "State":"state",
-          "Pin Code":"pinCode",
-          "Country":"country",
-          "Email":"email",
-          "Gender":"gender",
-          "Birthday":"dateOfBirth",
-          "Aniversary":"marrigeAniversary",
-          "Pan No":"panNo",
-          "GST IN":"gstin",
-          "GST Type":"gstType",
-          "Trade Name":"tradeName",
-          "Designation":"designation"
-        };
+    const headerMapping = {
+      "Name *": "name",
+      "Mobile Number *": "mobileNumber",
+      "Other Contact No.": "contactNumber",
+      "Village *": "address",
+      "City": "city",
+      "State": "state",
+      "Pin Code": "pinCode",
+      "Country": "country",
+      "Email": "email",
+      "Gender": "gender",
+      "Birthday": "dateOfBirth",
+      "Aniversary": "marrigeAniversary",
+      "Pan No": "panNo",
+      "GST IN": "gstin",
+      "GST Type": "gstType",
+      "Trade Name": "tradeName",
+      "Designation": "designation"
+    };
 
-            const requiredFields = ["name", "mobileNumber", "address"];
-            const customers = [];
-            const skippedCustomers = [];
-            for (const row of data) {
-                const customer = {};
-                for (const [templateHeader, dbField] of Object.entries(headerMapping)) {
-                    if (row[templateHeader] !== undefined && row[templateHeader] !== "") {
-                        customer[dbField] = row[templateHeader]; 
-                    }
-                }
+    const requiredFields = ["name", "mobileNumber", "address"];
+    const customers = [];
+    const skippedCustomers = [];
 
-                const missingFields = requiredFields.filter((field) => !customer[field]);
-                if (missingFields.length > 0) {
-                skippedCustomers.push({ row, reason: `Missing fields: ${missingFields.join(", ")}` });
-                    continue;
-                }
+    for (const row of data) {
+      const customer = {};
+      for (const [templateHeader, dbField] of Object.entries(headerMapping)) {
+        if (row[templateHeader] !== undefined && row[templateHeader] !== "") {
+          // Convert mobileNumber to string if it's the mobileNumber field
+          customer[dbField] = dbField === 'mobileNumber' 
+            ? String(row[templateHeader])
+            : row[templateHeader];
+        }
+      }
 
-                const existingCustomer = await Customer.findOne({
-                    $or: [{ name: customer.name.trim().toLowerCase() }, { mobileNumber: customer.mobileNumber } ]
-                });
-                if(existingCustomer){
-                    skippedCustomers.push({row, reason: "Customer already exists"});
-                    continue;
-                };
+      // Check for required fields
+      const missingFields = requiredFields.filter((field) => !customer[field]);
+      if (missingFields.length > 0) {
+        skippedCustomers.push({ row, reason: `Missing fields: ${missingFields.join(", ")}` });
+        continue;
+      }
 
-                customers.push({
-                    ...customer,
-                })
-            }
+      // Ensure mobileNumber is properly formatted
+      customer.mobileNumber = customer.mobileNumber.toString().replace(/\D/g, '');
 
-            // Insert all valid customers into the database
-            const insertedCustomers = await Customer.insertMany(customers);
-            // Delete the uploaded file
-            fs.unlink(req.file.path, (err) => {
-                if (err) console.error("Error deleting file:", err);
-            });
+      // Check if customer already exists
+      const existingCustomer = await Customer.findOne({
+        $or: [
+          { name: customer.name.trim().toLowerCase() }, 
+          { mobileNumber: customer.mobileNumber }
+        ]
+      });
+      
+      if (existingCustomer) {
+        skippedCustomers.push({ 
+          row: {
+            name: row["Name *"],
+            mobileNumber: row["Mobile Number *"],
+            addreess: row["Village *"],
+          },
+          reason: "Customer already exists" 
+        });
+        continue;
+      }
 
-            res.status(201).json(
-                new ApiResponse(201, { insertedCustomers, skippedCustomers }, "Customers uploaded successfully.")
-            );
+      // Generate password: first 3 letters of name + last 4 digits of mobile
+      const namePart = customer.name.slice(0, 3).toLowerCase();
+      const mobilePart = customer.mobileNumber.slice(-4);
+      const generatedPassword = `${namePart}${mobilePart}`;
+
+      const salt = await bcrypt.genSalt(10);
+      customers.push({
+        ...customer,
+        password: await bcrypt.hash(generatedPassword, salt),
+      });
+    }
+
+    // Insert all valid customers into the database
+    const insertedCustomers = await Customer.insertMany(customers);
+    
+    // Delete the uploaded file
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error("Error deleting file:", err);
+    });
+
+    res.status(201).json(
+      new ApiResponse(201, { insertedCustomers, skippedCustomers }, "Customers uploaded successfully.")
+    );
   } catch (error) {
     // Delete the file in case of an error
-    if (req.file && req.file.path) fs.unlinkSync(req.file.path);
-      next(error)
+    if (req.file?.path) fs.unlinkSync(req.file.path);
+    next(error);
   }
 });
   
