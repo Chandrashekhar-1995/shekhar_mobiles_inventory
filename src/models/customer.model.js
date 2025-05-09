@@ -175,12 +175,15 @@ const customerSchema = new Schema(
             type: String,
         },
         documentType: {
-            type: String,
-            max:[500, 'Maximum 500 chareters allowed'],
+            type:String,
+            enum: {
+                values: ["aadhar_card", "pan_card", "driving_license", "government_id","voter_card" ],
+                message: '{VALUE} is not a valid Document'
+              }
         },
         documentNo: {
             type: String,
-            max:[500, 'Maximum 500 chareters allowed'],
+            max:[100, 'Maximum 100 chareters allowed'],
         },
         isEmailVerified: {
             type: Boolean,

@@ -18,9 +18,7 @@ const __dirname = dirname(__filename);
 const createUser = asyncHandler(async (req, res, next) => {
 
     const { 
-        name, email, avatar, mobileNumber, address, city, state, pinCode, country, gender, dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, 
-        dapartment, panNo, emergencyContactPerson, emergencyContactNumber, bloodGroup, 
-        identityDocument, documentNumber, communication, salesCommission, remark 
+        name, email, avatar, mobileNumber, address, city, state, pinCode, country, gender, dateOfBirth, marrigeAniversary, bio, joiningDate, refferedBy, designation, department, panNo, emergencyContactPerson, emergencyContactNumber, bloodGroup, identityDocument, documentNumber, communication, salesCommission, remark 
     } = req.body; 
 
         // Validate required fields
@@ -69,10 +67,10 @@ const createUser = asyncHandler(async (req, res, next) => {
             marrigeAniversary, 
             bio, 
             remark, 
-            designation : designation ? designation : "trainee", 
+            designation: designation ? designation : "trainee", 
             refferedBy,
             joiningDate,
-            dapartment : dapartment ? dapartment : "sales",
+            department: department ? department : "sales",
             emergencyContactPerson,
             emergencyContactNumber,
             bloodGroup,

@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import mongoose, { Schema } from "mongoose";
+import { type } from "os";
 
 
 const userSchema = new Schema(
@@ -107,7 +108,9 @@ const userSchema = new Schema(
         department:{
             type:String,
             enum: {
-                values: ["sales", "marketing", "finance", "human_resource", "administration", "accounts"],
+                values: ["sales", "marketing", "finance", "human_resource", "administration", "accounts",
+                "management"
+                ],
                 message: '{VALUE} Department not found'
               }
         },
@@ -125,7 +128,7 @@ const userSchema = new Schema(
             type:String,
             max:[20, 'Maximum 20 chareters allowed'],
         },
-        identityDocument:{
+        documentType:{
             type:String,
             enum: {
                 values: ["aadhar_card", "pan_card", "driving_license", "government_id","voter_card" ],
@@ -142,6 +145,14 @@ const userSchema = new Schema(
                 values: ['sms', 'email' ],
                 message: '{VALUE} not Supported'
               }
+        },
+        creditAllowed:{
+            type:Boolean,
+            default: false, 
+        },
+        creditLimit:{
+            type:Number,
+            default:0,
         },
         saleHistory: [
             {
