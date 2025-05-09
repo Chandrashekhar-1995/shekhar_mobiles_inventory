@@ -126,7 +126,7 @@ const createProduct = asyncHandler( async (req, res, next) => {
 // fetch all product
 const fetchAllProduct = asyncHandler( async (req, res, next) =>{
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 500;
     const skip = (page - 1) * limit;
     try {
         const products = await Product.find().skip(skip).limit(limit);
@@ -392,7 +392,13 @@ const bulkUploadProduct = asyncHandler( async (req, res, next) => {
 
             const existingProduct = await Product.findOne({ productName: product.productName.toLowerCase() });
             if (existingProduct) {
-                skippedProducts.push({ row, reason: "Product already exists" });
+                skippedProducts.push({ 
+                    row, 
+                    row: {
+                        productName: row["Product Name *"],
+                        itemCode: row["Item Code"],
+                      },
+                    reason: "Product already exists" });
                 continue;
             }
 

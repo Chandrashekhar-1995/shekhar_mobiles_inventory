@@ -42,13 +42,13 @@ const createAccount = asyncHandler( async(req, res,next)=>{
 
 const fetchAllAccount = asyncHandler( async (req, res, next) =>{
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
     try {
         const accounts = await Account.find()
         .skip(skip)
         .limit(limit);
-        const total = await Invoice.countDocuments();
+        const total = await Account.countDocuments();
 
         if(accounts){
             res.status(201).json(new ApiResponse(201, { accounts, total, page, limit }, " All Account Fetched"));
@@ -149,8 +149,6 @@ const deleteAccount = asyncHandler( async (req, res, next) =>{
         next(error);
     }
 });
-
-
 
 
 export {
