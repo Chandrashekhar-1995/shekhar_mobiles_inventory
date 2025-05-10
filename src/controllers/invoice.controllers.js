@@ -83,10 +83,12 @@ const createInvoice = asyncHandler( async (req, res, next) => {
             customer: finalCustomerId,
             discountAmount,
             paymentAccount:account._id,
+            receivedAmount,
             paymentDate,
             privateNote,
             customerNote,
             deliveryTerm,
+            discountAmount,
             soldBy: soldBy ? soldBy : req.user._id,
         });
 
@@ -96,7 +98,6 @@ const createInvoice = asyncHandler( async (req, res, next) => {
         newInvoice.items = itemDetails;
         newInvoice.totalAmount = totalAmount;
         newInvoice.totalPayableAmount = totalAmount - discountAmount;
-        newInvoice.receivedAmount = receivedAmount;
         newInvoice.dueAmount = newInvoice.totalPayableAmount - receivedAmount;
         newInvoice.status = newInvoice.dueAmount === 0 
             ? "paid" 
@@ -171,6 +172,33 @@ const fetchAllInvoice = asyncHandler( async (req, res, next) =>{
         next(error);
     }
 });
+
+// Last 90 days ka sales data
+const getLast90DaysSales = asyncHandler(async (req, res, next) => {
+    try {
+      const salesData = await Invoice.getDailySalesData(90);
+      res.status(200).json(
+        new ApiResponse(200, salesData, "90 days sales data fetched")
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+// Aaj ka sales summary
+const getTodaySalesSummary = asyncHandler(async (req, res, next) => {
+    try {
+      const [result] = await Invoice.getTodaySalesSummary();
+      const summary = result ? result : { totalSales: 0, invoiceCount: 0 };
+      
+      res.status(200).json(
+        new ApiResponse(200, summary, "Today's sales summary")
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+
 
 // Endpoint to fetch invoice by id
 const fetchInvoiceByID = asyncHandler( async (req, res, next) =>{
@@ -287,8 +315,10 @@ export {
     fetchLastInvoice,
     createInvoice, 
     fetchAllInvoice, 
+    getLast90DaysSales,
+    getTodaySalesSummary,
     fetchInvoiceByID, 
     searchInvoice, 
     updateInvoice, 
-    deleteInvoice
+    deleteInvoice,
 };
