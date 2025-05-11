@@ -35,7 +35,7 @@ const createPurchaseInvoice = asyncHandler( async (req, res, next) => {
             dueDate,
             placeOfSupply,
             billFrom,
-            supplier,
+            customerId,
             items, /// todo
             discountAmount,
             paymentDate,
@@ -54,7 +54,7 @@ const createPurchaseInvoice = asyncHandler( async (req, res, next) => {
         }
 
         const finalBillFrom = billFrom.toLowerCase();
-        const finalSupplierId = finalBillFrom === "cash" ? process.env.CASH_CUSTOMER_ID : supplier;
+        const finalSupplierId = finalBillFrom === "cash" ? process.env.CASH_CUSTOMER_ID : customerId;        ;
         const extingSupplier = await Customer.findById(finalSupplierId);
         if (!extingSupplier) {
             throw new ApiError(404, "Supplier not found.");
@@ -128,6 +128,30 @@ const fetchAllPurchaseInvoice = asyncHandler( async (req, res, next) => {
         next(error);
     }
 });
+
+const getLast90DaysPurchases = asyncHandler(async (req, res, next) => {
+    try {
+      const purchaseData = await PurchaseInvoice.getDailyPurchaseData(90);
+      res.status(200).json(
+        new ApiResponse(200, purchaseData, "90 days purchase data fetched")
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+const getTodayPurchaseSummary = asyncHandler(async (req, res, next) => {
+    try {
+      const [result] = await PurchaseInvoice.getTodayPurchaseSummary();
+      const summary = result ? result : { totalPurchases: 0, invoiceCount: 0 };
+      
+      res.status(200).json(
+        new ApiResponse(200, summary, "Today's purchase summary")
+      );
+    } catch (error) {
+      next(error);
+    }
+  });
 
 const fetchPurchaseInvoiceByID = asyncHandler( async (req, res, next) => {
     try {
@@ -221,6 +245,8 @@ export {
     fetchLastPurchaseInvoice,
     createPurchaseInvoice,
     fetchAllPurchaseInvoice,
+    getLast90DaysPurchases,
+    getTodayPurchaseSummary,
     fetchPurchaseInvoiceByID, 
     searchPurchaseInvoice, 
     updatePurchaseInvoice, 

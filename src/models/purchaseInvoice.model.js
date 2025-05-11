@@ -121,4 +121,61 @@ const purchaseInvoiceSchema = new Schema(
 }
 );
 
+
+purchaseInvoiceSchema.statics.getDailyPurchaseData = async function(days = 90) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    
+    return this.aggregate([
+      {
+        $match: {
+          date: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$date" }
+          },
+          totalPurchases: { $sum: "$totalAmount" },
+          invoiceCount: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id": 1 }
+      },
+      {
+        $project: {
+          date: "$_id",
+          totalPurchases: 1,
+          invoiceCount: 1,
+          _id: 0
+        }
+      }
+    ]);
+  };
+  
+  purchaseInvoiceSchema.statics.getTodayPurchaseSummary = async function() {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+  
+    return this.aggregate([
+      {
+        $match: {
+          date: { $gte: todayStart, $lte: todayEnd }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalPurchases: { $sum: "$totalAmount" },
+          invoiceCount: { $sum: 1 }
+        }
+      }
+    ]);
+  };
+
 export const PurchaseInvoice = mongoose.model("PurchaseInvoice", purchaseInvoiceSchema);
