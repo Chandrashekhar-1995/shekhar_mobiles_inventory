@@ -169,6 +169,57 @@ const fetchAllRepair = asyncHandler( async (req, res, next) =>{
     }
 });
 
+
+// Last 90 days ka Repair Booking data
+const fetchLast90DaysRepairBookingData = asyncHandler( async (req, res, next) =>{
+    try {
+        const last90DaysData = await Repair.getDailyRepairBookingData(90);
+        if (last90DaysData.length > 0) {
+            res.status(200).json(
+                new ApiResponse(200, last90DaysData, "Last 90 days repair booking data fetched successfully.")
+            )
+          } else {
+            throw new ApiError(404, "No Repair found" );
+          }
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Last 30 days ka Repair Booking data
+const fetchLast30DaysRepairBookingData = asyncHandler( async (req, res, next) =>{
+    try {
+        const last30DaysData = await Repair.getDailyRepairBookingData(30);
+        if (last30DaysData.length > 0) {
+            res.status(200).json(
+                new ApiResponse(200, last30DaysData, "Last 30 days repair booking data fetched successfully.")
+            )
+          } else {
+            throw new ApiError(404, "No Repair found" );
+          }
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+// Today ka Repair Booking summary
+const fetchTodayRepairBookingSummary = asyncHandler( async (req, res, next) =>{
+    try {
+        const [todaySummary] = await Repair.getTodayRepairBookingSummary();
+
+        if (todaySummary.length > 0) {
+            res.status(200).json(
+                new ApiResponse(200, todaySummary, "Today's repair booking summary fetched successfully.")
+            )
+          } else {
+            throw new ApiError(404, "No Repair found for today" );
+          }
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Endpoint to fetch Repair by id
 const fetchRepairByID = asyncHandler( async (req, res, next) =>{
     try {        
@@ -291,7 +342,6 @@ const updateRepairItem = asyncHandler(async (req, res, next) => {
 });
 
 
-
 // delete Repair
 const deleteRepair = asyncHandler( async (req, res, next) =>{
     try {
@@ -316,6 +366,9 @@ export {
     fetchLastRepair,
     createRepair, 
     fetchAllRepair, 
+    fetchLast90DaysRepairBookingData,
+    fetchLast30DaysRepairBookingData,
+    fetchTodayRepairBookingSummary,
     fetchRepairByID, 
     searchRepair, 
     updateRepair,

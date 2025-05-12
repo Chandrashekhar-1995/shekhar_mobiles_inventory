@@ -135,7 +135,7 @@ invoiceSchema.statics.getDailySalesData = async function(days = 90) {
           _id: {
             $dateToString: { format: "%Y-%m-%d", date: "$date" }
           },
-          totalSales: { $sum: "$totalAmount" },
+          totalSales: { $sum:"$totalPayableAmount" },
           invoiceCount: { $sum: 1 }
         }
       },

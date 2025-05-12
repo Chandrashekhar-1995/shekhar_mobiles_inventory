@@ -9,7 +9,7 @@ const repairSchema = new Schema(
         },
         bookingDate: {
             type: Date,
-            default: Date.now,
+            default: Date.today,
         },
         expectDeliveryDate: {
             type: Date,
@@ -77,7 +77,6 @@ const repairSchema = new Schema(
                 ref: "User",
             },
         }],
-
         totalAmount: {
             type: Number,
             required: true,
@@ -136,4 +135,60 @@ const repairSchema = new Schema(
     { timestamps: true }
 );
 
+repairSchema.statics.getDailyRepairBookingData = async function(days = 90) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    
+    return this.aggregate([
+      {
+        $match: {
+          date: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", bookingDate: "$bookingDate" }
+          },
+          totalRepairPrice: { $sum:"$totalPayableAmount" },
+          bookRepairCount: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id": 1 }
+      },
+      {
+        $project: {
+          date: "$_id",
+          totalRepairPrice: 1,
+          bookRepairCount: 1,
+          _id: 0
+        }
+      }
+    ]);
+  };
+
+
+repairSchema.statics.getTodayRepairBookingSummary = async function() {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+  
+    return this.aggregate([
+      {
+        $match: {
+          date: { $gte: todayStart, $lte: todayEnd }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRepairPrice: { $sum:"$totalPayableAmount" },
+          bookRepairCount: { $sum: 1 }
+        }
+      }
+    ]);
+  };
 export const Repair = mongoose.model("Repair", repairSchema);
