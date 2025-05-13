@@ -9,7 +9,7 @@ const repairSchema = new Schema(
         },
         bookingDate: {
             type: Date,
-            default: Date.today,
+            default: Date.now,
         },
         expectDeliveryDate: {
             type: Date,
@@ -142,15 +142,15 @@ repairSchema.statics.getDailyRepairBookingData = async function(days = 90) {
     return this.aggregate([
       {
         $match: {
-          date: { $gte: startDate }
+          bookingDate: { $gte: startDate }
         }
       },
       {
         $group: {
           _id: {
-            $dateToString: { format: "%Y-%m-%d", bookingDate: "$bookingDate" }
+            $dateToString: { format: "%Y-%m-%d", date: "$bookingDate" } // Fixed here
           },
-          totalRepairPrice: { $sum:"$totalPayableAmount" },
+          totalRepairPrice: { $sum: "$totalPayableAmount" },
           bookRepairCount: { $sum: 1 }
         }
       },
@@ -168,7 +168,6 @@ repairSchema.statics.getDailyRepairBookingData = async function(days = 90) {
     ]);
   };
 
-
 repairSchema.statics.getTodayRepairBookingSummary = async function() {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -179,7 +178,7 @@ repairSchema.statics.getTodayRepairBookingSummary = async function() {
     return this.aggregate([
       {
         $match: {
-          date: { $gte: todayStart, $lte: todayEnd }
+          bookingDate: { $gte: todayStart, $lte: todayEnd }
         }
       },
       {

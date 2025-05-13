@@ -17,7 +17,7 @@ const invoiceSchema = new Schema(
         },
         date: {
             type: Date,
-            default: Date.today,
+            default: Date.now,
         },
         dueDate: {
             type: Date,
