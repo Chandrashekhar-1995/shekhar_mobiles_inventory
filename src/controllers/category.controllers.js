@@ -42,7 +42,7 @@ const fetchAllCategory = asyncHandler( async (req, res, next) => {
     try {
         const categories = await Category.find()
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await Category.countDocuments();
 
         if(categories){
@@ -80,7 +80,7 @@ const searchCategory = asyncHandler( async (req, res, next) =>{
             categoryName: { $regex: search, $options: "i" } 
         })
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await Category.countDocuments();
 
         if (!categories) {

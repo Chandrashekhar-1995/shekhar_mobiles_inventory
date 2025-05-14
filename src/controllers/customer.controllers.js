@@ -103,7 +103,7 @@ const fetchAllCustomer = asyncHandler( async (req, res, next) =>{
       const customers = await Customer.find({ name: { $ne: "cash" } })
       .select("-password -refreshToken")
       .skip(skip)
-      .limit(limit);
+      // .limit(limit);
       const total = await Customer.countDocuments();
 
       if(customers){
@@ -152,7 +152,7 @@ const searchCustomers = asyncHandler(async (req, res, next) => {
     })
       .select("-password -refreshToken")
       .skip(skip)
-      .limit(limit);
+      // .limit(limit);
 
     const total = await Customer.countDocuments({
       name: { $ne: "cash" },

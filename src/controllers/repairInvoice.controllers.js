@@ -167,7 +167,9 @@ const fetchAllRepairInvoice = asyncHandler( async (req, res, next) =>{
     const skip = (page - 1) * limit;
 
     try {        
-        const invoices = await Repair.find().skip(skip).limit(limit);
+        const invoices = await Repair.find()
+        .skip(skip)
+        // .limit(limit);
         const total = await Repair.countDocuments();
         if (invoices) {
             res.status(200).json(
@@ -217,7 +219,7 @@ const searchRepairInvoice = asyncHandler( async (req, res, next) =>{
               
             })
             .skip(skip)
-            .limit(limit);
+            // .limit(limit);
             const total = await Repair.countDocuments();
             
             if (invoices) {

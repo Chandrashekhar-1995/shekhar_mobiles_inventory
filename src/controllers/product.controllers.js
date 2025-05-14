@@ -129,7 +129,9 @@ const fetchAllProduct = asyncHandler( async (req, res, next) =>{
     const limit = parseInt(req.query.limit) || 500;
     const skip = (page - 1) * limit;
     try {
-        const products = await Product.find().skip(skip).limit(limit);
+        const products = await Product.find()
+        .skip(skip)
+        // .limit(limit);
         const total = await Product.countDocuments();
 
         if (products) {
@@ -171,7 +173,7 @@ const searcProduct = asyncHandler(async (req, res, next) => {
       $or: [{ productName: { $regex: search, $options: "i" }, }, { itemCode:{ $regex: search, $options: "i" } }],
     })
     .skip(skip)
-    .limit(limit);
+    // .limit(limit);
     const total = await Product.countDocuments();
 
     if (products) {

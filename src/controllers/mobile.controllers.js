@@ -71,8 +71,6 @@ const createMobile = asyncHandler( async (req, res, next) => {
     }
 });
 
-
-
 const fetchAllMobile = asyncHandler( async (req, res, next) =>{
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -82,7 +80,7 @@ const fetchAllMobile = asyncHandler( async (req, res, next) =>{
         const mobiles = await Mobile.find()
         .populate({ path: "brand", select: "brandName"})
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await Mobile.countDocuments();
 
         if(mobiles){
@@ -95,7 +93,6 @@ const fetchAllMobile = asyncHandler( async (req, res, next) =>{
         next(error);
     }
 });
-
 
 const fetchMobileByID = asyncHandler( async (req, res, next) =>{
     const {id} = req.params;
@@ -111,7 +108,6 @@ const fetchMobileByID = asyncHandler( async (req, res, next) =>{
         next(error);
     }
 });
-
 
 const searchMobile = asyncHandler( async (req, res, next) =>{
     const page = parseInt(req.query.page) || 1;
@@ -135,7 +131,7 @@ const searchMobile = asyncHandler( async (req, res, next) =>{
             })
             .populate({ path: "brand", select: "brandName"})
             .skip(skip)
-            .limit(limit);
+            // .limit(limit);
             const total = await Mobile.countDocuments();
 
         if (mobiles) {
@@ -148,7 +144,6 @@ const searchMobile = asyncHandler( async (req, res, next) =>{
         next(error);
     }
 });
-
 
 const updateMobile = asyncHandler( async (req, res, next) =>{
     try {

@@ -145,7 +145,7 @@ const createRepair = asyncHandler(async (req, res, next) => {
 // Endpoint to fetch invoices
 const fetchAllRepair = asyncHandler(async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 100;
+    const limit = parseInt(req.query.limit);
     const skip = (page - 1) * limit;
 
     try {
@@ -249,7 +249,7 @@ const searchRepair = asyncHandler(async (req, res, next) => {
             .populate({ path: "repairing.repairUnder", select: "name" })
             .populate({ path: "repairing.repairBy", select: "name" })
             .skip(skip)
-            .limit(limit);
+            // .limit(limit);
         const total = await Repair.countDocuments({  $or: [
                 { repairNumber: { $regex: search, $options: "i" } },
                 { bookingDate: { $regex: search, $options: "i" } },

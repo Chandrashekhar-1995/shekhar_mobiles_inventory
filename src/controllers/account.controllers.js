@@ -42,7 +42,7 @@ const createAccount = asyncHandler( async(req, res,next)=>{
 
 const fetchAllAccount = asyncHandler( async (req, res, next) =>{
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = parseInt(req.query.limit) || 100;
     const skip = (page - 1) * limit;
     try {
         const accounts = await Account.find()

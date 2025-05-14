@@ -117,7 +117,7 @@ const fetchAllPurchaseInvoice = asyncHandler( async (req, res, next) => {
         .populate({ path: "items.item", select: "productName itemCode" })
         .populate({ path: "purchaseBy", select: "name" })
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await PurchaseInvoice.countDocuments();
         if (purchaseInvoices) {
             res.status(200).json(new ApiResponse(200, { purchaseInvoices, total, page, limit }, "Purchase invoices fetched successfully."));
@@ -185,7 +185,7 @@ const searchPurchaseInvoice = asyncHandler( async (req, res, next) =>{
             ],
               
             }).skip(skip)
-            .limit(limit);
+            // .limit(limit);
             const total = await PurchaseInvoice.countDocuments();
     
             if (purchaseInvoices) {

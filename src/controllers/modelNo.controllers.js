@@ -31,7 +31,7 @@ const fetchAllModelNo = asyncHandler( async (req, res, next) =>{
     try {
         const models = await ModelNo.find()
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await ModelNo.countDocuments();
 
         if(models){
@@ -45,7 +45,6 @@ const fetchAllModelNo = asyncHandler( async (req, res, next) =>{
     }
 });
 
-
 const fetchModelNoByID = asyncHandler( async (req, res, next) =>{
     const {id} = req.params;
     try {
@@ -55,7 +54,6 @@ const fetchModelNoByID = asyncHandler( async (req, res, next) =>{
         next(error);
     }
 });
-
 
 const searchModelNo = asyncHandler( async (req, res, next) =>{
     try {
@@ -68,7 +66,7 @@ const searchModelNo = asyncHandler( async (req, res, next) =>{
             modelNo: { $regex: search, $options: "i" } 
         })
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await ModelNo.countDocuments();
 
         if(models){

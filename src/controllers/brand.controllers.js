@@ -31,7 +31,7 @@ const fetchAllBrand = asyncHandler( async (req, res, next) =>{
     try {
         const brands = await Brand.find()
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await Brand.countDocuments();
 
         if(brands){

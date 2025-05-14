@@ -39,7 +39,7 @@ const fetchAllFault = asyncHandler( async (req, res, next) =>{
     try {
         const faults = await Fault.find()
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await Fault.countDocuments()
 
         if (faults) {
@@ -85,7 +85,7 @@ const searchFault = asyncHandler( async (req, res, next) =>{
             fault: { $regex: search, $options: "i" } 
         })
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await Fault.countDocuments();
 
         if (faults) {

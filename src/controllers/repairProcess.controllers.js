@@ -42,7 +42,7 @@ const getRepairProcesses = asyncHandler( async (req, res, next) => {
       .populate("fault", "fault")
       .populate( "createdBy", "name")
       .skip(skip)
-      .limit(limit)
+      // .limit(limit)
       const total = await RepairProcess.countDocuments();
 
       if(processes){

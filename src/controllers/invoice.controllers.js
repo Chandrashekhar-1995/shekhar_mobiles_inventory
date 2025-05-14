@@ -159,7 +159,7 @@ const fetchAllInvoice = asyncHandler( async (req, res, next) =>{
         .populate({ path: "soldBy", select: "name" })
         .populate({ path: "paymentAccount", select: "accountName" })
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await Invoice.countDocuments();
         if (invoices) {
             res.status(200).json(
@@ -245,7 +245,7 @@ const searchInvoice = asyncHandler( async (req, res, next) =>{
             .populate({ path: "soldBy", select: "name" })
             .populate({ path: "paymentAccount", select: "accountName" })
             .skip(skip)
-            .limit(limit);
+            // .limit(limit);
             const total = await Invoice.countDocuments();
 
             if(invoices){

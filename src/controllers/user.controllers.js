@@ -100,7 +100,7 @@ const fetchAllUser = asyncHandler( async (req, res, next) =>{
         const users = await User.find()
         .select("-password -refreshToken")
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await User.countDocuments();
 
         if(users){
@@ -145,7 +145,7 @@ const searchUser = asyncHandler(async (req, res, next) => {
         })
         .select("-password -refreshToken")
         .skip(skip)
-        .limit(limit);
+        // .limit(limit);
         const total = await User.countDocuments();
   
       if(users){
