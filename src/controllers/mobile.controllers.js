@@ -2,7 +2,7 @@ import {Mobile} from "../models/mobile.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-
+import { Brand } from "../models/brand.model.js";
 
 // Create Mobile
 const createMobile = asyncHandler( async (req, res, next) => {
@@ -10,7 +10,6 @@ const createMobile = asyncHandler( async (req, res, next) => {
         const {
             MobileType,
             brand,
-
             modelNo,
             emeiNumber,
             emeiNumberSecond,
@@ -19,7 +18,7 @@ const createMobile = asyncHandler( async (req, res, next) => {
             salePrice,
             minSalePrice,
             mrp,
-            stockQuantity,
+            openingStock,
             description,
             warranty,
             unit,
@@ -40,12 +39,13 @@ const createMobile = asyncHandler( async (req, res, next) => {
             }
         }
 
+        const existingBrand = await Brand.findById(brand)
+
         const newMobile = new Mobile({
             MobileType,
-            brand, //_id
-            brandName,
+            brand,
             modelNo,
-            mobileName: brandName + " " + modelNo,
+            mobileName: existingBrand.brandName + " " + modelNo,
             emeiNumber,
             emeiNumberSecond,
             productImage,
@@ -53,7 +53,7 @@ const createMobile = asyncHandler( async (req, res, next) => {
             salePrice,
             minSalePrice,
             mrp,
-            stockQuantity,  // opening quantity
+            stockQuantity : openingStock,  // opening quantity
             description,
             warranty,
             unit:unit?.toLowerCase(),

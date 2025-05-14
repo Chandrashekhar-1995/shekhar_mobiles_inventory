@@ -102,9 +102,28 @@ const updateRepairProcess = asyncHandler( async (req, res, next) => {
   }
 });
 
+// Delete a repair process
+const deleteRepairProcess = asyncHandler( async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const process = await RepairProcess.findByIdAndDelete(id);
+
+    if (!process) {
+      throw new ApiError(404, "Repair process not found.");
+    }
+
+    res.status(200).json(
+      new ApiResponse(200, {}, "Repair process deleted.")
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
 export {
   createRepairProcess,
   getRepairProcesses,
   getProcessByFault,
-  updateRepairProcess
+  updateRepairProcess,
+  deleteRepairProcess,
 }
