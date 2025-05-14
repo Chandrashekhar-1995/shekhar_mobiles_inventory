@@ -11,7 +11,7 @@ const categorySchema = new Schema({
         type: Number, // percentage
         max: 90,
     },
-    subcategories: [
+    subCategories: [
         {
             type: String,
             trim: true,

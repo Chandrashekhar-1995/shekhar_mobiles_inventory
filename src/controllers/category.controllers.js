@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 
 const createCategory = asyncHandler( async (req, res, next) => {
-    const { categoryName, subcategories, gstRate } = req.body;
+    const { categoryName, subCategories, gstRate } = req.body;
 
     try {
         // Validate input
@@ -21,7 +21,7 @@ const createCategory = asyncHandler( async (req, res, next) => {
         // Create the new category
         const category = new Category({
             categoryName,
-            subcategories: subcategories || [], // Add subcategories if provided
+            subCategories: subCategories || [], // Add subCategories if provided
             gstRate,
         });
 
@@ -153,18 +153,18 @@ const deleteCategory = asyncHandler( async (req, res, next) =>{
 
 
 const addSubcategory = asyncHandler(async (req, res, next) => {
-    const { category, subcategories } = req.body;
+    const { category, subCategories } = req.body;
   
   try {
       // Validation
-      if (!category || !subcategories) {
-        throw new ApiError(400, "Category name and subcategories are required.");
+      if (!category || !subCategories) {
+        throw new ApiError(400, "Category name and subCategories are required.");
       }
 
-      // Ensure subcategories is an array
-      const subcategoryList = Array.isArray(subcategories)
-        ? subcategories
-        : [subcategories];
+      // Ensure subCategories is an array
+      const subcategoryList = Array.isArray(subCategories)
+        ? subCategories
+        : [subCategories];
     
       const existingCategory = await Category.findOne({ categoryName: category });
     
@@ -172,22 +172,22 @@ const addSubcategory = asyncHandler(async (req, res, next) => {
         throw new ApiError(404, "Category not found.");
       }
     
-      // Filter out already existing subcategories (case-insensitive match)
-      const existingSubsLower = existingCategory.subcategories.map((s) =>
+      // Filter out already existing subCategories (case-insensitive match)
+      const existingSubsLower = existingCategory.subCategories.map((s) =>
         s.toLowerCase()
       );
     
-      const newSubcategories = subcategoryList.filter(
+      const newsubCategories = subcategoryList.filter(
         (sub) => !existingSubsLower.includes(sub.toLowerCase())
       );
     
-      if (newSubcategories.length === 0) {
+      if (newsubCategories.length === 0) {
         return res
           .status(200)
-          .json(new ApiResponse(200, existingCategory, "No new subcategories to add."));
+          .json(new ApiResponse(200, existingCategory, "No new subCategories to add."));
       }
     
-      existingCategory.subcategories.push(...newSubcategories);
+      existingCategory.subCategories.push(...newsubCategories);
       await existingCategory.save();
     
       return res.status(200).json(
