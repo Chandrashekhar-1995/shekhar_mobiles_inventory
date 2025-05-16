@@ -56,6 +56,21 @@ const getRepairProcesses = asyncHandler( async (req, res, next) => {
   }
 });
 
+// Get repair Process by id
+const getRepairProcessByID = asyncHandler (async (req, res, next) =>{
+    try {
+        const process = await RepairProcess.findById(req.params.id);
+        if (!process) {
+            throw new ApiError(404, "Repair process not found");
+        }
+
+    res.json(new ApiResponse(200, process, "Repair process found"));
+
+    } catch (error) {
+         next(error);
+    }
+});
+
 // Get repair process by fault
 const getProcessByFault = asyncHandler( async (req, res, next) => {
   try {
@@ -120,9 +135,12 @@ const deleteRepairProcess = asyncHandler( async (req, res, next) => {
   }
 });
 
+
+
 export {
   createRepairProcess,
   getRepairProcesses,
+  getRepairProcessByID,
   getProcessByFault,
   updateRepairProcess,
   deleteRepairProcess,

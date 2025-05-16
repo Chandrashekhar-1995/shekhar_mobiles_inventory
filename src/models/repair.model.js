@@ -51,7 +51,10 @@ const repairSchema = new Schema(
                 match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
             },
             repairDescription: String,
-
+            repairProcess:{
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "RepairProcess",
+            },
             usedItem: [{
                 item:{
                     type: mongoose.Schema.Types.ObjectId,
@@ -61,13 +64,32 @@ const repairSchema = new Schema(
                 itemQuantity: Number,
                 itemDescription: String,
             }],
-
             repairStatus: {
                 type: String,
                 enum: ["booked", "in_progress", "repair_done", "reject", "delivered", "return"],
                 required: true,
                 default: "booked",
             },
+            repairProcessStatus: {
+  type: {
+    process: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RepairProcess"
+    },
+    completedSteps: [{
+      stepId: mongoose.Schema.Types.ObjectId,
+      checkedItems: [{
+        itemId: mongoose.Schema.Types.ObjectId,
+        isChecked: Boolean
+      }]
+    }],
+    currentStep: {
+      type: Number,
+      default: 0
+    }
+  },
+  default: null
+},
             repairUnder: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User",
@@ -121,8 +143,7 @@ const repairSchema = new Schema(
         bookBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-        },
-        
+        },     
         deliverBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

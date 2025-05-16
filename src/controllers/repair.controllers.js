@@ -6,6 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
+import { RepairProcess } from "../models/repairProcess.model.js";
 
 
 // Generate Repair invoice number
@@ -156,6 +157,7 @@ const fetchAllRepair = asyncHandler(async (req, res, next) => {
             .populate({ path: "deliverBy", select: "name" })
             .populate({ path: "repairing.repairUnder", select: "name" })
             .populate({ path: "repairing.repairBy", select: "name" })
+            .populate({ path: "repairing.repairProcess", select: "processName" })
             .skip(skip)
             .limit(limit);
         const total = await Repair.countDocuments();
@@ -301,7 +303,7 @@ const updateRepair = asyncHandler(async (req, res, next) => {
 // update Repair item by id
 const updateRepairItem = asyncHandler(async (req, res, next) => {
     try {
-        const { id } = req.params; // main repair invoice ID
+        const { id } = req.params;
         const { itemIndex, ...updatedFields } = req.body;
 
         const invoice = await Repair.findById(id);
@@ -343,6 +345,162 @@ const deleteRepair = asyncHandler(async (req, res, next) => {
     }
 });
 
+// Update repair process with steps tracking
+const updateRepairProcessWithSteps = asyncHandler(async (req, res, next) => {
+  try {
+    const { repairId, repairingIndex, repairProcessId } = req.body;
+
+    // Validate inputs
+    if (!repairId || !mongoose.Types.ObjectId.isValid(repairId)) {
+      throw new ApiError(400, "Valid repair ID is required.");
+    }
+    
+    if (repairingIndex === undefined || repairingIndex === null) {
+      throw new ApiError(400, "Repairing item index is required.");
+    }
+
+    // Find the repair order
+    const repair = await Repair.findById(repairId);
+    if (!repair) {
+      throw new ApiError(404, "Repair order not found.");
+    }
+
+    // Check if the repairing index exists
+    if (repairingIndex < 0 || repairingIndex >= repair.repairing.length) {
+      throw new ApiError(400, "Invalid repairing item index.");
+    }
+
+    const repairingItem = repair.repairing[repairingIndex];
+
+    // Get the repair process details
+    const repairProcess = await RepairProcess.findById(repairProcessId);
+    if (!repairProcess) {
+      throw new ApiError(404, "Repair process not found.");
+    }
+
+    // Initialize repair process status with all steps
+    const initialProcessStatus = {
+      process: repairProcessId,
+      completedSteps: repairProcess.steps.map(step => ({
+        stepId: step._id,
+        checkedItems: step.checklistItems.map(item => ({
+          itemId: item._id,
+          isChecked: false
+        }))
+      })),
+      currentStep: 0
+    };
+
+    // Update the repairing item
+    repairingItem.repairProcess = repairProcessId;
+    repairingItem.repairProcessStatus = initialProcessStatus;
+    repairingItem.repairStatus = "in_progress";
+
+    await repair.save();
+
+    res.status(200).json(
+      new ApiResponse(
+        200, 
+        { 
+          repair: repair,
+          updatedItem: repairingItem,
+          repairProcess: repairProcess
+        }, 
+        "Repair process assigned successfully with all steps initialized."
+      )
+    );
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Update individual step completion
+const updateRepairStepCompletion = asyncHandler(async (req, res, next) => {
+  try {
+    const { repairId, repairingIndex, stepId, itemId, isChecked } = req.body;
+
+    // Validate inputs
+    if (!repairId || !mongoose.Types.ObjectId.isValid(repairId)) {
+      throw new ApiError(400, "Valid repair ID is required.");
+    }
+    
+    if (repairingIndex === undefined || repairingIndex === null) {
+      throw new ApiError(400, "Repairing item index is required.");
+    }
+
+    // Find the repair order
+    const repair = await Repair.findById(repairId);
+    if (!repair) {
+      throw new ApiError(404, "Repair order not found.");
+    }
+
+    // Check if the repairing index exists
+    if (repairingIndex < 0 || repairingIndex >= repair.repairing.length) {
+      throw new ApiError(400, "Invalid repairing item index.");
+    }
+
+    const repairingItem = repair.repairing[repairingIndex];
+
+    // Verify repair process exists
+    if (!repairingItem.repairProcess || !repairingItem.repairProcessStatus) {
+      throw new ApiError(400, "No repair process assigned to this item.");
+    }
+
+    // Find the step in process status
+    const stepStatus = repairingItem.repairProcessStatus.completedSteps.find(s => 
+      s.stepId.toString() === stepId.toString()
+    );
+
+    if (!stepStatus) {
+      throw new ApiError(404, "Step not found in repair process status.");
+    }
+
+    // Update the specific checklist item
+    const itemToUpdate = stepStatus.checkedItems.find(item => 
+      item.itemId.toString() === itemId.toString()
+    );
+    
+    if (!itemToUpdate) {
+      throw new ApiError(404, "Checklist item not found.");
+    }
+
+    itemToUpdate.isChecked = isChecked;
+
+    // Update current step if all items are checked
+    const repairProcess = await RepairProcess.findById(repairingItem.repairProcess);
+    const currentStep = repairProcess.steps[repairingItem.repairProcessStatus.currentStep];
+    
+    if (currentStep && currentStep._id.toString() === stepId.toString()) {
+      const allItemsChecked = stepStatus.checkedItems.every(item => item.isChecked);
+      if (allItemsChecked) {
+        repairingItem.repairProcessStatus.currentStep += 1;
+      }
+    }
+
+    // Update repair status if all steps are completed
+    if (repairingItem.repairProcessStatus.currentStep >= repairProcess.steps.length) {
+      repairingItem.repairStatus = "repair_done";
+    }
+
+    await repair.save();
+
+    res.status(200).json(
+      new ApiResponse(
+        200, 
+        { 
+          repair: repair,
+          updatedItem: repairingItem 
+        }, 
+        "Repair step completion updated successfully."
+      )
+    );
+
+  } catch (error) {
+    next(error);
+  }
+});
+
 
 export {
     fetchLastRepair,
@@ -355,4 +513,7 @@ export {
     updateRepair,
     updateRepairItem,
     deleteRepair,
+    updateRepairProcessWithSteps,
+    updateRepairStepCompletion,
+
 };

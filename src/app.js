@@ -32,6 +32,7 @@ import {errorHandler} from "./middlewares/errorHandler.middleware.js";
 import modelNoRouter from "./routes/modelNo.routes.js";
 import faultRouter from "./routes/fault.routes.js";
 import repairProcessRoutes from "./routes/repairProcess.routes.js";
+import faultRepairingRouter from "./routes/faultRepairing.routes.js";
 
 
 app.use("/api/v1/healthcheck", healthCheckRouter );
@@ -50,6 +51,7 @@ app.use("/api/v1/purchase-invoice/", purchaseInvoiceRouter);
 app.use("/api/v1/repair/", repairRouter);
 app.use("/api/v1/fault/", faultRouter);
 app.use("/api/v1/repair-process/", repairProcessRoutes);
+app.use("/api/v1/repairing/", faultRepairingRouter);
 
 // Error Handler Middleware (must be after all routes)
 app.use(errorHandler);
