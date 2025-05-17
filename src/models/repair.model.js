@@ -55,13 +55,12 @@ const repairSchema = new Schema(
               type: mongoose.Schema.Types.ObjectId,
               ref: "RepairProcess",
             },
-            usedItem: [{
+            usedItems: [{
                 item:{
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "Product",
                 },
-                itemSalePrice: Number,
-                itemQuantity: Number,
+                quantity: Number,
                 itemDescription: String,
             }],
             repairStatus: {

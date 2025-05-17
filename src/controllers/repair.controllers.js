@@ -158,6 +158,7 @@ const fetchAllRepair = asyncHandler(async (req, res, next) => {
             .populate({ path: "repairing.repairUnder", select: "name" })
             .populate({ path: "repairing.repairBy", select: "name" })
             .populate({ path: "repairing.repairProcess", select: "processName" })
+            .populate({ path: "repairing.usedItems.item", select: "productName itemCode purchasePrice salePrice unit" })
             .skip(skip)
             .limit(limit);
         const total = await Repair.countDocuments();
@@ -301,25 +302,35 @@ const updateRepair = asyncHandler(async (req, res, next) => {
 });
 
 // update Repair item by id
+// Alternative approach using findByIdAndUpdate
 const updateRepairItem = asyncHandler(async (req, res, next) => {
     try {
         const { id } = req.params;
         const { itemIndex, ...updatedFields } = req.body;
 
-        const invoice = await Repair.findById(id);
-        if (!invoice) {
+        // Sanitize ObjectId fields
+        const sanitizedFields = {};
+        Object.entries(updatedFields).forEach(([key, value]) => {
+            if (['repairUnder', 'repairBy'].includes(key)) {
+                sanitizedFields[`repairing.${itemIndex}.${key}`] = 
+                    value && mongoose.isValidObjectId(value) ? value : null;
+            } else {
+                sanitizedFields[`repairing.${itemIndex}.${key}`] = value;
+            }
+        });
+
+        const updatedInvoice = await Repair.findByIdAndUpdate(
+            id,
+            { $set: sanitizedFields },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedInvoice) {
             throw new ApiError(404, "Repair invoice not found");
         }
 
-        if (!Array.isArray(invoice.repairing) || itemIndex < 0 || itemIndex >= invoice.repairing.length) {
-            throw new ApiError(400, "Invalid item index");
-        }
-
-        Object.assign(invoice.repairing[itemIndex], updatedFields);
-        await invoice.save();
-
         res.status(200).json(
-            new ApiResponse(200, invoice, "Repairing item updated successfully")
+            new ApiResponse(200, updatedInvoice, "Repairing item updated successfully")
         );
     } catch (error) {
         next(error);
