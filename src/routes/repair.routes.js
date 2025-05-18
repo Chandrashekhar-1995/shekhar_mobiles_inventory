@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { isLoggedIn, isUser, isAdmin } from "../middlewares/auth.middleware.js";
-import { createRepair, deleteRepair, fetchAllRepair, fetchLast90DaysRepairBookingData, fetchLastRepair, fetchRepairByID, fetchTodayRepairBookingSummary, searchRepair, updateRepair, updateRepairItem,  updateRepairProcessWithSteps,updateRepairStepCompletion, } from "../controllers/repair.controllers.js";
+import { createRepair, deleteRepair, fetchAllRepair, fetchLast90DaysRepairBookingData, fetchLastRepair, fetchRepairByID, fetchTodayRepairBookingSummary, searchRepair, updateRepair, updateRepairItem } from "../controllers/repair.controllers.js";
 
 
 const repairRouter = Router();
@@ -15,7 +15,6 @@ repairRouter.get("/", isLoggedIn, isUser, searchRepair);
 repairRouter.put("/update/repair-item/:id", isLoggedIn, isUser, updateRepairItem );
 repairRouter.put("/:id", isLoggedIn, isUser, updateRepair );
 repairRouter.delete("/:id", isLoggedIn, isAdmin, deleteRepair );
-repairRouter.patch("/:id/items/:repairingIndex/process-status", isLoggedIn, isUser, updateRepairProcessWithSteps );
 
 
 
