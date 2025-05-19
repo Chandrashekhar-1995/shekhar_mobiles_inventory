@@ -224,12 +224,8 @@ customerSchema.pre("save", async function (next) {
 
 customerSchema.methods.validatePassword = async function (passwordInterByUser){
     const user = this;
-    console.log("Validating password...");
-    console.log("Input password:", passwordInterByUser);
-    console.log("Stored hash:", this.password);
     const hashPassword = user.password
     const isPasswordValid = await bcrypt.compare(passwordInterByUser, hashPassword);
-    console.log("Password valid:", isPasswordValid);
 
     return isPasswordValid;
 }

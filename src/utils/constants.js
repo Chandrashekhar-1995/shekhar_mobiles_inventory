@@ -1,4 +1,8 @@
 
+export const CASH_ACCOUNT_ID="6814ac5514eadd8dd0d6b553"
+export const CASH_CUSTOMER_ID="68137491cc129904e08d6301"
+
+
 export const UserRolesEnum = {
     RELATIONSHIP_MANAGER:"relationship_manager",
     MARKETING_EXECUTIVE:"marketing_executive",
