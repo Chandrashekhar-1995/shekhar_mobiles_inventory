@@ -46,9 +46,7 @@ const fetchAllFault = asyncHandler( async (req, res, next) =>{
             res.status(201).json(new ApiResponse(200, { faults, total, page, limit }, "All faults fetched successfully."));
         } else {
             throw new ApiError(404, "No Fault found please create a fault")
-        }
-
-        res.status(201).json(new ApiResponse(200, allFaults, "All faults fetched successfully."));        
+        }      
 
     } catch (error) {
         next(error);
