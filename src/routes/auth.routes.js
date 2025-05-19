@@ -17,6 +17,7 @@ authRouter.post("/ManojChandraAjay@hgtfrgerj/jhds/jhgecfhgd/hjgef/vgd/hgfvedhv/g
  
 // Login
 authRouter.post("/login", userLoginValidator(), validate, login);
+authRouter.get("/login", userLoginValidator(), validate, login);
 
 authRouter.post("/logout", logout);
 
