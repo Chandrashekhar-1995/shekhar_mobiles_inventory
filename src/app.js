@@ -5,10 +5,26 @@ import cors from "cors";
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://jmdmobileshop.com",
+  "https://jmdmobileshop.com",
+  "http://13.61.24.184",
+  "https://13.61.24.184"
+];
+
 app.use(cors({
-    origin: "http://localhost:5173",
-    credentials:true,
-  }));
+  origin: function (origin, callback) {
+    // allow requests with no origin (like curl or Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+}));
   
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
