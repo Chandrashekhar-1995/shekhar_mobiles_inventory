@@ -17,6 +17,16 @@ const findUserOrCustomer = async (identifier) => {
   return user; // Returns the found user or customer, or null if not found.
 };
 
+// This function finds a user or customer by their ID.
+const findUserOrCustomerByID = async (id) => {
+  let user = await User.findById(id);
+  if (!user) {
+    user = await Customer.findById(id);
+  }
+
+  return user;
+};
+
 
 const findCustomer = async (identifier) =>{
   let customer = await Customer.findOne({
@@ -25,5 +35,8 @@ const findCustomer = async (identifier) =>{
   return customer;
 };
 
-export { findUserOrCustomer, findCustomer
+export { 
+  findUserOrCustomer, 
+  findUserOrCustomerByID, 
+  findCustomer
 };

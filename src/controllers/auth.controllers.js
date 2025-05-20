@@ -3,8 +3,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { findUserOrCustomer } from "../utils/dbHelpers.js";
-
+import { findUserOrCustomer, findUserOrCustomerByID } from "../utils/dbHelpers.js";
 
 // check auth
 const checkAuth = asyncHandler( async (req, res, next) =>{
@@ -157,6 +156,43 @@ const logout = asyncHandler(async (req, res) => {
     );
 });
 
+// reset password Step 1: User submits name, mobileNumber, email
+const resetPasswordRequest = asyncHandler( async (req, res, next) => {
+    const { name, mobileNumber, email } = req.body;
+    try {
+      const user = await findUserOrCustomer(mobileNumber) || await findUserOrCustomer(email);
+      if (!user) {
+          throw new ApiError(404, "User not found");
+      }
+      if (user.name !== name.toLowerCase() || user.mobileNumber !== mobileNumber || user.email !== email.toLowerCase()) {
+          throw new ApiError(400, "User details do not match");
+      }
+  
+       res.status(200).json(new ApiResponse(200, { userId: user._id }, 'Details verified.'));
+    } catch (error) {
+        next(error)
+    }
+  });
+
+// reset password Step 2: User submits userId and newPassword
+const resetPasswordConfirm = asyncHandler( async (req, res, next) => {
+    const { userId, newPassword } = req.body;
+    try {
+        const user = await User.findById(userId) || await Customer.findById(userId);
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+        user.password = newPassword;
+        await user.save();
+  
+        res.status(200).json(
+            new ApiResponse(200, null, "Password updated successfully.")
+        );
+    } catch (error) {
+        next(error)
+    }
+});
+
 
 
 export {
@@ -164,5 +200,7 @@ export {
     register,
     registerAdmin,
     login,
-    logout
+    logout,
+    resetPasswordRequest,
+    resetPasswordConfirm,
 }
